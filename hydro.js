@@ -2432,7 +2432,7 @@ async function extractDirectUrlWithYtDlp(url, opts = {}) {
     const targetRes = Math.max(144, Number(opts.resolution || 720) || 720);
     const format = isAudio
         ? 'bestaudio[ext=m4a]/bestaudio/best'
-        : `best[ext=mp4][height<=${targetRes}]/best[height<=${targetRes}]/best`;
+        : `bestvideo[ext=mp4][vcodec!*=av01][vcodec!*=vp9][height<=${targetRes}]+bestaudio[ext=m4a]/best[ext=mp4][vcodec!*=av01][vcodec!*=vp9][height<=${targetRes}]/best[ext=mp4][height<=${targetRes}]/best[height<=${targetRes}]`;
 
     // 1) Native command runner (fast path)
     try {
@@ -2480,7 +2480,7 @@ async function downloadWithYtDlpFile(url, opts = {}) {
     const maxBytes = Number(opts.maxBytes || (isAudio ? 80 * 1024 * 1024 : 120 * 1024 * 1024));
     const format = isAudio
         ? 'bestaudio[ext=m4a]/bestaudio/best'
-        : `bv*[height<=${targetRes}][vcodec!*=av01]+ba/b[height<=${targetRes}]/best[height<=${targetRes}]`;
+        : `bestvideo[ext=mp4][vcodec!*=av01][vcodec!*=vp9][height<=${targetRes}]+bestaudio[ext=m4a]/best[ext=mp4][vcodec!*=av01][vcodec!*=vp9][height<=${targetRes}]/bestvideo[height<=${targetRes}]+bestaudio/best[height<=${targetRes}]`;
 
     const runner = getYtDlpRunner();
     const tmpDir = path.join(__dirname, 'tmp', 'yt-dlp-cache');
@@ -2496,6 +2496,7 @@ async function downloadWithYtDlpFile(url, opts = {}) {
             '--retries', '2',
             '--fragment-retries', '2',
             '--socket-timeout', '20',
+            '--merge-output-format', 'mp4',
             '-f', format,
             '-o', outputTpl,
             normalizeYouTubeUrl(url)
@@ -2848,10 +2849,10 @@ async function normalizeAudioBufferForWhatsApp(rawBuffer) {
 
 function getVideoConvertTimeoutMs(rawBuffer) {
     const sizeMB = Buffer.isBuffer(rawBuffer) ? (rawBuffer.length / (1024 * 1024)) : 0;
-    if (sizeMB >= 90) return 420000;
-    if (sizeMB >= 60) return 300000;
-    if (sizeMB >= 30) return 210000;
-    return 150000;
+    if (sizeMB >= 90) return 540000;
+    if (sizeMB >= 60) return 420000;
+    if (sizeMB >= 30) return 300000;
+    return 210000;
 }
 
 async function normalizeVideoBufferForWhatsApp(rawBuffer) {
@@ -34075,9 +34076,9 @@ case 'ytvideo': {
     );
   }
 
-  const args = text.split(' ');
-  const link = normalizeYouTubeUrl(args[0]);
-  const resolution = args[1];
+  const args = String(text || '').trim().split(/\s+/);
+  const link = normalizeYouTubeUrl(cleanCommandUrl(args[0] || ''));
+  const resolution = String(args[1] || '').replace(/[^0-9]/g, '');
 
   if (!isUrl(link) || !link.includes("youtu")) {
     return replyhydro("⚠️ Link tidak valid!\n\nSilakan masukkan link YouTube yang benar.");
@@ -34110,10 +34111,6 @@ case 'ytvideo': {
 		      const sourceErrors = []
 		      const sources = [
 		        {
-		          label: 'local ytdl',
-		          run: async () => downloadYoutubeVideoWithYtdl(link, resolution)
-		        },
-		        {
 		          label: 'yt-dlp file',
 		          run: async () => {
 		            const ytdlpFile = await downloadWithYtDlpFile(link, { audio: false, resolution, maxBytes: 120 * 1024 * 1024 })
@@ -34129,12 +34126,8 @@ case 'ytvideo': {
 		          }
 		        },
 		        {
-		          label: 'fallback api',
-		          run: async () => {
-		            const fallback = await resolveYoutubeFallbackDownload(link, { audio: false, resolution })
-		            const buffer = await downloadBufferFromHttp(fallback.downloadUrl, 120 * 1024 * 1024)
-		            return { buffer, title: fallback.title || 'yt-video', qualityLabel: `${resolution}p` }
-		          }
+		          label: 'local ytdl',
+		          run: async () => downloadYoutubeVideoWithYtdl(link, resolution)
 		        }
 		      ]
 
@@ -34164,7 +34157,7 @@ case 'ytvideo': {
 		      const shouldSendDocument = normalizedVideo.asDocument || fileSizeMB > 48;
 	      const fileMsg = shouldSendDocument
 	        ? { document: normalizedVideo.buffer, fileName: `${safeTitle}.${normalizedVideo.ext}`, mimetype: normalizedVideo.mimetype || 'video/mp4' }
-	        : { video: normalizedVideo.buffer, fileName: `${safeTitle}.${normalizedVideo.ext}`, mimetype: normalizedVideo.mimetype || 'video/mp4', caption: `✅ *Berhasil Mengunduh*\n🎥 ${safeTitle}\n📌 Resolusi: ${payload.qualityLabel || `${resolution}p`}` };
+	        : { video: normalizedVideo.buffer, fileName: `${safeTitle}.${normalizedVideo.ext}`, mimetype: normalizedVideo.mimetype || 'video/mp4', gifPlayback: false, caption: `✅ *Berhasil Mengunduh*\n🎥 ${safeTitle}\n📌 Resolusi: ${payload.qualityLabel || `${resolution}p`}` };
 	      if (shouldSendDocument) {
 	        await sendMessageWithRetry(m.chat, fileMsg, { quoted: m }, 5, 900);
 	      } else {
