@@ -27615,14 +27615,32 @@ case 'antigcnosewa':
                 if (args.length < 1) return replyhydro(`Contoh: ${prefix + command} on/off`)
                 {
                 db.settings[botNumber] = db.settings[botNumber] || {}
+                db.settings._global = db.settings._global || {}
                 const mode = String(q || '').toLowerCase()
                 if (mode === 'on') {
                     db.settings[botNumber].antigcnosewa = true
+                    db.settings._global.antigcnosewa = true
+                    for (const ownerNo of [global.ownernomer, global.ownernumber]) {
+                        const digits = String(ownerNo || '').replace(/[^0-9]/g, '')
+                        if (!digits) continue
+                        const ownerJid = `${digits}@s.whatsapp.net`
+                        db.settings[ownerJid] = db.settings[ownerJid] || {}
+                        db.settings[ownerJid].antigcnosewa = true
+                    }
                     saveDB(global.db)
                     try { global.triggerAntiGcNoSewaSweep?.('command.on') } catch {}
+                    try { if (m.isGroup) global.triggerAntiGcNoSewaCheck?.(m.chat, 'command.on.current-group') } catch {}
                     replyhydro('✅ antigcnosewa aktif. Bot akan auto keluar dari grup yang belum terdaftar sewa.')
                 } else if (mode === 'off') {
                     db.settings[botNumber].antigcnosewa = false
+                    db.settings._global.antigcnosewa = false
+                    for (const ownerNo of [global.ownernomer, global.ownernumber]) {
+                        const digits = String(ownerNo || '').replace(/[^0-9]/g, '')
+                        if (!digits) continue
+                        const ownerJid = `${digits}@s.whatsapp.net`
+                        db.settings[ownerJid] = db.settings[ownerJid] || {}
+                        db.settings[ownerJid].antigcnosewa = false
+                    }
                     saveDB(global.db)
                     replyhydro('✅ antigcnosewa nonaktif. Bot bisa tetap berada di grup tanpa sewa.')
                 } else {

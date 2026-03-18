@@ -498,6 +498,25 @@ const getBotSetting = () => {
     const botId = hydro.decodeJid(hydro?.user?.id || '')
     return { botId, setting: global.db?.settings?.[botId] || {} }
 }
+const isAntiGcNoSewaEnabled = () => {
+    const { setting } = getBotSetting()
+    if (setting?.antigcnosewa === true) return true
+    const settings = global.db?.settings || {}
+    if (settings?._global?.antigcnosewa === true) return true
+    const ownerDigits = new Set(
+        [global.ownernomer, global.ownernumber]
+            .map((x) => String(x || '').replace(/[^0-9]/g, ''))
+            .filter(Boolean)
+    )
+    for (const [jid, cfg] of Object.entries(settings)) {
+        if (!cfg || typeof cfg !== 'object') continue
+        if (cfg.antigcnosewa !== true) continue
+        const digits = String(jid || '').replace(/[^0-9]/g, '')
+        if (ownerDigits.has(digits)) return true
+    }
+    // fallback aman untuk kasus key setting bot berubah/jarang sinkron
+    return Object.values(settings).some((cfg) => cfg && typeof cfg === 'object' && cfg.antigcnosewa === true)
+}
 
 const isJoinGraceActive = (groupId) => {
     const graceMap = global.__agcnsJoinGrace || {}
@@ -514,8 +533,7 @@ global.__agcnsSweepState = global.__agcnsSweepState || { running: false, lastRun
 const enforceAntiGcNoSewa = async (groupId, trigger = 'event') => {
     const normalizedGroupId = normalizeGroupJid(groupId)
     if (!normalizedGroupId || !String(normalizedGroupId).endsWith('@g.us')) return
-    const { setting } = getBotSetting()
-    if (!setting?.antigcnosewa) return
+    if (!isAntiGcNoSewaEnabled()) return
     if (isJoinGraceActive(normalizedGroupId)) return
 
     const now = Date.now()
@@ -537,8 +555,7 @@ const enforceAntiGcNoSewa = async (groupId, trigger = 'event') => {
 }
 
 const sweepAntiGcNoSewa = async (trigger = 'manual') => {
-    const { setting } = getBotSetting()
-    if (!setting?.antigcnosewa) return
+    if (!isAntiGcNoSewaEnabled()) return
     const state = global.__agcnsSweepState
     if (state.running) return
     state.running = true
@@ -561,6 +578,11 @@ const sweepAntiGcNoSewa = async (trigger = 'manual') => {
 global.triggerAntiGcNoSewaSweep = (trigger = 'manual') => {
     sweepAntiGcNoSewa(trigger).catch((err) => {
         console.error('[ANTIGCNOSEWA] trigger sweep error:', err)
+    })
+}
+global.triggerAntiGcNoSewaCheck = (groupId, trigger = 'manual.check') => {
+    enforceAntiGcNoSewa(groupId, trigger).catch((err) => {
+        console.error('[ANTIGCNOSEWA] trigger check error:', err)
     })
 }
 
