@@ -9,7 +9,8 @@ usage() {
 Sync local changes to panel in one flow:
   1) git add + commit (jika ada perubahan)
   2) git push
-  3) kirim deploy + restart ke panel
+  3) upload file commit terbaru ke panel (Files API)
+  4) restart panel
 
 Usage:
   bash scripts/ptero-sync.sh
@@ -54,6 +55,9 @@ fi
 
 REMOTE="${PTERO_GIT_REMOTE:-origin}"
 BRANCH="${PTERO_GIT_BRANCH:-$(git -C "$REPO_ROOT" branch --show-current 2>/dev/null || echo main)}"
+COMMITTED=0
+declare -a DEPLOY_FILES_RAW=()
+declare -a DEPLOY_FILES=()
 
 if ! git -C "$REPO_ROOT" remote get-url "$REMOTE" >/dev/null 2>&1; then
   echo "[ERROR] Remote git '$REMOTE' belum di-set."
@@ -71,6 +75,11 @@ if git -C "$REPO_ROOT" diff --cached --quiet -- "$PROJECT_REL"; then
 else
   echo "[INFO] Commit perubahan..."
   git -C "$REPO_ROOT" commit -m "$COMMIT_MESSAGE" -- "$PROJECT_REL"
+  COMMITTED=1
+  while IFS= read -r line; do
+    [[ -z "$line" ]] && continue
+    DEPLOY_FILES_RAW+=("$line")
+  done < <(git -C "$REPO_ROOT" show --pretty='' --name-only HEAD -- "$PROJECT_REL" | sed '/^$/d')
 fi
 
 echo "[INFO] Push ke $REMOTE/$BRANCH ..."
@@ -81,7 +90,23 @@ if ! git -C "$REPO_ROOT" push "$REMOTE" "$BRANCH"; then
   exit 1
 fi
 
-echo "[INFO] Kirim deploy command ke panel..."
-bash "$ROOT_DIR/scripts/ptero-control.sh" deploy
+if (( COMMITTED == 1 )); then
+  for f in "${DEPLOY_FILES_RAW[@]}"; do
+    if [[ "$PROJECT_REL" == "." ]]; then
+      DEPLOY_FILES+=("$f")
+    else
+      DEPLOY_FILES+=("${f#${PROJECT_REL}/}")
+    fi
+  done
+fi
+
+if (( ${#DEPLOY_FILES[@]} == 0 )); then
+  echo "[INFO] Tidak ada file baru dari commit saat ini."
+  echo "[INFO] Sinkronisasi panel pakai file inti..."
+  DEPLOY_FILES=(hydro.js settings.js config.js package.json index.js)
+fi
+
+echo "[INFO] Upload file ke panel via Files API..."
+bash "$ROOT_DIR/scripts/ptero-file-sync.sh" --restart "${DEPLOY_FILES[@]}"
 
 echo "[OK] Sinkronisasi selesai: local -> git -> panel"

@@ -9,6 +9,7 @@
     "ptero:start": "bash scripts/ptero-control.sh start",
     "ptero:stop": "bash scripts/ptero-control.sh stop",
     "ptero:restart": "bash scripts/ptero-control.sh restart",
+    "ptero:file-sync": "bash scripts/ptero-file-sync.sh",
     "ptero:deploy": "bash scripts/ptero-control.sh deploy",
     "ptero:sync": "bash scripts/ptero-sync.sh"
   },
