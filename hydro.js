@@ -1375,6 +1375,7 @@ const MENU_COMMAND_TO_CATEGORY = (() => {
   }
   return map
 })()
+const MENU_STRICT_CATEGORIES = new Set(Object.keys(MENU_MANUAL_COMMANDS))
 const MENU_EXCLUDE_CMDS = new Set([
   'menu',
   'allmenu',
@@ -1442,11 +1443,32 @@ const classifyCommandToMenu = (cmd) => {
 const getMenuCategoryMap = () => {
   if (global.__hydroMenuCategoryMapCache) return global.__hydroMenuCategoryMapCache
   const allCommands = extractAllCaseCommands()
+  const allCommandSet = new Set(allCommands.map((cmd) => String(cmd || '').trim().toLowerCase()).filter(Boolean))
   const map = Object.fromEntries(MENU_CATEGORY_ORDER.map((key) => [key, new Set()]))
-  for (const cmd of allCommands) {
-    const category = normalizeMenuCategoryKey(classifyCommandToMenu(cmd) || 'othermenu')
-    if (!map[category]) map.othermenu.add(cmd)
-    else map[category].add(cmd)
+  const assigned = new Set()
+
+  // 1) Isi kategori strict dari daftar manual dulu (fixed mapping)
+  for (const [rawCategory, cmds] of Object.entries(MENU_MANUAL_COMMANDS)) {
+    const category = normalizeMenuCategoryKey(rawCategory)
+    if (!category || !map[category]) continue
+    const list = Array.isArray(cmds) ? cmds : []
+    for (const cmdRaw of list) {
+      const cmd = String(cmdRaw || '').trim().toLowerCase()
+      if (!cmd) continue
+      if (!allCommandSet.has(cmd)) continue
+      map[category].add(cmd)
+      assigned.add(cmd)
+    }
+  }
+
+  // 2) Sisanya pakai classifier, tapi kategori strict tidak boleh ketambahan command liar
+  for (const cmdRaw of allCommands) {
+    const cmd = String(cmdRaw || '').trim().toLowerCase()
+    if (!cmd || assigned.has(cmd)) continue
+    let category = normalizeMenuCategoryKey(classifyCommandToMenu(cmd) || 'othermenu')
+    if (!map[category]) category = 'othermenu'
+    if (MENU_STRICT_CATEGORIES.has(category)) category = 'othermenu'
+    map[category].add(cmd)
   }
   global.__hydroMenuCategoryMapCache = Object.fromEntries(
     Object.entries(map).map(([k, v]) => [k, Array.from(v).sort()])
