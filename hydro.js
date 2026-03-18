@@ -2958,6 +2958,87 @@ function extractQuotedText(quotedMsg) {
     }
     return '';
 }
+function unwrapQuotedMessageNode(rawMsg) {
+    let current = rawMsg;
+    let guard = 0;
+    while (current && typeof current === 'object' && guard < 8) {
+        if (current.ephemeralMessage?.message) {
+            current = current.ephemeralMessage.message;
+            guard++;
+            continue;
+        }
+        if (current.viewOnceMessage?.message) {
+            current = current.viewOnceMessage.message;
+            guard++;
+            continue;
+        }
+        if (current.viewOnceMessageV2?.message) {
+            current = current.viewOnceMessageV2.message;
+            guard++;
+            continue;
+        }
+        if (current.viewOnceMessageV2Extension?.message) {
+            current = current.viewOnceMessageV2Extension.message;
+            guard++;
+            continue;
+        }
+        break;
+    }
+    return current || null;
+}
+function getIncomingQuotedMessageRaw(m) {
+    if (!m || typeof m !== 'object') return null;
+    const contextCandidates = [
+        m?.message?.extendedTextMessage?.contextInfo,
+        m?.message?.imageMessage?.contextInfo,
+        m?.message?.videoMessage?.contextInfo,
+        m?.message?.documentMessage?.contextInfo,
+        m?.message?.buttonsResponseMessage?.contextInfo,
+        m?.message?.listResponseMessage?.contextInfo,
+        m?.msg?.contextInfo,
+        m?.quoted?.msg?.contextInfo,
+        m?.quoted?.message?.extendedTextMessage?.contextInfo,
+        m?.quoted?.fakeObj?.message?.extendedTextMessage?.contextInfo
+    ];
+    for (const ctx of contextCandidates) {
+        if (ctx?.quotedMessage) {
+            const unwrapped = unwrapQuotedMessageNode(ctx.quotedMessage);
+            if (unwrapped) return unwrapped;
+        }
+    }
+    return null;
+}
+function extractIncomingQuotedText(m) {
+    const rawQuoted = getIncomingQuotedMessageRaw(m);
+    if (!rawQuoted || typeof rawQuoted !== 'object') return '';
+    const candidates = [
+        rawQuoted.conversation,
+        rawQuoted.extendedTextMessage?.text,
+        rawQuoted.imageMessage?.caption,
+        rawQuoted.videoMessage?.caption,
+        rawQuoted.documentMessage?.caption,
+        rawQuoted.buttonsMessage?.contentText,
+        rawQuoted.templateMessage?.hydratedTemplate?.hydratedContentText,
+        rawQuoted.listMessage?.description,
+        rawQuoted.pollCreationMessage?.name
+    ];
+    for (const item of candidates) {
+        const text = String(item || '').trim();
+        if (text) return text;
+    }
+    return '';
+}
+function resolveHidetagReplyText(m, fallbackQuoted, prefix, command, bodyText) {
+    const blocked = new Set([
+        String(bodyText || '').trim().toLowerCase(),
+        `${String(prefix || '.').trim()}${String(command || '').trim()}`.toLowerCase()
+    ]);
+    const rawQuotedText = String(extractIncomingQuotedText(m) || '').trim();
+    if (rawQuotedText && !blocked.has(rawQuotedText.toLowerCase())) return rawQuotedText;
+    const fallbackText = String(extractQuotedText(fallbackQuoted) || '').trim();
+    if (fallbackText && !blocked.has(fallbackText.toLowerCase())) return fallbackText;
+    return '';
+}
 
 function toAbsoluteHttpUrl(url = '', base = '') {
     const val = String(url || '').trim();
@@ -17449,7 +17530,7 @@ if (!isBotAdmins) return replytolak('_Bot Harus Menjadi Admin Terlebih Dahulu_')
 const mentions = participants.map(a => a.id)
 const inputText = String(q || '').trim()
 if (m.quoted) {
-const quotedText = extractQuotedText(m.quoted)
+const quotedText = resolveHidetagReplyText(m, m.quoted, prefix, command, bodyText)
 if (inputText) {
 await hydro.sendMessage(m.chat, { text: inputText, mentions }, { quoted: m })
 } else {
@@ -17475,7 +17556,7 @@ if (!Ahmad) return replytolak(mess.only.owner)
 const mentions = participants.map(a => a.id)
 const inputText = String(q || '').trim()
 if (m.quoted) {
-const quotedText = extractQuotedText(m.quoted)
+const quotedText = resolveHidetagReplyText(m, m.quoted, prefix, command, bodyText)
 if (inputText) {
 await hydro.sendMessage(m.chat, { text: inputText, mentions }, { quoted: m })
 } else {
