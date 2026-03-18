@@ -1,0 +1,28 @@
+.ptero.env
+
+# dependencies & cache
+node_modules/
+tmp/
+temp/
+.trash/
+bin/
+yt-dlp
+yt-dlp.exe
+
+# local runtime/session
+session/
+sessions/
+auth_info_baileys/
+creds.json
+*.session
+
+# local backup / generated
+Hagima/
+Hagima.backup-*/
+Hagima.broken-*/
+Hagima.keyfix-*/
+*-player-script.js
+*.zip
+
+# platform files
+.DS_Store
