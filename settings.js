@@ -1,5 +1,13 @@
 const chalk = require("chalk")
 const fs = require("fs")
+let runtimeConfig = {}
+try {
+  runtimeConfig = require("./config")
+} catch {
+  runtimeConfig = {}
+}
+const cfgBrand = runtimeConfig.branding || {}
+const cfgMenu = runtimeConfig.menu || {}
 //aumto presence update
 global.autoTyping = true //auto tying in gc (true to on, false to off)
 global.autoRecord = false //auto recording (true to on, false to off)
@@ -13,12 +21,12 @@ global.channel = '' // channel dinonaktifkan
 global.channeln = '' // channel dinonaktifkan
 //===============SETTING MENU==================\\
 global.thumbnail = 'https://files.catbox.moe/r3mbjq.jpg'
-global.ig = ''
-global.tele = 'prtamaaa15'
-global.ttowner = ''
-global.ownername = 'pratama'
-global.owner = ['6282173760744'] // SETTING JUGA DI FOLDER DATABASE 
-global.ownernomer = '6282173760744'
+global.ig = cfgBrand.ig ?? ''
+global.tele = cfgBrand.tele ?? 'prtamaaa15'
+global.ttowner = cfgBrand.tiktok ?? ''
+global.ownername = cfgBrand.ownername || 'pratama'
+global.owner = [cfgBrand.ownerNumber || '6282173760744'] // SETTING JUGA DI FOLDER DATABASE 
+global.ownernomer = cfgBrand.ownerNumber || '6282173760744'
 global.socialm = 'GitHub: -'
 global.location = 'Indonesia' 
 //========================setting Payment=====================\\
@@ -30,11 +38,11 @@ global.andana = 'glng' // KOSONG KAN JIKA TIDAK ADA
 global.angopay = false // KOSONG KAN JIKA TIDAK ADA
 global.anovo = false // KOSONG KAN JIKA TIDAK ADA
 //==================setting bot===========================\\
-global.botname = "Hagima"
-global.ownernumber = '6282173760744'
-global.botnumber = '6281367968133'
-global.ownername = 'pratama'
-global.ownerNumber = ["6282173760744@s.whatsapp.net"]
+global.botname = cfgBrand.botname || "Hagima"
+global.ownernumber = cfgBrand.ownerNumber || '6282173760744'
+global.botnumber = cfgBrand.botNumber || '6281367968133'
+global.ownername = cfgBrand.ownername || 'pratama'
+global.ownerNumber = [`${cfgBrand.ownerNumber || '6282173760744'}@s.whatsapp.net`]
 global.ownerweb = ""
 global.websitex = ""
 global.wagc = ""
@@ -192,8 +200,9 @@ global.rpg = {
 }
 
 //new
-global.commandPrefix = '.'
-global.prefix = '.'
+global.commandPrefix = typeof runtimeConfig.prefix === 'string' && runtimeConfig.prefix.trim() ? runtimeConfig.prefix.trim() : '.'
+global.prefix = global.commandPrefix
+global.menuConfig = cfgMenu
 global.sessionName = 'Hagima'
 global.hituet = 0
 //media target

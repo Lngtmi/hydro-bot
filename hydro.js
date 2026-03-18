@@ -1216,67 +1216,104 @@ async function HydroTTDL(videoUrl) {
     return { error: error.message };
   }
 }
-const MENU_CATEGORY_ORDER = [
-  'gamemenu',
-  'groupmenu',
-  'downloadmenu',
-  'aimenu',
-  'storemenu',
-  'funmenu',
-  'rpgmenu',
-  'islamimenu',
-  'primbonmenu',
-  'beritamenu',
-  'stalkermenu',
-  'stickermenu',
-  'quotesmenu',
-  'randomvideomenu',
-  'randomphotomenu',
-  'ephoto360menu',
-  'animemenu',
-  'anonymousmenu',
-  'databasemenu',
-  'ownermenu',
+const MENU_DEFAULT_HIDDEN = new Set([
   'cpanelmenu',
   'pushmenu',
   'domainmenu',
   'bugmenu',
   'digitaloceanmenu',
   'pyterodactylemenu',
-  'jashermenu',
-  'sertifikatmenu',
-  'othermenu'
+  'jashermenu'
+])
+const MENU_CATEGORY_ORDER = [
+  'groupmenu',
+  'toolsmenu',
+  'downloadmenu',
+  'searchmenu',
+  'stickermenu',
+  'gamemenu',
+  'aimenu',
+  'storemenu',
+  'ownermenu',
+  'othermenu',
+  'rpgmenu',
+  'islamimenu',
+  'anonymousmenu',
+  'funmenu',
+  'databasemenu',
+  'cpanelmenu',
+  'pushmenu',
+  'domainmenu',
+  'bugmenu',
+  'digitaloceanmenu',
+  'pyterodactylemenu',
+  'jashermenu'
 ]
 const MENU_CATEGORY_TITLES = {
-  gamemenu: 'GAME MENU',
   groupmenu: 'GROUP MENU',
-  downloadmenu: 'DOWNLOAD MENU',
+  toolsmenu: 'TOOLS MENU',
+  downloadmenu: 'DOWNLOADER MENU',
+  searchmenu: 'SEARCH MENU',
+  stickermenu: 'STICKER MENU',
+  gamemenu: 'GAME MENU',
   aimenu: 'AI MENU',
   storemenu: 'STORE MENU',
-  funmenu: 'FUN MENU',
+  ownermenu: 'OWNER MENU',
+  othermenu: 'OTHER MENU',
   rpgmenu: 'RPG MENU',
   islamimenu: 'ISLAMI MENU',
-  primbonmenu: 'PRIMBON MENU',
-  beritamenu: 'BERITA MENU',
-  stalkermenu: 'STALKER MENU',
-  stickermenu: 'STICKER MENU',
-  quotesmenu: 'QUOTES MENU',
-  randomvideomenu: 'RANDOM VIDEO MENU',
-  randomphotomenu: 'RANDOM PHOTO MENU',
-  ephoto360menu: 'EPHOTO360 MENU',
-  animemenu: 'ANIME MENU',
   anonymousmenu: 'ANONYMOUS MENU',
+  funmenu: 'FUN MENU',
   databasemenu: 'DATABASE MENU',
-  ownermenu: 'OWNER MENU',
   cpanelmenu: 'CPANEL MENU',
   pushmenu: 'PUSH MENU',
   domainmenu: 'DOMAIN MENU',
   bugmenu: 'BUG MENU',
-  digitaloceanmenu: 'DIGITALOCEAN MENU',
-  pyterodactylemenu: 'PYTERODACTYLE MENU',
-  jashermenu: 'JASHER MENU',
-  sertifikatmenu: 'SERTIFIKAT MENU',
-  othermenu: 'OTHER MENU'
+  digitaloceanmenu: 'DIGITAL OCEAN MENU',
+  pyterodactylemenu: 'PTERODACTYL MENU',
+  jashermenu: 'JASHER MENU'
+}
+const MENU_CATEGORY_DESCRIPTIONS = {
+  groupmenu: 'Moderasi grup dan member',
+  toolsmenu: 'Utilitas harian dan converter',
+  downloadmenu: 'Download media multi platform',
+  searchmenu: 'Pencarian konten dan data',
+  stickermenu: 'Buat/edit sticker',
+  gamemenu: 'Game interaktif',
+  aimenu: 'Asisten AI',
+  storemenu: 'Sewa, premium, transaksi',
+  ownermenu: 'Kontrol owner bot',
+  othermenu: 'Perintah tambahan',
+  rpgmenu: 'RPG dan ekonomi',
+  islamimenu: 'Fitur islami',
+  anonymousmenu: 'Anonymous & menfess',
+  funmenu: 'Hiburan',
+  databasemenu: 'Data/list custom',
+  cpanelmenu: 'Manajemen panel',
+  pushmenu: 'Broadcast/push kontak',
+  domainmenu: 'Kelola domain/subdomain',
+  bugmenu: 'Debug/testing',
+  digitaloceanmenu: 'Tools DigitalOcean',
+  pyterodactylemenu: 'Tools Pterodactyl',
+  jashermenu: 'Menu custom jasher'
+}
+const MENU_CATEGORY_ALIASES = {
+  menugame: 'gamemenu',
+  gamesmenu: 'gamemenu',
+  utilitymenu: 'toolsmenu',
+  utilsmenu: 'toolsmenu',
+  tools: 'toolsmenu',
+  search: 'searchmenu',
+  findmenu: 'searchmenu',
+  stalkermenu: 'searchmenu',
+  beritamenu: 'searchmenu',
+  primbonmenu: 'toolsmenu',
+  quotesmenu: 'toolsmenu',
+  randomvideomenu: 'toolsmenu',
+  randomphotomenu: 'toolsmenu',
+  ephoto360menu: 'toolsmenu',
+  animemenu: 'toolsmenu',
+  sertifikatmenu: 'toolsmenu'
 }
 const MENU_EXCLUDE_CMDS = new Set([
   'menu',
@@ -1287,6 +1324,20 @@ const MENU_EXCLUDE_CMDS = new Set([
   'profil',
   'inventory'
 ])
+const normalizeMenuCategoryKey = (raw) => {
+  const key = String(raw || '').trim().toLowerCase()
+  if (!key) return ''
+  return MENU_CATEGORY_ALIASES[key] || key
+}
+const getHiddenMenuCategories = () => {
+  const fromConfig = Array.isArray(global.menuConfig?.hiddenCategories) ? global.menuConfig.hiddenCategories : null
+  const source = fromConfig || Array.from(MENU_DEFAULT_HIDDEN)
+  return new Set(source.map((item) => normalizeMenuCategoryKey(item)).filter(Boolean))
+}
+const getVisibleMenuCategoryOrder = () => {
+  const hidden = getHiddenMenuCategories()
+  return MENU_CATEGORY_ORDER.filter((key) => !hidden.has(key))
+}
 const extractAllCaseCommands = () => {
   const src = fs.readFileSync(__filename).toString()
   const matches = Array.from(src.matchAll(/case\s+['"]([^'"]+)['"]/g))
@@ -1303,23 +1354,17 @@ const extractAllCaseCommands = () => {
 const classifyCommandToMenu = (cmd) => {
   if (/^(ttt|ttc|tictactoe|delttc|delttt|tebak|suit|casino|slot|truth|dare|family100|asahotak|siapakahaku|susunkata|tekateki|caklontong|math|kuis|quiz|judi|petakbom|hint|nyerah)/i.test(cmd)) return 'gamemenu'
   if (/(kick|add|promote|demote|hidetag|hidetage|^h$|tagall|totag|group|setsubject|setname|setdesc|setppgroup|linkgc|revoke|open|close|antilink|welcome|setwelcome|setleft|left|mute|unmute|listonline|join|leave|sider|antitagsw|antiwame|pinmsg|unpinmsg|unpinmasg|delete|del|^d$|warn|unwarn|cekwarn|warnlist|listwarn)/i.test(cmd)) return 'groupmenu'
-  if (/(yt|yts|play|tiktok|tt|instagram|igdl|fbdl|facebook|mediafire|gdrive|terabox|spotify|soundcloud|pinterest|capcut|apk|download|gitclone|tomp3|tomp4|toaudio|tovn|toimg|toonce|ttslide|twitter)/i.test(cmd)) return 'downloadmenu'
-  if (/(ai|gpt|chatgpt|openai|gemini|claude|simi|bing|aivo|hydromind|powerbrain|aimath|ai4chat|meta|bot)/i.test(cmd)) return 'aimenu'
+  if (/(sticker|stiker|take|emoji|fstik|smeme|qc|iqc|swm|brat|ttp|attp)/i.test(cmd)) return 'stickermenu'
+  if (/(ytmp3|ytmp4|play|tiktok|ttslide|tiktokaudio|instagram|igdl|facebook|fbdl|mediafire|gdrive|terabox|spotify|soundcloud|capcut|gitclone|twittervid|snackvideo|download|ytv|yta)/i.test(cmd)) return 'downloadmenu'
+  if (/(yts|ytsearch|ttsearch|google|imdb|weather|wanumber|stalk|cekid|whois|trackip|myip|host|genshinstalk|npmstalk|githubstalk|news|berita|cnn|kompas|detik)/i.test(cmd)) return 'searchmenu'
+  if (/(ai|gpt|chatgpt|openai|gemini|claude|simi|bing|hydromind|aimath|ai4chat)/i.test(cmd)) return 'aimenu'
   if (/(buy|sewa|premium|prem|donasi|donate|payment|dana|gopay|ovo|produk|order|store)/i.test(cmd)) return 'storemenu'
+  if (/(owner|addowner|delowner|autoread|antigcnosewa|public|self|setppbot|restart|shutdown|backup)/i.test(cmd)) return 'ownermenu'
+  if (/(anonymous|menfess|menfes|confess|balasmenfess|balasmenfes|tolakmenfess|tolakmenfes|stopmenfess|stopmenfes|startchat|nextchat|leavechat)/i.test(cmd)) return 'anonymousmenu'
   if (/(rpg|hunt|mining|adventure|mulung|berkebun|dagang|bank|atm|gajian|bonus|upgrade|mancing|pet|heal|craft|work|rob|misi|nguli)/i.test(cmd)) return 'rpgmenu'
   if (/(islam|doa|quran|surah|hadis|sholat|asmaul|kisahnabi|alkitab)/i.test(cmd)) return 'islamimenu'
-  if (/(primbon|zodiak|weton|jodoh|ramalan|nomorhoki|fengshui|arti)/i.test(cmd)) return 'primbonmenu'
-  if (/(berita|news|cnn|tempo|kompas|detik|bbc|cnbc|viva|republika|antara)/i.test(cmd)) return 'beritamenu'
-  if (/(stalk|cekid|whois|trackip|myip|ip|host|userfind|igstalk|ttstalk|genshinstalk|npmstalk|githubstalk)/i.test(cmd)) return 'stalkermenu'
-  if (/(sticker|stiker|take|emoji|fstik|smeme|qc|iqc|swm|brat|ttp|attp)/i.test(cmd)) return 'stickermenu'
-  if (/(quote|quotes|bucin|motivasi|pantun)/i.test(cmd)) return 'quotesmenu'
-  if (/(randomvideo|asupan|gheayubi|bocil|ukhty|santuy|kayes|panrika|video)/i.test(cmd)) return 'randomvideomenu'
-  if (/(randomphoto|randompic|wall|cecan|cogan|waifu|loli|aesthetic|kpop|rose|ryujin|ulzzang|ppcouple|pubg|cat|dog|profilepic|foto)/i.test(cmd)) return 'randomphotomenu'
-  if (/(ephoto|photooxy|textpro|glitch|neon|logo|3d|nulis|write|textmaker)/i.test(cmd)) return 'ephoto360menu'
-  if (/(anime|otaku|manga|anilist)/i.test(cmd)) return 'animemenu'
-  if (/(anonymous|menfess|menfes|confess|balasmenfess|balasmenfes|tolakmenfess|tolakmenfes|stopmenfess|stopmenfes|startchat|nextchat|leavechat)/i.test(cmd)) return 'anonymousmenu'
+  if (/(fun|joke|meme|halah|hilih|huluh|heleh|holoh|rate|ship)/i.test(cmd)) return 'funmenu'
   if (/(setcmd|delcmd|listcmd|addlist|updatelist|setproses|setdone|changedone|changed|liststicker|listimage|listvideo|listvn|addvn|delvn|addimage|delimage|addvideo|delvideo|addsticker|delsticker|database)/i.test(cmd)) return 'databasemenu'
-  if (/(owner|addowner|delowner|autoread|antigcnosewa|public|self|setppbot|restart|shutdown|backup)/i.test(cmd)) return 'ownermenu'
   if (/(cpanel|panel|createadmin|createuser|listsrv|listusr|delsrv|delusr|unli|[0-9]+gb|adminpanel|serverpanel)/i.test(cmd)) return 'cpanelmenu'
   if (/(push|jpm|broadcast|bcgc|bc|pushkontak|pushch)/i.test(cmd)) return 'pushmenu'
   if (/(domain|subdomain|dns|cf)/i.test(cmd)) return 'domainmenu'
@@ -1327,59 +1372,40 @@ const classifyCommandToMenu = (cmd) => {
   if (/(digitalocean|doctl|droplet)/i.test(cmd)) return 'digitaloceanmenu'
   if (/(pterodactyl|pytero|wings|egg|node)/i.test(cmd)) return 'pyterodactylemenu'
   if (/(jasher)/i.test(cmd)) return 'jashermenu'
-  if (/(sertifikat|certificate)/i.test(cmd)) return 'sertifikatmenu'
-  if (/(fun|joke|meme|halah|hilih|huluh|heleh|holoh|rate|ship)/i.test(cmd)) return 'funmenu'
-  if (/(ping|runtime|myip|reportbug|owner|jadibot|listjadibot|script|rating|infobot|bacaperaturan|donasi|friend|obfuscate|styletext|fliptext|tts|say|togif|toqr|tovn|toaudio|tomp3|tomp4|toimg|toonce|volume|ebinary|dbinary|ssweb|quoted|readviewonce|cekkhodam|paptt|alkitab|totalfitur|tinyurl|menu|allmenu|status)/i.test(cmd)) return 'othermenu'
-  return null
+  if (/(ping|runtime|reportbug|jadibot|listjadibot|script|rating|infobot|bacaperaturan|friend|obfuscate|styletext|fliptext|tts|say|togif|toqr|toaudio|tovn|toimg|toonce|volume|ebinary|dbinary|ssweb|quoted|readviewonce|cekkhodam|paptt|totalfitur|tinyurl|status)/i.test(cmd)) return 'toolsmenu'
+  return 'othermenu'
 }
 const getMenuCategoryMap = () => {
   if (global.__hydroMenuCategoryMapCache) return global.__hydroMenuCategoryMapCache
   const allCommands = extractAllCaseCommands()
   const map = Object.fromEntries(MENU_CATEGORY_ORDER.map((key) => [key, new Set()]))
-  const entries = allCommands.map((cmd) => ({ cmd, category: classifyCommandToMenu(cmd) }))
-
-  // Isi command yang belum terkategori dengan kategori terdekat berdasarkan urutan source.
-  for (let i = 0; i < entries.length; i++) {
-    if (entries[i].category) continue
-    let prev = i - 1
-    while (prev >= 0 && !entries[prev].category) prev--
-    let next = i + 1
-    while (next < entries.length && !entries[next].category) next++
-
-    if (prev >= 0 && next < entries.length) {
-      entries[i].category = (i - prev <= next - i) ? entries[prev].category : entries[next].category
-    } else if (prev >= 0) {
-      entries[i].category = entries[prev].category
-    } else if (next < entries.length) {
-      entries[i].category = entries[next].category
-    } else {
-      entries[i].category = 'othermenu'
-    }
+  for (const cmd of allCommands) {
+    const category = normalizeMenuCategoryKey(classifyCommandToMenu(cmd) || 'othermenu')
+    if (!map[category]) map.othermenu.add(cmd)
+    else map[category].add(cmd)
   }
-
-  for (const entry of entries) {
-    const category = entry.category || 'othermenu'
-    if (!map[category]) map.othermenu.add(entry.cmd)
-    else map[category].add(entry.cmd)
-  }
-  global.__hydroMenuCategoryMapCache = Object.fromEntries(Object.entries(map).map(([k, v]) => [k, Array.from(v).sort()]))
+  global.__hydroMenuCategoryMapCache = Object.fromEntries(
+    Object.entries(map).map(([k, v]) => [k, Array.from(v).sort()])
+  )
   return global.__hydroMenuCategoryMapCache
 }
-const renderMenuCategoryText = (menuKey) => {
-  const key = String(menuKey || '').toLowerCase()
+const renderMenuCategoryText = (menuKey, options = {}) => {
+  const includeHidden = options?.includeHidden !== false
+  const key = normalizeMenuCategoryKey(menuKey)
   if (!MENU_CATEGORY_ORDER.includes(key)) return null
+  if (!includeHidden && getHiddenMenuCategories().has(key)) return null
   const cmdPrefix = prefix || '.'
   const menuMap = getMenuCategoryMap()
   const commands = Array.isArray(menuMap[key]) ? menuMap[key] : []
   const title = MENU_CATEGORY_TITLES[key] || key.toUpperCase()
   if (!commands.length) return `*${title}*\nBelum ada command di menu ini.`
-  const lines = [`*${title}*`, `Total command: *${commands.length}*`, ``]
+  const lines = [`*${botname} • ${title}*`, `Total command: *${commands.length}*`, ``]
   for (const cmd of commands) lines.push(`• ${cmdPrefix}${cmd}`)
   return lines.join('\n').trim()
 }
 async function listbut2(chat, teks, listnye, jm) {
 const key = String(command || '').toLowerCase()
-const normalizedKey = key === 'menugame' ? 'gamemenu' : key
+const normalizedKey = normalizeMenuCategoryKey(key === 'menugame' ? 'gamemenu' : key)
 const generated = (normalizedKey.endsWith('menu') && normalizedKey !== 'menu' && normalizedKey !== 'allmenu')
   ? renderMenuCategoryText(normalizedKey)
   : null
@@ -1409,59 +1435,60 @@ for (let i = 0; i < chunks.length; i++) {
 }
 
 function getMainMenuList() {
+  const visibleCategories = getVisibleMenuCategoryOrder()
+  const quickLabels = {
+    allmenu: 'Semua Fitur',
+    status: 'Status User',
+    infobot: 'Info Bot',
+    bacaperaturan: 'Peraturan',
+    donasi: 'Donasi',
+    script: 'Script',
+    rating: 'Rating'
+  }
+  const toRow = (id) => {
+    const key = normalizeMenuCategoryKey(id)
+    if (!visibleCategories.includes(key)) return null
+    return {
+      title: MENU_CATEGORY_TITLES[key] || key.toUpperCase(),
+      description: MENU_CATEGORY_DESCRIPTIONS[key] || 'Daftar command',
+      id: key
+    }
+  }
+  const mapRows = (ids) => ids.map(toRow).filter(Boolean)
+  const quickAccess = Array.isArray(global.menuConfig?.quickAccess) && global.menuConfig.quickAccess.length
+    ? global.menuConfig.quickAccess
+    : ['allmenu', 'status', 'infobot', 'bacaperaturan', 'donasi']
+  const coreIds = ['groupmenu', 'toolsmenu', 'downloadmenu', 'searchmenu', 'stickermenu']
+  const advancedIds = ['gamemenu', 'aimenu', 'storemenu', 'ownermenu', 'othermenu']
+  const listed = new Set([...coreIds, ...advancedIds].map(normalizeMenuCategoryKey))
+  const extraRows = visibleCategories
+    .filter((id) => !listed.has(id))
+    .map((id) => toRow(id))
+    .filter(Boolean)
+
   return {
     title: "MENU BOT",
     sections: [
       {
         title: "Akses Cepat",
         highlight_label: "Rekomendasi",
-        rows: [
-          { title: "Semua Fitur", description: "Lihat semua command bot", id: "allmenu" },
-          { title: "Status User", description: "Cek status akun kamu", id: "status" },
-          { title: "Info Bot", description: "Status bot dan info sistem", id: "infobot" },
-          { title: "Peraturan", description: "Baca aturan penggunaan", id: "bacaperaturan" },
-          { title: "Donasi", description: "Dukung pengembangan bot", id: "donasi" },
-          { title: "Script", description: "Info source script bot", id: "script" },
-          { title: "Rating", description: "Kasih nilai untuk bot", id: "rating" }
-        ]
+        rows: quickAccess.map((id) => ({
+          title: quickLabels[String(id || '').toLowerCase()] || String(id || '').toUpperCase(),
+          description: 'Akses cepat',
+          id: String(id || '').toLowerCase()
+        }))
       },
-	      {
-	        title: "Kategori Utama",
-	        rows: [
-	          { title: "Owner Menu", description: "Khusus owner bot", id: "ownermenu" },
-	          { title: "Group Menu", description: "Fitur khusus grup", id: "groupmenu" },
-	          { title: "Game Menu", description: "Fitur permainan", id: "gamemenu" },
-	          { title: "Store Menu", description: "Fitur toko dan transaksi", id: "storemenu" },
-	          { title: "Download Menu", description: "Downloader media", id: "downloadmenu" },
-	          { title: "AI Menu", description: "Fitur AI assistant", id: "aimenu" }
-	        ]
-	      },
       {
-        title: "Kategori Lanjutan",
-        rows: [
-          { title: "Berita Menu", description: "Update berita", id: "beritamenu" },
-          { title: "Primbon Menu", description: "Fitur primbon", id: "primbonmenu" },
-          { title: "Ephoto360 Menu", description: "Efek teks dan foto", id: "ephoto360menu" },
-          { title: "Islamic Menu", description: "Fitur islami", id: "islamimenu" },
-	          { title: "Fun Menu", description: "Fitur hiburan", id: "funmenu" },
-	          { title: "Database Menu", description: "Fitur database", id: "databasemenu" },
-	          { title: "Others Menu", description: "Fitur lainnya", id: "othermenu" },
-	          { title: "RPG Menu", description: "RPG dan ekonomi", id: "rpgmenu" }
-	        ]
-	      },
+        title: "WibuSoft Style",
+        rows: mapRows(coreIds)
+      },
       {
-        title: "Random & Utility",
-        rows: [
-          { title: "Anonymous Menu", description: "Fitur anonymous chat", id: "anonymousmenu" },
-	          { title: "Random Video Menu", description: "Koleksi video random", id: "randomvideomenu" },
-	          { title: "Random Photo Menu", description: "Koleksi foto random", id: "randomphotomenu" },
-	          { title: "Sticker Menu", description: "Tools sticker", id: "stickermenu" },
-	          { title: "Quotes Menu", description: "Kata-kata dan quote", id: "quotesmenu" },
-	          { title: "Stalker Menu", description: "Tools stalking", id: "stalkermenu" }
-	        ]
-	      }
-	    ]
-	  }
+        title: "Kategori Inti",
+        rows: mapRows(advancedIds)
+      },
+      ...(extraRows.length ? [{ title: "Kategori Lainnya", rows: extraRows }] : [])
+    ]
+  }
 }
 
 async function uploadwidipe(filePath) {
@@ -5333,6 +5360,20 @@ const matchAnonymousNow = async (store, senderJid, prefix) => {
   return room
 }
 
+const normalizedMenuCommand = normalizeMenuCategoryKey(command)
+if (
+  normalizedMenuCommand &&
+  normalizedMenuCommand.endsWith('menu') &&
+  normalizedMenuCommand !== 'menu' &&
+  normalizedMenuCommand !== 'allmenu'
+) {
+  const menuText = renderMenuCategoryText(normalizedMenuCommand)
+  if (menuText && !/Belum ada command/i.test(menuText)) {
+    await hydro.sendMessage(m.chat, { text: menuText }, { quoted: m })
+    return
+  }
+}
+
 switch (command) {
 case 'hint': {
 const activeGame = resolveActiveGameState()
@@ -5765,28 +5806,27 @@ break
 case 'allmenu': {
 hydro.sendMessage(m.chat, { react: { text: `⏱️`, key: m.key }})
 const cmdPrefix = prefix || '.'
-const menuTree = getMainMenuList()
-const sections = Array.isArray(menuTree?.sections) ? menuTree.sections : []
+const visibleCategories = getVisibleMenuCategoryOrder()
+const menuMap = getMenuCategoryMap()
 const lines = [
   `*${botname} - ALL MENU*`,
-  `Total kategori: *${sections.reduce((n, s) => n + ((s.rows || []).length), 0)}*`,
+  `Total kategori: *${visibleCategories.length}*`,
   ``,
 ]
-
-for (const section of sections) {
-  const rows = Array.isArray(section?.rows) ? section.rows : []
-  if (!rows.length) continue
-  lines.push(`*${section.title || 'Menu'}*`)
-  for (const row of rows) {
-    const rawId = String(row?.id || '').trim()
-    const cmd = rawId ? (rawId.startsWith(cmdPrefix) ? rawId : `${cmdPrefix}${rawId}`) : '-'
-    const title = row?.title ? String(row.title).trim() : 'Menu'
-    lines.push(`- ${cmd} : ${title}`)
+let idx = 1
+for (const key of visibleCategories) {
+  const title = MENU_CATEGORY_TITLES[key] || key.toUpperCase()
+  const commands = Array.isArray(menuMap[key]) ? menuMap[key] : []
+  if (!commands.length) continue
+  lines.push(`*${title}*`)
+  for (const cmd of commands) {
+    lines.push(`${idx}. ${cmdPrefix}${cmd}`)
+    idx += 1
   }
   lines.push('')
 }
 
-lines.push(`Ketik command menu di atas untuk lihat list command detail.`)
+lines.push(`Ketik command kategorinya untuk lihat menu ringkas.`)
 await hydro.sendMessage(m.chat, { text: lines.join('\n').trim() }, { quoted: m })
 }
 break
