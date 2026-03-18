@@ -2929,6 +2929,35 @@ function cleanCommandUrl(input = '') {
     const picked = raw.match(/https?:\/\/\S+/i)?.[0] || raw;
     return picked.replace(/[),.;!?]+$/g, '');
 }
+function extractQuotedText(quotedMsg) {
+    if (!quotedMsg) return '';
+    const fromPath = (obj, path) => {
+        try {
+            return path.split('.').reduce((acc, key) => (acc ? acc[key] : undefined), obj);
+        } catch {
+            return undefined;
+        }
+    };
+    const candidates = [
+        quotedMsg.text,
+        quotedMsg.caption,
+        quotedMsg.msg?.text,
+        quotedMsg.msg?.caption,
+        fromPath(quotedMsg, 'message.conversation'),
+        fromPath(quotedMsg, 'message.extendedTextMessage.text'),
+        fromPath(quotedMsg, 'message.imageMessage.caption'),
+        fromPath(quotedMsg, 'message.videoMessage.caption'),
+        fromPath(quotedMsg, 'fakeObj.message.conversation'),
+        fromPath(quotedMsg, 'fakeObj.message.extendedTextMessage.text'),
+        fromPath(quotedMsg, 'fakeObj.message.imageMessage.caption'),
+        fromPath(quotedMsg, 'fakeObj.message.videoMessage.caption')
+    ];
+    for (const item of candidates) {
+        const text = String(item || '').trim();
+        if (text) return text;
+    }
+    return '';
+}
 
 function toAbsoluteHttpUrl(url = '', base = '') {
     const val = String(url || '').trim();
@@ -17417,13 +17446,47 @@ case 'h': {
 if (!m.isGroup) return replytolak(mess.only.group)
 if (!isAdmins && !Ahmad) return reply('Khusus Admin!!')
 if (!isBotAdmins) return replytolak('_Bot Harus Menjadi Admin Terlebih Dahulu_')
-hydro.sendMessage(m.chat, { text : q ? q : '' , mentions: participants.map(a => a.id)}, { quoted: m })
+const mentions = participants.map(a => a.id)
+const inputText = String(q || '').trim()
+if (m.quoted) {
+const quotedText = extractQuotedText(m.quoted)
+if (inputText) {
+await hydro.sendMessage(m.chat, { text: inputText, mentions }, { quoted: m })
+} else {
+try {
+await hydro.sendMessage(m.chat, { forward: m.quoted.fakeObj, mentions }, { quoted: m })
+} catch {
+if (!quotedText) return replyhydro(`Reply pesan dulu atau isi teks.\nContoh: ${prefix + command} halo semua`)
+await hydro.sendMessage(m.chat, { text: quotedText, mentions }, { quoted: m })
+}
+}
+} else {
+if (!inputText) return replyhydro(`Contoh:\n${prefix + command} halo semua\nAtau reply pesan lalu ketik ${prefix + command}`)
+await hydro.sendMessage(m.chat, { text: inputText, mentions }, { quoted: m })
+}
 }
 break
 case 'ht': {
 if (!m.isGroup) return replytolak(mess.only.group)
 if (!Ahmad) return replytolak(mess.only.owner)
-hydro.sendMessage(m.chat, { text : q ? q : '' , mentions: participants.map(a => a.id)}, { quoted: m })
+const mentions = participants.map(a => a.id)
+const inputText = String(q || '').trim()
+if (m.quoted) {
+const quotedText = extractQuotedText(m.quoted)
+if (inputText) {
+await hydro.sendMessage(m.chat, { text: inputText, mentions }, { quoted: m })
+} else {
+try {
+await hydro.sendMessage(m.chat, { forward: m.quoted.fakeObj, mentions }, { quoted: m })
+} catch {
+if (!quotedText) return replyhydro(`Reply pesan dulu atau isi teks.\nContoh: ${prefix + command} halo semua`)
+await hydro.sendMessage(m.chat, { text: quotedText, mentions }, { quoted: m })
+}
+}
+} else {
+if (!inputText) return replyhydro(`Contoh:\n${prefix + command} halo semua\nAtau reply pesan lalu ketik ${prefix + command}`)
+await hydro.sendMessage(m.chat, { text: inputText, mentions }, { quoted: m })
+}
 }
 break
 case 'totag': {
