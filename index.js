@@ -384,7 +384,12 @@ hydro.ev.on('creds.update', await saveCreds)
 	// agar pesan owner di grup tidak ter-drop sebelum diproses.
 	const msgId = String(kay.key?.id || '')
 	if (msgId.startsWith('BAE5') && msgId.length === 16 && kay.key.fromMe) return
-	const m = smsg(hydro, kay, store)
+const m = smsg(hydro, kay, store)
+	if (m?.isGroup && m?.chat && global.triggerAntiGcNoSewaCheck) {
+		setTimeout(() => {
+			global.triggerAntiGcNoSewaCheck?.(m.chat, 'messages.upsert')
+		}, 500)
+	}
 	require('./hydro')(hydro, m, chatUpdate, store)
 	} catch (err) {
 console.log(err)}})
@@ -444,7 +449,7 @@ if (!global.__agcnsSweepIntervalStarted) {
     global.__agcnsSweepIntervalStarted = true
     setInterval(() => {
         global.triggerAntiGcNoSewaSweep?.('interval')
-    }, 5 * 60 * 1000)
+    }, 60 * 1000)
 }
 
 hydro.sendTextWithMentions = async (jid, text, quoted, options = {}) => hydro.sendMessage(jid, { text: text, contextInfo: { mentionedJid: [...text.matchAll(/@(\d{0,16})/g)].map(v => v[1] + '@s.whatsapp.net') }, ...options }, { quoted })
@@ -493,12 +498,32 @@ const hasSewaGroup = (groupId, sewaList = null) => {
     const list = Array.isArray(sewaList) ? sewaList : readSewaList()
     return list.some((item) => normalizeGroupJid(item?.id || item?.groupId || '') === target)
 }
+const ANTIGCNOSEWA_FILE = './database/antigcnosewa.json'
+const readAntiGcNoSewaFileState = () => {
+    try {
+        if (!fs.existsSync(ANTIGCNOSEWA_FILE)) {
+            fs.writeFileSync(ANTIGCNOSEWA_FILE, JSON.stringify({ enabled: false }, null, 2))
+            return false
+        }
+        const raw = fs.readFileSync(ANTIGCNOSEWA_FILE, 'utf8')
+        const parsed = JSON.parse(raw || '{}')
+        return parsed?.enabled === true
+    } catch {
+        return false
+    }
+}
+const writeAntiGcNoSewaFileState = (enabled) => {
+    try {
+        fs.writeFileSync(ANTIGCNOSEWA_FILE, JSON.stringify({ enabled: Boolean(enabled), updatedAt: Date.now() }, null, 2))
+    } catch {}
+}
 
 const getBotSetting = () => {
     const botId = hydro.decodeJid(hydro?.user?.id || '')
     return { botId, setting: global.db?.settings?.[botId] || {} }
 }
 const isAntiGcNoSewaEnabled = () => {
+    if (readAntiGcNoSewaFileState()) return true
     const { setting } = getBotSetting()
     if (setting?.antigcnosewa === true) return true
     const settings = global.db?.settings || {}
@@ -516,6 +541,17 @@ const isAntiGcNoSewaEnabled = () => {
     }
     // fallback aman untuk kasus key setting bot berubah/jarang sinkron
     return Object.values(settings).some((cfg) => cfg && typeof cfg === 'object' && cfg.antigcnosewa === true)
+}
+global.setAntiGcNoSewaState = (enabled) => {
+    const value = Boolean(enabled)
+    writeAntiGcNoSewaFileState(value)
+    try {
+        global.db = global.db || {}
+        global.db.settings = global.db.settings || {}
+        global.db.settings._global = global.db.settings._global || {}
+        global.db.settings._global.antigcnosewa = value
+        fs.writeFileSync('./database/database.json', JSON.stringify(global.db, null, 2))
+    } catch {}
 }
 
 const isJoinGraceActive = (groupId) => {
@@ -563,7 +599,13 @@ const sweepAntiGcNoSewa = async (trigger = 'manual') => {
     state.lastTrigger = trigger
     try {
         const groups = await hydro.groupFetchAllParticipating().catch(() => ({}))
-        const groupIds = Object.keys(groups || {})
+        let groupIds = Object.keys(groups || {})
+        if (!groupIds.length) {
+            try {
+                const storeChats = Object.keys(store?.chats || {})
+                groupIds = storeChats.filter((jid) => String(jid).endsWith('@g.us'))
+            } catch {}
+        }
         for (const groupId of groupIds) {
             await enforceAntiGcNoSewa(groupId, `sweep:${trigger}`).catch(() => {})
             await delay(350)

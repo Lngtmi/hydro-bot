@@ -27627,6 +27627,13 @@ case 'antigcnosewa':
                         db.settings[ownerJid] = db.settings[ownerJid] || {}
                         db.settings[ownerJid].antigcnosewa = true
                     }
+                    try {
+                        if (typeof global.setAntiGcNoSewaState === 'function') {
+                            global.setAntiGcNoSewaState(true)
+                        } else {
+                            fs.writeFileSync('./database/antigcnosewa.json', JSON.stringify({ enabled: true, updatedAt: Date.now() }, null, 2))
+                        }
+                    } catch {}
                     saveDB(global.db)
                     try { global.triggerAntiGcNoSewaSweep?.('command.on') } catch {}
                     try { if (m.isGroup) global.triggerAntiGcNoSewaCheck?.(m.chat, 'command.on.current-group') } catch {}
@@ -27641,6 +27648,13 @@ case 'antigcnosewa':
                         db.settings[ownerJid] = db.settings[ownerJid] || {}
                         db.settings[ownerJid].antigcnosewa = false
                     }
+                    try {
+                        if (typeof global.setAntiGcNoSewaState === 'function') {
+                            global.setAntiGcNoSewaState(false)
+                        } else {
+                            fs.writeFileSync('./database/antigcnosewa.json', JSON.stringify({ enabled: false, updatedAt: Date.now() }, null, 2))
+                        }
+                    } catch {}
                     saveDB(global.db)
                     replyhydro('✅ antigcnosewa nonaktif. Bot bisa tetap berada di grup tanpa sewa.')
                 } else {
