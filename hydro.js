@@ -17453,11 +17453,14 @@ const quotedText = extractQuotedText(m.quoted)
 if (inputText) {
 await hydro.sendMessage(m.chat, { text: inputText, mentions }, { quoted: m })
 } else {
+if (quotedText) {
+await hydro.sendMessage(m.chat, { text: quotedText, mentions }, { quoted: m })
+} else {
 try {
 await hydro.sendMessage(m.chat, { forward: m.quoted.fakeObj, mentions }, { quoted: m })
 } catch {
-if (!quotedText) return replyhydro(`Reply pesan dulu atau isi teks.\nContoh: ${prefix + command} halo semua`)
-await hydro.sendMessage(m.chat, { text: quotedText, mentions }, { quoted: m })
+return replyhydro(`Reply pesan teks dulu atau isi teks.\nContoh: ${prefix + command} halo semua`)
+}
 }
 }
 } else {
@@ -17476,11 +17479,14 @@ const quotedText = extractQuotedText(m.quoted)
 if (inputText) {
 await hydro.sendMessage(m.chat, { text: inputText, mentions }, { quoted: m })
 } else {
+if (quotedText) {
+await hydro.sendMessage(m.chat, { text: quotedText, mentions }, { quoted: m })
+} else {
 try {
 await hydro.sendMessage(m.chat, { forward: m.quoted.fakeObj, mentions }, { quoted: m })
 } catch {
-if (!quotedText) return replyhydro(`Reply pesan dulu atau isi teks.\nContoh: ${prefix + command} halo semua`)
-await hydro.sendMessage(m.chat, { text: quotedText, mentions }, { quoted: m })
+return replyhydro(`Reply pesan teks dulu atau isi teks.\nContoh: ${prefix + command} halo semua`)
+}
 }
 }
 } else {
