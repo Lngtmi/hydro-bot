@@ -2875,6 +2875,11 @@ async function normalizeVideoBufferForWhatsApp(rawBuffer) {
         const isMp4Container = ext === 'mp4' || mime === 'video/mp4';
         const videoCodec = String(probe?.videoCodec || '').toLowerCase();
         const isCodecWaSafe = /(h264|avc1|mpeg4)/i.test(videoCodec);
+        // Jika probe tidak bisa membaca track tapi container MP4 valid,
+        // jangan paksa transcode (sering bikin timeout di server panel).
+        if (isMp4Container && probe.unknown) {
+            return { buffer: rawBuffer, mimetype: 'video/mp4', ext: 'mp4', asDocument: false };
+        }
         if (isMp4Container && !probe.unknown && probe.hasVideo && !probe.unsupportedVideo && isCodecWaSafe) {
             return { buffer: rawBuffer, mimetype: 'video/mp4', ext: 'mp4', asDocument: false };
         }
@@ -2886,11 +2891,21 @@ async function normalizeVideoBufferForWhatsApp(rawBuffer) {
         }
         const { toVideo } = require('./lib/converter');
         const sourceExt = ext || (mime.includes('mp4') ? 'mp4' : 'webm');
-        const converted = await toVideo(rawBuffer, sourceExt, {
-            timeoutMs: getVideoConvertTimeoutMs(rawBuffer),
-            preset: rawBuffer.length > 35 * 1024 * 1024 ? 'ultrafast' : 'veryfast',
-            crf: rawBuffer.length > 35 * 1024 * 1024 ? '31' : '29'
-        });
+        let converted;
+        try {
+            converted = await toVideo(rawBuffer, sourceExt, {
+                timeoutMs: getVideoConvertTimeoutMs(rawBuffer),
+                preset: rawBuffer.length > 35 * 1024 * 1024 ? 'ultrafast' : 'veryfast',
+                crf: rawBuffer.length > 35 * 1024 * 1024 ? '31' : '29'
+            });
+        } catch (convErr) {
+            const msg = String(convErr?.message || convErr).toLowerCase();
+            // Jangan gagal total kalau transcode timeout; kirim buffer MP4 asli dulu.
+            if (isMp4Container && msg.includes('timeout')) {
+                return { buffer: rawBuffer, mimetype: 'video/mp4', ext: 'mp4', asDocument: false };
+            }
+            throw convErr;
+        }
         const convertedProbe = probeMediaTracks(converted, 'mp4');
         if (!convertedProbe.unknown && (!convertedProbe.hasVideo || convertedProbe.unsupportedVideo)) {
             throw new Error('Video hasil konversi tidak valid.');
@@ -34126,8 +34141,12 @@ case 'ytvideo': {
 		          }
 		        },
 		        {
-		          label: 'local ytdl',
-		          run: async () => downloadYoutubeVideoWithYtdl(link, resolution)
+		          label: 'fallback api',
+		          run: async () => {
+		            const fallback = await resolveYoutubeFallbackDownload(link, { audio: false, resolution })
+		            const buffer = await downloadBufferFromHttp(fallback.downloadUrl, 120 * 1024 * 1024)
+		            return { buffer, title: fallback.title || 'yt-video', qualityLabel: `${resolution}p` }
+		          }
 		        }
 		      ]
 
