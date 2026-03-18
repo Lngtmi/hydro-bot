@@ -1315,6 +1315,66 @@ const MENU_CATEGORY_ALIASES = {
   animemenu: 'toolsmenu',
   sertifikatmenu: 'toolsmenu'
 }
+const MENU_MANUAL_COMMANDS = {
+  groupmenu: [
+    'kick', 'add', 'promote', 'demote', 'hidetag', 'hidetage', 'h', 'ht', 'totag', 'tagall',
+    'setname', 'setdesc', 'setsubject', 'setppgroup', 'delppgroup', 'deleteppgroup', 'linkgc',
+    'revoke', 'opentime', 'closetime', 'open', 'close', 'mute', 'welcome', 'setwelcome', 'setleft',
+    'editinfo', 'antilink', 'antilinkgc', 'antilinkch', 'antilinkall', 'antiwame', 'antitagsw',
+    'antivirus', 'antitoxic', 'warn', 'unwarn', 'cekwarn', 'warnlist', 'listwarn', 'pinmsg',
+    'unpinmsg', 'delete', 'del', 'd', 'listonline', 'sider'
+  ],
+  toolsmenu: [
+    'ping', 'runtime', 'status', 'owner', 'reportbug', 'tinyurl', 'toqr', 'togif', 'toimg',
+    'toonce', 'toaudio', 'tovn', 'tomp3', 'tomp4', 'volume', 'ebinary', 'dbinary', 'ssweb',
+    'quoted', 'readviewonce', 'cekkhodam', 'styletext', 'fliptext', 'obfuscate', 'tts', 'say',
+    'alkitab', 'paptt', 'totalfitur', 'myip', 'infobot', 'rating', 'script', 'bacaperaturan',
+    'donasi'
+  ],
+  downloadmenu: [
+    'play', 'ytmp3', 'ytmp4', 'ytdl', 'ytv', 'yta', 'tiktok', 'tiktokslide', 'tiktokaudio',
+    'instagram', 'igdl', 'facebook', 'fbdl', 'twittervid', 'spotify', 'soundcloud', 'mediafire',
+    'gdrive', 'teraboxdl', 'snackvideo', 'capcutdl', 'gitclone'
+  ],
+  searchmenu: [
+    'google', 'ytsearch', 'ttsearch', 'imdb', 'weather', 'wanumber', 'stalk', 'igstalk',
+    'ttstalk', 'githubstalk', 'npmstalk', 'cekidgc', 'cekidch', 'berita', 'cnn', 'kompas',
+    'detik', 'tempo'
+  ],
+  stickermenu: ['sticker', 'stiker', 'take', 'emoji', 'brat', 'animebrat', 'bratvid', 'furbrat', 'ttp', 'attp', 'smeme', 'qc', 'iqc'],
+  gamemenu: [
+    'family100', 'tebakkata', 'tebaktebakan', 'tebaklagu', 'tebakgambar', 'tebaklirik', 'tebakbendera',
+    'tebakkabupaten', 'tebaksurah', 'tebakkimia', 'asahotak', 'siapaaku', 'susunkata', 'tekateki',
+    'blackjack', 'slot', 'truth', 'dare', 'tictactoe', 'ttt', 'ttc', 'suit', 'hint', 'nyerah'
+  ],
+  aimenu: ['ai', 'gpt', 'chatgpt', 'openai', 'gemini', 'claude', 'hydromind', 'simi', 'bing'],
+  storemenu: ['addsewa', 'delsewa', 'listsewa', 'ceksewa', 'addprem', 'delprem', 'listprem', 'premium', 'buyprem'],
+  ownermenu: [
+    'autoread', 'antigcnosewa', 'public', 'self', 'onlypc', 'onlygc', 'setppbot', 'delppbot',
+    'setbotname', 'setbotbio', 'addowner', 'delowner', 'restart', 'shutdown', 'backup'
+  ],
+  anonymousmenu: ['anonymouschat', 'start', 'next', 'stop', 'sendprofile', 'menfess', 'confess', 'balasmenfess', 'tolakmenfess', 'stopmenfess'],
+  databasemenu: [
+    'addlist', 'updatelist', 'dellist', 'setproses', 'setp', 'changesetproses', 'delsetproses',
+    'setdone', 'changedone', 'delsetdone', 'liststicker', 'listimage', 'listvideo', 'listvn',
+    'addsticker', 'delsticker', 'addimage', 'delimage', 'addvideo', 'delvideo', 'addvn', 'delvn'
+  ],
+  funmenu: ['halah', 'hilih', 'huluh', 'heleh', 'holoh', 'joke', 'meme', 'ship', 'rate', 'cekmati'],
+  rpgmenu: ['hunt', 'mining', 'adventure', 'bank', 'atm', 'mancing', 'berkebun', 'daily', 'weekly', 'monthly', 'transfer'],
+  islamimenu: ['alquran', 'audiosurah', 'doaharian', 'jadwalsholat', 'asmaulhusna', 'kisahnabi', 'quotesislami']
+}
+const MENU_COMMAND_TO_CATEGORY = (() => {
+  const map = Object.create(null)
+  for (const [category, cmds] of Object.entries(MENU_MANUAL_COMMANDS)) {
+    const list = Array.isArray(cmds) ? cmds : []
+    for (const cmd of list) {
+      const key = String(cmd || '').trim().toLowerCase()
+      if (!key) continue
+      map[key] = category
+    }
+  }
+  return map
+})()
 const MENU_EXCLUDE_CMDS = new Set([
   'menu',
   'allmenu',
@@ -1352,6 +1412,10 @@ const extractAllCaseCommands = () => {
   return Array.from(set)
 }
 const classifyCommandToMenu = (cmd) => {
+  const normalizedCmd = String(cmd || '').trim().toLowerCase()
+  if (normalizedCmd && MENU_COMMAND_TO_CATEGORY[normalizedCmd]) {
+    return MENU_COMMAND_TO_CATEGORY[normalizedCmd]
+  }
   if (/^(ttt|ttc|tictactoe|delttc|delttt|tebak|suit|casino|slot|truth|dare|family100|asahotak|siapakahaku|susunkata|tekateki|caklontong|math|kuis|quiz|judi|petakbom|hint|nyerah)/i.test(cmd)) return 'gamemenu'
   if (/(kick|add|promote|demote|hidetag|hidetage|^h$|tagall|totag|group|setsubject|setname|setdesc|setppgroup|linkgc|revoke|open|close|antilink|welcome|setwelcome|setleft|left|mute|unmute|listonline|join|leave|sider|antitagsw|antiwame|pinmsg|unpinmsg|unpinmasg|delete|del|^d$|warn|unwarn|cekwarn|warnlist|listwarn)/i.test(cmd)) return 'groupmenu'
   if (/(sticker|stiker|take|emoji|fstik|smeme|qc|iqc|swm|brat|ttp|attp)/i.test(cmd)) return 'stickermenu'
