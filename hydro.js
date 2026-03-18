@@ -2480,7 +2480,7 @@ async function downloadWithYtDlpFile(url, opts = {}) {
     const maxBytes = Number(opts.maxBytes || (isAudio ? 80 * 1024 * 1024 : 120 * 1024 * 1024));
     const format = isAudio
         ? 'bestaudio[ext=m4a]/bestaudio/best'
-        : `bestvideo[ext=mp4][vcodec!*=av01][vcodec!*=vp9][height<=${targetRes}]+bestaudio[ext=m4a]/best[ext=mp4][vcodec!*=av01][vcodec!*=vp9][height<=${targetRes}]/bestvideo[height<=${targetRes}]+bestaudio/best[height<=${targetRes}]`;
+        : `best[ext=mp4][acodec!=none][vcodec!*=av01][vcodec!*=vp9][height<=${targetRes}]/best[ext=mp4][acodec!=none][height<=${targetRes}]/best[height<=${targetRes}]`;
 
     const runner = getYtDlpRunner();
     const tmpDir = path.join(__dirname, 'tmp', 'yt-dlp-cache');
@@ -2496,7 +2496,6 @@ async function downloadWithYtDlpFile(url, opts = {}) {
             '--retries', '2',
             '--fragment-retries', '2',
             '--socket-timeout', '20',
-            '--merge-output-format', 'mp4',
             '-f', format,
             '-o', outputTpl,
             normalizeYouTubeUrl(url)
@@ -2873,14 +2872,9 @@ async function normalizeVideoBufferForWhatsApp(rawBuffer) {
             throw new Error('Provider mengembalikan audio tanpa track video (black screen).');
         }
         const isMp4Container = ext === 'mp4' || mime === 'video/mp4';
-        const videoCodec = String(probe?.videoCodec || '').toLowerCase();
-        const isCodecWaSafe = /(h264|avc1|mpeg4)/i.test(videoCodec);
-        // Jika probe tidak bisa membaca track tapi container MP4 valid,
-        // jangan paksa transcode (sering bikin timeout di server panel).
-        if (isMp4Container && probe.unknown) {
-            return { buffer: rawBuffer, mimetype: 'video/mp4', ext: 'mp4', asDocument: false };
-        }
-        if (isMp4Container && !probe.unknown && probe.hasVideo && !probe.unsupportedVideo && isCodecWaSafe) {
+        // Jalur utama: jika sudah MP4 dan ada indikasi video valid, kirim langsung.
+        // Ini mencegah timeout transcode yang bikin command gagal.
+        if (isMp4Container && (probe.unknown || (!probe.unsupportedVideo && probe.hasVideo))) {
             return { buffer: rawBuffer, mimetype: 'video/mp4', ext: 'mp4', asDocument: false };
         }
         if (!hasFfmpegBinary()) {
@@ -2899,12 +2893,8 @@ async function normalizeVideoBufferForWhatsApp(rawBuffer) {
                 crf: rawBuffer.length > 35 * 1024 * 1024 ? '31' : '29'
             });
         } catch (convErr) {
-            const msg = String(convErr?.message || convErr).toLowerCase();
-            // Jangan gagal total kalau transcode timeout; kirim buffer MP4 asli dulu.
-            if (isMp4Container && msg.includes('timeout')) {
-                return { buffer: rawBuffer, mimetype: 'video/mp4', ext: 'mp4', asDocument: false };
-            }
-            throw convErr;
+            // Jangan bikin command gagal gara-gara ffmpeg; fallback kirim sebagai dokumen.
+            return { buffer: rawBuffer, mimetype: mime || 'application/octet-stream', ext: ext || 'bin', asDocument: true };
         }
         const convertedProbe = probeMediaTracks(converted, 'mp4');
         if (!convertedProbe.unknown && (!convertedProbe.hasVideo || convertedProbe.unsupportedVideo)) {
