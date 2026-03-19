@@ -1562,54 +1562,25 @@ const getMenuCategoryMap = () => {
   const allCommands = extractAllCaseCommands()
   const allCommandSet = new Set(allCommands.map((cmd) => String(cmd || '').trim().toLowerCase()).filter(Boolean))
   const map = Object.fromEntries(MENU_CATEGORY_ORDER.map((key) => [key, new Set()]))
-  const assigned = new Set()
   const wibusoftSource = getWibusoftMenuSource()
   const wibusoftCommandMap = wibusoftSource.commandToCategory || Object.create(null)
   const hasWibusoftData = Object.keys(wibusoftCommandMap).length > 0
-  const aliasSet = new Set(Array.isArray(wibusoftSource.aliasCommands) ? wibusoftSource.aliasCommands : [])
+  const sourceMap = hasWibusoftData ? (wibusoftSource.categoryMap || {}) : MENU_MANUAL_COMMANDS
 
-  // 1) Isi dari command map wibusoft dulu (active only).
-  for (const [rawCategory, cmds] of Object.entries(wibusoftSource.categoryMap || {})) {
+  // Mode ketat: hanya tampilkan command yang terkurasi di source map.
+  // Tidak ada auto-inject command liar ke othermenu.
+  for (const [rawCategory, cmds] of Object.entries(sourceMap)) {
     const category = normalizeMenuCategoryKey(rawCategory)
     if (!category || !map[category]) continue
     const list = Array.isArray(cmds) ? cmds : []
     for (const rawCmd of list) {
-      const cmd = String(rawCmd || '').trim().toLowerCase()
+      const cmd = normalizeMenuCommandName(rawCmd)
       if (!cmd) continue
-      if (!allCommandSet.has(cmd)) continue
+      if (allCommandSet.size && !allCommandSet.has(cmd)) continue
       map[category].add(cmd)
-      assigned.add(cmd)
     }
   }
 
-  // 2) Isi kategori strict dari daftar manual dulu (fixed mapping, fallback)
-  for (const [rawCategory, cmds] of Object.entries(MENU_MANUAL_COMMANDS)) {
-    const category = normalizeMenuCategoryKey(rawCategory)
-    if (!category || !map[category]) continue
-    const list = Array.isArray(cmds) ? cmds : []
-    for (const cmdRaw of list) {
-      const cmd = String(cmdRaw || '').trim().toLowerCase()
-      if (!cmd) continue
-      if (assigned.has(cmd)) continue
-      if (!allCommandSet.has(cmd)) continue
-      if (hasWibusoftData && aliasSet.has(cmd)) continue
-      map[category].add(cmd)
-      assigned.add(cmd)
-    }
-  }
-
-  // 3) Sisanya pakai classifier (biarkan masuk ke kategori yang tepat, jangan dipaksa ke othermenu)
-  for (const cmdRaw of allCommands) {
-    const cmd = String(cmdRaw || '').trim().toLowerCase()
-    if (!cmd || assigned.has(cmd)) continue
-    let category = normalizeMenuCategoryKey(classifyCommandToMenu(cmd) || 'othermenu')
-    if (!map[category]) category = 'othermenu'
-    if (hasWibusoftData && aliasSet.has(cmd)) continue
-    // Jika mapping Wibusoft aktif, command "liar" tidak dimasukkan ke othermenu
-    // agar menu tetap rapi dan fokus ke command yang memang terkurasi.
-    if (hasWibusoftData && category === 'othermenu' && !wibusoftCommandMap[cmd]) continue
-    map[category].add(cmd)
-  }
   global.__hydroMenuCategoryMapCache = Object.fromEntries(
     Object.entries(map).map(([k, v]) => [k, Array.from(v).sort()])
   )
