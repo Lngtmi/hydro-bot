@@ -165,7 +165,7 @@ keepAliveIntervalMs: 10000,
 emitOwnEvents: true,
 fireInitQueries: true,
 generateHighQualityLinkPreview: true,
-syncFullHistory: true,
+syncFullHistory: false,
 markOnlineOnConnect: true,
       getMessage: async (key) => {
             if (store) {
