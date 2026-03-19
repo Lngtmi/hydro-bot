@@ -51,4 +51,31 @@ const Lyrics = {
     }
 };
 
-module.exports = Lyrics;
+/**
+ * Backward-compatible helper:
+ * - dipakai di hydro.js sebagai `await lirik(query)`
+ * - harus balikin object lagu langsung (bukan wrapper status/success)
+ */
+async function lirik(title) {
+    const res = await Lyrics.search(title)
+    if (!res?.success || !res?.data) {
+        const errMsg = res?.message || "Lirik tidak ditemukan"
+        throw new Error(errMsg)
+    }
+
+    const song = res.data
+    return {
+        trackName: song.trackName || "",
+        artistName: song.artistName || "",
+        albumName: song.albumName || "",
+        duration: Number(song.duration) || 0,
+        plainLyrics: song.lyrics || "",
+        syncedLyrics: ""
+    }
+}
+
+module.exports = {
+    ...Lyrics,
+    Lyrics,
+    lirik
+};
