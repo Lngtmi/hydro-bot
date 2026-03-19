@@ -5597,11 +5597,10 @@ if (
   normalizedMenuCommand !== 'menu' &&
   normalizedMenuCommand !== 'allmenu'
 ) {
-  const menuText = renderMenuCategoryText(normalizedMenuCommand)
-  if (menuText && !/Belum ada command/i.test(menuText)) {
-    await hydro.sendMessage(m.chat, { text: menuText }, { quoted: m })
-    return
-  }
+  const fallbackTitle = MENU_CATEGORY_TITLES[normalizedMenuCommand] || normalizedMenuCommand.toUpperCase()
+  const menuText = renderMenuCategoryText(normalizedMenuCommand) || `*${fallbackTitle}*\nBelum ada command di menu ini.`
+  await hydro.sendMessage(m.chat, { text: menuText }, { quoted: m })
+  return
 }
 
 switch (command) {
