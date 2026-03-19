@@ -39204,25 +39204,102 @@ console.log('Caught exception: ', err)
 })
 
 function autoClearSession() {
-    const sessionDir = `./${sessionName}`;
-    const monitorInterval = 4 * 60 * 60 * 1000;
-    
-    setInterval(async () => {
-        try {
-            const files = fs.readdirSync(sessionDir);
-            const filteredFiles = files.filter(file => 
-                file.startsWith('pre-key') ||
-                file.startsWith('sender-key') ||
-                file.startsWith('session-') ||
-                file.startsWith('app-state')
-            );
+    const sessionDir = path.resolve(`./${sessionName}`)
+    const monitorInterval = 60 * 60 * 1000 // 1 jam
 
-            if (filteredFiles.length === 0) return;
-            console.log(chalk.cyan.bold(`📂 [SESSION MONITOR] ${filteredFiles.length} auth/session file terdeteksi (auto-delete dinonaktifkan agar bot tetap stabil setelah idle).`));
-        } catch (error) {
-            console.error(chalk.red.bold('📑 [SESSION MONITOR ERROR]'), chalk.red.bold(error));
+    const RULES = [
+        { key: 'pre-key', keep: 60, minAgeMs: 2 * 60 * 60 * 1000 },          // 2 jam
+        { key: 'session-', keep: 90, minAgeMs: 24 * 60 * 60 * 1000 },        // 1 hari
+        { key: 'sender-key', keep: 90, minAgeMs: 24 * 60 * 60 * 1000 },      // 1 hari
+        { key: 'app-state', keep: 12, minAgeMs: 24 * 60 * 60 * 1000 }        // 1 hari
+    ]
+    const SESSION_HARD_CAP = 250
+
+    const listTrackedFiles = () => {
+        if (!fs.existsSync(sessionDir)) return []
+        const files = fs.readdirSync(sessionDir)
+        const now = Date.now()
+        const tracked = []
+        for (const file of files) {
+            if (!RULES.some(rule => file.startsWith(rule.key))) continue
+            const abs = path.join(sessionDir, file)
+            try {
+                const stat = fs.statSync(abs)
+                tracked.push({
+                    file,
+                    abs,
+                    mtimeMs: stat.mtimeMs || now,
+                    ageMs: now - (stat.mtimeMs || now)
+                })
+            } catch {}
         }
-    }, monitorInterval);
+        return tracked
+    }
+
+    const pruneByRule = (items, rule) => {
+        const scoped = items
+            .filter(item => item.file.startsWith(rule.key))
+            .sort((a, b) => b.mtimeMs - a.mtimeMs)
+        if (scoped.length <= rule.keep) return []
+        const overflow = scoped.slice(rule.keep)
+        return overflow.filter(item => item.ageMs >= rule.minAgeMs)
+    }
+
+    const removeFiles = (list) => {
+        let removed = 0
+        for (const item of list) {
+            try {
+                if (fs.existsSync(item.abs)) {
+                    fs.unlinkSync(item.abs)
+                    removed += 1
+                }
+            } catch {}
+        }
+        return removed
+    }
+
+    const runSweep = () => {
+        try {
+            const tracked = listTrackedFiles()
+            if (!tracked.length) return
+
+            const removeMap = new Map()
+            for (const rule of RULES) {
+                const targets = pruneByRule(tracked, rule)
+                for (const item of targets) removeMap.set(item.file, item)
+            }
+
+            // Safety net: kalau tetap melebihi hard cap, buang yang paling tua (minimal umur 1 hari)
+            const projectedCount = tracked.length - removeMap.size
+            if (projectedCount > SESSION_HARD_CAP) {
+                const oldest = tracked
+                    .filter(item => !removeMap.has(item.file))
+                    .sort((a, b) => a.mtimeMs - b.mtimeMs)
+                const extraNeed = projectedCount - SESSION_HARD_CAP
+                let extraPicked = 0
+                for (const item of oldest) {
+                    if (extraPicked >= extraNeed) break
+                    if (item.ageMs < 24 * 60 * 60 * 1000) continue
+                    removeMap.set(item.file, item)
+                    extraPicked += 1
+                }
+            }
+
+            const removed = removeFiles(Array.from(removeMap.values()))
+            const finalCount = Math.max(0, tracked.length - removed)
+            console.log(
+                chalk.cyan.bold(
+                    `📂 [SESSION MONITOR] sebelum: ${tracked.length}, dihapus: ${removed}, sisa: ${finalCount}`
+                )
+            )
+        } catch (error) {
+            console.error(chalk.red.bold('📑 [SESSION MONITOR ERROR]'), chalk.red.bold(error))
+        }
+    }
+
+    // Jalankan sekali saat startup + interval berkala
+    setTimeout(runSweep, 45 * 1000)
+    setInterval(runSweep, monitorInterval)
 }
 
-autoClearSession();
+autoClearSession()
