@@ -5484,64 +5484,18 @@ const sendPinInChatCompat = async ({ quotedKey, action = 'pin', durationSec = 86
   }
   if (!normalizedKey.id) throw new Error('Key pesan target tidak valid untuk pin.')
 
-  const tryMethods = [
-    ['pinInChatMessage(relay)', async () => {
-      const msg = generateWAMessageFromContent(m.chat, proto.Message.fromObject({
-        pinInChatMessage: {
-          type: pinType,
-          ...(pinType === 1 ? { time: safeDuration } : {}),
-          key: normalizedKey,
-          senderTimestampMs: Date.now()
-        }
-      }), {
-        userJid: hydro.user.id
-      })
-      await hydro.relayMessage(m.chat, msg.message, { messageId: msg.key.id })
-    }],
-    ['keepInChatMessage(relay)', async () => {
-      const msg = generateWAMessageFromContent(m.chat, proto.Message.fromObject({
-        keepInChatMessage: {
-          type: pinType,
-          ...(pinType === 1 ? { time: safeDuration } : {}),
-          key: normalizedKey,
-          senderTimestampMs: Date.now()
-        }
-      }), {
-        userJid: hydro.user.id
-      })
-      await hydro.relayMessage(m.chat, msg.message, { messageId: msg.key.id })
-    }],
-    ['sendMessage(pin)', async () => {
-      await hydro.sendMessage(m.chat, {
-        pin: {
-          type: pinType,
-          ...(pinType === 1 ? { time: safeDuration } : {}),
-          key: normalizedKey
-        }
-      })
-    }],
-    ['sendMessage(keep)', async () => {
-      await hydro.sendMessage(m.chat, {
-        keep: {
-          type: pinType,
-          ...(pinType === 1 ? { time: safeDuration } : {}),
-          key: normalizedKey
-        }
-      })
-    }]
-  ]
-
-  let lastErr = null
-  for (const [label, fn] of tryMethods) {
-    try {
-      await fn()
-      return label
-    } catch (err) {
-      lastErr = err
-      console.error('PIN TRY FAILED:', label, String(err?.message || err))
+  const msg = generateWAMessageFromContent(m.chat, proto.Message.fromObject({
+    pinInChatMessage: {
+      type: pinType,
+      ...(pinType === 1 ? { time: safeDuration } : {}),
+      key: normalizedKey,
+      senderTimestampMs: Date.now()
     }
-  }
-  throw lastErr || new Error('Pin message tidak didukung oleh versi Baileys ini.')
+  }), {
+    userJid: hydro.user.id
+  })
+  await hydro.relayMessage(m.chat, msg.message, { messageId: msg.key.id })
+  return 'pinInChatMessage(relay)'
 }
 const extractReplyKeyFromCommand = () => {
   const ctx =
@@ -5850,7 +5804,8 @@ replyhydro(`❌ Gagal unpin chat.\nDetail: ${msg.slice(0, 120)}`)
 }
 }
 break
-case 'pinmsg': {
+case 'pinmsg':
+case 'pinmasg': {
 if (m.isGroup) {
 if (!isAdmins && !Ahmad) return replytolak(mess.only.admin)
 if (!isBotAdmins) return replyhydro('Bot harus jadi admin dulu untuk pin pesan!')
@@ -5862,10 +5817,14 @@ const pinDurationMap = {
   '24h': 86400,
   '1d': 86400,
   '7d': 604800,
-  '30d': 2592000
+  '30d': 2592000,
+  '1m': 2592000
 }
 const requestedDuration = String(args[0] || '').toLowerCase()
-const pinDuration = pinDurationMap[requestedDuration] || 86400
+if (requestedDuration && !pinDurationMap[requestedDuration]) {
+  return replyhydro('❌ Durasi tidak valid.\nGunakan: 24h, 7d, atau 30d\nContoh: .pinmsg 30d')
+}
+const pinDuration = pinDurationMap[requestedDuration] || 2592000
 const quotedKey = extractReplyKeyFromCommand() || buildQuotedPinKey(m.quoted)
 if (!quotedKey?.id) return replyhydro('❌ Gagal membaca pesan reply. Coba reply ulang pesan yang mau di-pin.')
 try {
