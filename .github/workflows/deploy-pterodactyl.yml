@@ -33,7 +33,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          KEEP_REGEX='^(hydro\.js|index\.js|config\.js|settings\.js|module\.js|simple\.js|package\.json|package-lock\.json|lib/|scrape/|data/|database/|src/|scripts/|bin/|temp/)'
+          KEEP_REGEX='^(hydro\.js|index\.js|config\.js|settings\.js|module\.js|simple\.js|package\.json|package-lock\.json|lib/|scrape/|src/|scripts/|bin/)'
           SKIP_REGEX='^(\.github/|README\.md$|\.gitignore$|\.ptero\.env|\.ptero\.env\.example|tmp/|Hagima|Hagima\.|.*\.zip$|.*\.tar\.gz$|.*-player-script\.js$|yt-dlp$)'
 
           : > /tmp/upload_files.txt
@@ -66,19 +66,47 @@ jobs:
 
             encoded="$(python3 -c 'import sys,urllib.parse;print(urllib.parse.quote(sys.argv[1], safe="/"))' "$file")"
 
-            http_code="$(curl -sS -o /tmp/ptero_upload_resp.json -w '%{http_code}' \
-              -X POST "${PANEL_URL}/api/client/servers/${SERVER_ID}/files/write?file=/${encoded}" \
-              -H "Authorization: Bearer ${API_KEY}" \
-              -H "Accept: application/json" \
-              -H "Content-Type: text/plain" \
-              --data-binary "@${file}")"
+            uploaded=0
+            for attempt in 1 2 3 4 5 6; do
+              http_code="$(curl -sS -o /tmp/ptero_upload_resp.json -w '%{http_code}' \
+                -X POST "${PANEL_URL}/api/client/servers/${SERVER_ID}/files/write?file=/${encoded}" \
+                -H "Authorization: Bearer ${API_KEY}" \
+                -H "Accept: application/json" \
+                -H "Content-Type: text/plain" \
+                --data-binary "@${file}")"
 
-            if [[ "$http_code" -lt 200 || "$http_code" -ge 300 ]]; then
-              echo "Upload failed for $file (HTTP $http_code)"
+              if [[ "$http_code" -ge 200 && "$http_code" -lt 300 ]]; then
+                uploaded=1
+                break
+              fi
+              echo "Retry $attempt failed for $file (HTTP $http_code)"
+              sleep $((attempt + 1))
+            done
+
+            if [[ "$uploaded" -ne 1 ]]; then
+              echo "Upload failed for $file after retries"
               cat /tmp/ptero_upload_resp.json || true
               exit 1
             fi
           done < /tmp/upload_files.txt
+
+      - name: Cleanup legacy panel sync scripts
+        if: steps.files.outputs.upload_count != '0'
+        env:
+          PANEL_URL: ${{ secrets.PTERO_PANEL_URL }}
+          SERVER_ID: ${{ secrets.PTERO_SERVER_ID }}
+          API_KEY: ${{ secrets.PTERO_CLIENT_API_KEY }}
+        run: |
+          set -euo pipefail
+          payload='{"root":"/home/container","files":["ptero-control.sh","ptero-file-sync.sh","ptero-sync.sh"]}'
+          curl -sS -o /tmp/ptero_cleanup_resp.json -w '%{http_code}' \
+            -X POST "${PANEL_URL}/api/client/servers/${SERVER_ID}/files/delete" \
+            -H "Authorization: Bearer ${API_KEY}" \
+            -H "Accept: application/json" \
+            -H "Content-Type: application/json" \
+            -d "$payload" >/tmp/ptero_cleanup_code.txt || true
+          code="$(cat /tmp/ptero_cleanup_code.txt || echo 000)"
+          echo "cleanup code: $code"
 
       - name: Restart server
         if: steps.files.outputs.upload_count != '0'
