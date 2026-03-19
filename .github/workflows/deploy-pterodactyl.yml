@@ -100,11 +100,7 @@ jobs:
           while IFS= read -r file; do
             [[ -z "$file" ]] && continue
             echo "Uploading: $file"
-            encoded="$(python3 - <<'PY' "$file"
-import sys, urllib.parse
-print(urllib.parse.quote(sys.argv[1], safe='/'))
-PY
-)"
+            encoded="$(python3 -c 'import sys,urllib.parse;print(urllib.parse.quote(sys.argv[1], safe=\"/\"))' "$file")"
 
             http_code="$(curl -sS -o /tmp/ptero_upload_resp.json -w '%{http_code}' \
               -X POST "${PANEL_URL}/api/client/servers/${SERVER_ID}/files/write?file=/${encoded}" \
@@ -130,18 +126,9 @@ PY
           set -euo pipefail
 
           mapfile -t FILES < /tmp/delete_files.txt
-          json_files="$(printf '%s\n' "${FILES[@]}" | python3 - <<'PY'
-import json, sys
-files=[line.strip() for line in sys.stdin if line.strip()]
-print(json.dumps(files))
-PY
-)"
+          json_files="$(printf '%s\n' "${FILES[@]}" | python3 -c 'import json,sys;print(json.dumps([l.strip() for l in sys.stdin if l.strip()]))')"
 
-          payload="$(python3 - <<'PY' "$json_files"
-import json, sys
-print(json.dumps({"root": "/", "files": json.loads(sys.argv[1])}))
-PY
-)"
+          payload="$(python3 -c 'import json,sys;print(json.dumps({"root":"/","files":json.loads(sys.argv[1])}))' "$json_files")"
 
           http_code="$(curl -sS -o /tmp/ptero_delete_resp.json -w '%{http_code}' \
             -X POST "${PANEL_URL}/api/client/servers/${SERVER_ID}/files/delete" \
