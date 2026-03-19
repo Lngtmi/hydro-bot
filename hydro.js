@@ -888,18 +888,25 @@ Ketik *surrender* untuk menyerah dan mengaku kalah`
 	    }
 	    }
 
-        //Suit PvP
-	    this.suit = this.suit ? this.suit : {}
-	    let roof = Object.values(this.suit).find(roof => roof.id && roof.status && [roof.p, roof.p2].includes(m.sender))
-	    if (roof && !isCmd) {
-	    let win = ''
-	    let tie = false
-	    if (m.sender == roof.p2 && /^(acc(ept)?|accept|yes|okay?|reject|no|later|nop(e.)?yes|y)/i.test(m.text) && m.isGroup && roof.status == 'wait') {
-	    if (/^(reject|no|later|n|nop(e.)?yes)/i.test(m.text)) {
-	    hydro.sendTextWithMentions(m.chat, `@${roof.p2.split`@`[0]} rejected the suit, the suit is canceled`, m)
-	    delete this.suit[roof.id]
-	    return !0
-	    }
+	        //Suit PvP
+		    this.suit = this.suit ? this.suit : {}
+		    const jidDigits = (jid = '') => String(jid).replace(/[^0-9]/g, '')
+		    const senderDigitsSuit = jidDigits(m.sender)
+		    let roof = Object.values(this.suit).find(roof =>
+		      roof.id && roof.status &&
+		      [roof.p, roof.p2].some(j => jidDigits(j) === senderDigitsSuit)
+		    )
+		    if (roof && !isCmd) {
+		    let win = ''
+		    let tie = false
+		    const isP1 = jidDigits(m.sender) === jidDigits(roof.p)
+		    const isP2 = jidDigits(m.sender) === jidDigits(roof.p2)
+		    if (isP2 && /^(acc(ept)?|accept|yes|okay?|reject|no|later|nop(e.)?yes|y)/i.test(m.text) && m.isGroup && roof.status == 'wait') {
+		    if (/^(reject|no|later|n|nop(e.)?yes)/i.test(m.text)) {
+		    hydro.sendTextWithMentions(m.chat, `@${roof.p2.split`@`[0]} rejected the suit, the suit is canceled`, m)
+		    delete this.suit[roof.id]
+		    return !0
+		    }
 	    roof.status = 'play'
 	    roof.asal = m.chat
 	    clearTimeout(roof.waktu)
@@ -923,8 +930,8 @@ click https://wa.me/${botNumber.split`@`[0]}`, m, { mentions: [roof.p, roof.p2] 
 	    return !0
 	    }, roof.timeout)
 	    }
-	    let jwb = m.sender == roof.p
-	    let jwb2 = m.sender == roof.p2
+		    let jwb = isP1
+		    let jwb2 = isP2
 	    let g = /Gunting/i
 	    let b = /Batu/i
 	    let k = /Kertas/i
