@@ -5850,6 +5850,72 @@ replyhydro(`❌ Gagal unpin chat.\nDetail: ${detail.slice(0, 120)}`)
 }
 }
 break
+case 'sematkan':
+case 'pinpesan': {
+if (m.isGroup) {
+if (!isAdmins && !Ahmad) return replytolak(mess.only.admin)
+if (!isBotAdmins) return replyhydro('Bot harus jadi admin dulu untuk sematkan pesan di grup!')
+}
+if (!m.quoted) return replyhydro(`Reply pesan yang mau disematkan.\nContoh: ${prefix + command} 30d`)
+const durationMap = {
+  '24h': 86400,
+  '1d': 86400,
+  '7d': 604800,
+  '30d': 2592000
+}
+const requested = String(args[0] || '').toLowerCase()
+if (requested && !durationMap[requested]) {
+  return replyhydro('❌ Durasi tidak valid.\nGunakan: 24h, 7d, atau 30d\nContoh: .sematkan 30d')
+}
+const durationSec = durationMap[requested] || 86400
+const quotedKey = getRawQuotedKey(m.quoted) || extractReplyKeyFromCommand() || buildQuotedPinKey(m.quoted)
+if (!quotedKey?.id) return replyhydro('❌ Gagal membaca pesan reply. Coba reply ulang pesan target.')
+try {
+await sendPinInChatCompat({
+  quotedKey,
+  action: 'pin',
+  durationSec
+})
+replyhydro(`✅ Pesan berhasil disematkan (${Math.round(durationSec / 86400)} hari).`)
+} catch (err) {
+console.error('SEMATKAN ERROR:', err)
+const detail = String(err?.message || err)
+if (detail.includes('myAppStateKey')) {
+	return replyhydro('❌ Gagal sematkan pesan karena sesi WA belum sinkron (myAppStateKey). Re-login pairing ulang.')
+}
+if (detail.includes('max') || detail.includes('too many') || detail.includes('409')) {
+	return replyhydro('❌ Gagal sematkan pesan. Batas sematkan pesan sudah penuh (maksimal 3 per chat). Lepas salah satu dulu.')
+}
+replyhydro(`❌ Gagal sematkan pesan.\nDetail: ${detail.slice(0, 120)}`)
+}
+}
+break
+case 'lepassematkan':
+case 'unsematkan':
+case 'unpinpesan': {
+if (m.isGroup) {
+if (!isAdmins && !Ahmad) return replytolak(mess.only.admin)
+if (!isBotAdmins) return replyhydro('Bot harus jadi admin dulu untuk lepas sematkan pesan di grup!')
+}
+if (!m.quoted) return replyhydro(`Reply pesan yang mau dilepas sematkannya.\nContoh: ${prefix + command}`)
+const quotedKey = getRawQuotedKey(m.quoted) || extractReplyKeyFromCommand() || buildQuotedPinKey(m.quoted)
+if (!quotedKey?.id) return replyhydro('❌ Gagal membaca pesan reply. Coba reply ulang pesan target.')
+try {
+await sendPinInChatCompat({
+  quotedKey,
+  action: 'unpin'
+})
+replyhydro('✅ Sematkan pesan berhasil dilepas.')
+} catch (err) {
+console.error('LEPASSEMATKAN ERROR:', err)
+const detail = String(err?.message || err)
+if (detail.includes('myAppStateKey')) {
+	return replyhydro('❌ Gagal lepas sematkan karena sesi WA belum sinkron (myAppStateKey). Re-login pairing ulang.')
+}
+replyhydro(`❌ Gagal lepas sematkan pesan.\nDetail: ${detail.slice(0, 120)}`)
+}
+}
+break
 case 'restart':
 if (!Ahmad) return replytolak(mess.only.owner)
 replyhydro(`restarting ${global.botname}`)
