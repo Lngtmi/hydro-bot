@@ -200,6 +200,47 @@ let autoCloseLastAction = {}; // Penanda eksekusi terakhir grup
 function saveAutoClose() {
     fs.writeFileSync('./database/autoco.json', JSON.stringify(autoCloseDB, null, 2));
 }
+
+const OPENAI_KEY_STORE = path.join(__dirname, 'session', 'openai_api_key.txt')
+const maskSecret = (raw = '') => {
+    const v = String(raw || '').trim()
+    if (!v) return '-'
+    if (v.length <= 10) return `${v.slice(0, 2)}***${v.slice(-2)}`
+    return `${v.slice(0, 6)}***${v.slice(-4)}`
+}
+const readStoredOpenAIKey = () => {
+    try {
+        if (!fs.existsSync(OPENAI_KEY_STORE)) return ''
+        return String(fs.readFileSync(OPENAI_KEY_STORE, 'utf8') || '').trim()
+    } catch {
+        return ''
+    }
+}
+const resolveOpenAIKey = () => {
+    const envKey = String(process.env.OPENAI_API_KEY || '').trim()
+    if (envKey) return envKey
+    if (global.keyopenai && String(global.keyopenai).trim() && String(global.keyopenai).trim() !== '-') {
+        return String(global.keyopenai).trim()
+    }
+    const stored = readStoredOpenAIKey()
+    return stored || ''
+}
+const persistOpenAIKey = (rawKey = '') => {
+    const key = String(rawKey || '').trim()
+    const dir = path.dirname(OPENAI_KEY_STORE)
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
+    fs.writeFileSync(OPENAI_KEY_STORE, key, 'utf8')
+    global.keyopenai = key
+}
+const clearPersistedOpenAIKey = () => {
+    try {
+        if (fs.existsSync(OPENAI_KEY_STORE)) fs.unlinkSync(OPENAI_KEY_STORE)
+    } catch {}
+    global.keyopenai = '-'
+}
+
+const bootOpenAIKey = resolveOpenAIKey()
+if (bootOpenAIKey) global.keyopenai = bootOpenAIKey
 const DB_FILE = './database/database.json';
 function loadDB() {
   if (fs.existsSync(DB_FILE)) {
@@ -1374,7 +1415,8 @@ const MENU_MANUAL_COMMANDS = {
   storemenu: ['addsewa', 'delsewa', 'listsewa', 'ceksewa', 'addprem', 'delprem', 'listprem', 'premium', 'buyprem'],
   ownermenu: [
     'autoread', 'antigcnosewa', 'public', 'self', 'onlypc', 'onlygc', 'setppbot', 'delppbot',
-    'setbotname', 'setbotbio', 'addowner', 'delowner', 'restart', 'shutdown', 'backup'
+    'setbotname', 'setbotbio', 'addowner', 'delowner', 'setopenaikey', 'cekopenaikey', 'delopenaikey',
+    'restart', 'shutdown', 'backup'
   ],
   anonymousmenu: ['anonymouschat', 'start', 'next', 'stop', 'sendprofile', 'menfess', 'confess', 'balasmenfess', 'tolakmenfess', 'stopmenfess'],
   databasemenu: [
@@ -1561,7 +1603,7 @@ const classifyCommandToMenu = (cmd) => {
   if (/(yts|ytsearch|ttsearch|google|imdb|weather|wanumber|stalk|cekid|whois|trackip|myip|host|genshinstalk|npmstalk|githubstalk|news|berita|cnn|kompas|detik)/i.test(cmd)) return 'searchmenu'
   if (/(ai|gpt|chatgpt|openai|gemini|claude|simi|bing|hydromind|aimath|ai4chat)/i.test(cmd)) return 'aimenu'
   if (/(buy|sewa|premium|prem|donasi|donate|payment|dana|gopay|ovo|produk|order|store)/i.test(cmd)) return 'storemenu'
-  if (/(owner|addowner|delowner|autoread|antigcnosewa|public|self|setppbot|restart|shutdown|backup)/i.test(cmd)) return 'ownermenu'
+  if (/(owner|addowner|delowner|autoread|antigcnosewa|public|self|setppbot|restart|shutdown|backup|setopenaikey|cekopenaikey|delopenaikey)/i.test(cmd)) return 'ownermenu'
   if (/(anonymous|menfess|menfes|confess|balasmenfess|balasmenfes|tolakmenfess|tolakmenfes|stopmenfess|stopmenfes|startchat|nextchat|leavechat)/i.test(cmd)) return 'anonymousmenu'
   if (/(rpg|hunt|mining|adventure|mulung|berkebun|dagang|bank|atm|gajian|bonus|upgrade|mancing|pet|heal|craft|work|rob|misi|nguli)/i.test(cmd)) return 'rpgmenu'
   if (/(islam|doa|quran|surah|hadis|sholat|asmaul|kisahnabi|alkitab)/i.test(cmd)) return 'islamimenu'
@@ -5743,6 +5785,40 @@ hydro.public = false
 replyhydro('*Sukses Berubah Menjadi Pemakaian Sendiri*')
             }
             break
+case 'setopenaikey':
+case 'setopenai':
+case 'setkeyopenai': {
+if (!Ahmad) return replytolak(mess.only.owner)
+if (!text) return replyhydro(`Format salah.\nContoh: ${prefix}setopenaikey sk-xxxx`)
+const candidate = String(text || '').trim()
+if (candidate.length < 20) return replyhydro('API key terlalu pendek. Pastikan key OpenAI valid.')
+persistOpenAIKey(candidate)
+replyhydro(`✅ OpenAI API key berhasil disimpan.\nKey: ${maskSecret(candidate)}\n\nPerintah cek: ${prefix}cekopenaikey`)
+}
+break
+case 'cekopenaikey':
+case 'checkopenaikey': {
+if (!Ahmad) return replytolak(mess.only.owner)
+const envKey = String(process.env.OPENAI_API_KEY || '').trim()
+const storedKey = readStoredOpenAIKey()
+const activeKey = resolveOpenAIKey()
+const source = envKey ? 'ENV (OPENAI_API_KEY)' : (storedKey ? 'LOCAL (session/openai_api_key.txt)' : '-')
+replyhydro(
+`🔐 *Status OpenAI Key*
+• Sumber aktif: ${source}
+• Key aktif: ${maskSecret(activeKey)}
+
+Gunakan *${prefix}setopenaikey sk-...* untuk set key.`
+)
+}
+break
+case 'delopenaikey':
+case 'hapusopenaikey': {
+if (!Ahmad) return replytolak(mess.only.owner)
+clearPersistedOpenAIKey()
+replyhydro('✅ OpenAI key lokal berhasil dihapus. Jika env OPENAI_API_KEY masih terisi, bot tetap akan memakai env.')
+}
+break
 
 case 'smeme': case 'stickermeme': case 'stickmeme': {
 if (!/webp/.test(mime) && /image/.test(mime)) {
@@ -35295,8 +35371,14 @@ break
             if (!/audio/.test(mime)) return replyhydro('Reply pesan voice note (VN), bukan media lain.')
             const isVoiceNote = Boolean(qmsg?.ptt || m.quoted?.ptt || m.quoted?.msg?.ptt || m.quoted?.message?.audioMessage?.ptt)
             if (!isVoiceNote) return replyhydro('Perintah ini khusus voice note (VN). Kirim/Reply VN lalu ketik .transkrip')
-            if (!global.keyopenai || global.keyopenai === '-' || String(global.keyopenai).trim() === '') {
-              return replyhydro('OpenAI API key belum diset. Isi OPENAI_API_KEY dulu di environment/server.')
+            const openAiKey = resolveOpenAIKey()
+            if (!openAiKey) {
+              return replyhydro(
+`OpenAI API key belum diset.
+• Isi env server: OPENAI_API_KEY
+atau
+• Owner set via chat: ${prefix}setopenaikey sk-xxxx`
+              )
             }
 
             replyhydro('⏳ VN diterima, sedang diproses transkrip...')
@@ -35321,7 +35403,7 @@ break
               fs.writeFileSync(tempFile, audioBuffer)
 
               const { Configuration, OpenAIApi } = require('openai')
-              const openai = new OpenAIApi(new Configuration({ apiKey: global.keyopenai }))
+              const openai = new OpenAIApi(new Configuration({ apiKey: openAiKey }))
               const result = await openai.createTranscription(
                 fs.createReadStream(tempFile),
                 'whisper-1',
