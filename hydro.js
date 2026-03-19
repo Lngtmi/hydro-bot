@@ -5817,70 +5817,36 @@ replyhydro(`❌ Gagal unpin chat.\nDetail: ${msg.slice(0, 120)}`)
 break
 case 'pinmsg':
 case 'pinmasg': {
-if (m.isGroup) {
-if (!isAdmins && !Ahmad) return replytolak(mess.only.admin)
-if (!isBotAdmins) return replyhydro('Bot harus jadi admin dulu untuk pin pesan!')
-} else {
 if (!Ahmad) return replytolak(mess.only.owner)
-}
-if (!m.quoted) return replyhydro(`Reply pesan yang mau di-pin.\nContoh: ${prefix + command}`)
-const pinDurationMap = {
-  '24h': 86400,
-  '1d': 86400,
-  '7d': 604800,
-  '30d': 2592000,
-  '1m': 2592000
-}
-const requestedDuration = String(args[0] || '').toLowerCase()
-if (requestedDuration && !pinDurationMap[requestedDuration]) {
-  return replyhydro('❌ Durasi tidak valid.\nGunakan: 24h, 7d, atau 30d\nContoh: .pinmsg 30d')
-}
-const pinDuration = pinDurationMap[requestedDuration] || 2592000
-const quotedKey = getRawQuotedKey(m.quoted) || extractReplyKeyFromCommand() || buildQuotedPinKey(m.quoted)
-if (!quotedKey?.id) return replyhydro('❌ Gagal membaca pesan reply. Coba reply ulang pesan yang mau di-pin.')
 try {
-const pinBy = await sendPinInChatCompat({
-  quotedKey,
-  action: 'pin',
-  durationSec: pinDuration
-})
-console.log('PINMSG OK:', { chat: m.chat, key: quotedKey, method: pinBy })
-replyhydro(`✅ Pesan berhasil di-pin (${Math.round(pinDuration / 86400)} hari).`)
+await hydro.chatModify({ pin: true }, m.chat)
+replyhydro('✅ Chat berhasil disematkan (pin).')
 } catch (err) {
 console.error('PINMSG ERROR:', err)
 const detail = String(err?.message || err)
-if (detail.includes('Invalid media type')) {
-return replyhydro('❌ Fitur pin pesan tidak didukung versi Baileys saat ini. Update Baileys atau relogin session terbaru.')
+if (detail.includes('myAppStateKey')) {
+	return replyhydro('❌ Gagal pin chat karena sesi WA belum sinkron (myAppStateKey). Re-login pairing ulang untuk mengaktifkan fitur ini.')
 }
-replyhydro(`❌ Gagal pin pesan.\nDetail: ${detail.slice(0, 120)}`)
+if (detail.includes('409') || detail.includes('too many') || detail.includes('max')) {
+	return replyhydro('❌ Gagal pin chat. Slot pin penuh (maksimal 3 chat). Lepas pin dulu dengan .unpinmsg')
+}
+replyhydro(`❌ Gagal pin chat.\nDetail: ${detail.slice(0, 120)}`)
 }
 }
 break
 case 'unpinmsg':
 case 'unpinmasg': {
-if (m.isGroup) {
-if (!isAdmins && !Ahmad) return replytolak(mess.only.admin)
-if (!isBotAdmins) return replyhydro('Bot harus jadi admin dulu untuk unpin pesan!')
-} else {
 if (!Ahmad) return replytolak(mess.only.owner)
-}
-if (!m.quoted) return replyhydro(`Reply pesan yang mau di-unpin.\nContoh: ${prefix + command}`)
-const quotedKey = getRawQuotedKey(m.quoted) || extractReplyKeyFromCommand() || buildQuotedPinKey(m.quoted)
-if (!quotedKey?.id) return replyhydro('❌ Gagal membaca pesan reply. Coba reply ulang pesan yang mau di-unpin.')
 try {
-const unpinBy = await sendPinInChatCompat({
-  quotedKey,
-  action: 'unpin'
-})
-console.log('UNPINMSG OK:', { chat: m.chat, key: quotedKey, method: unpinBy })
-replyhydro('✅ Pesan berhasil di-unpin.')
+await hydro.chatModify({ pin: false }, m.chat)
+replyhydro('✅ Sematkan chat berhasil dilepas.')
 } catch (err) {
 console.error('UNPINMSG ERROR:', err)
 const detail = String(err?.message || err)
-if (detail.includes('Invalid media type')) {
-return replyhydro('❌ Fitur unpin pesan tidak didukung versi Baileys saat ini. Update Baileys atau relogin session terbaru.')
+if (detail.includes('myAppStateKey')) {
+	return replyhydro('❌ Gagal unpin chat karena sesi WA belum sinkron (myAppStateKey). Re-login pairing ulang untuk mengaktifkan fitur ini.')
 }
-replyhydro(`❌ Gagal unpin pesan.\nDetail: ${detail.slice(0, 120)}`)
+replyhydro(`❌ Gagal unpin chat.\nDetail: ${detail.slice(0, 120)}`)
 }
 }
 break
