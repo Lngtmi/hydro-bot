@@ -5475,27 +5475,16 @@ const resolveActiveGameState = () => {
 const sendPinInChatCompat = async ({ quotedKey, action = 'pin', durationSec = 86400 }) => {
   const pinType = action === 'unpin' ? 2 : 1
   const safeDuration = Math.max(60, Number(durationSec) || 86400)
-  const normalizedKey = quotedKey || {}
+  const isGroupChat = String(m.chat || '').endsWith('@g.us')
+  const normalizedKey = {
+    remoteJid: m.chat,
+    id: quotedKey?.id,
+    fromMe: Boolean(quotedKey?.fromMe),
+    ...(isGroupChat && quotedKey?.participant ? { participant: quotedKey.participant } : {})
+  }
+  if (!normalizedKey.id) throw new Error('Key pesan target tidak valid untuk pin.')
 
   const tryMethods = [
-    async () => {
-      await hydro.sendMessage(m.chat, {
-        pin: {
-          type: pinType,
-          ...(pinType === 1 ? { time: safeDuration } : {}),
-          key: normalizedKey
-        }
-      }, { quoted: m })
-    },
-    async () => {
-      await hydro.sendMessage(m.chat, {
-        keep: {
-          type: pinType,
-          ...(pinType === 1 ? { time: safeDuration } : {}),
-          key: normalizedKey
-        }
-      }, { quoted: m })
-    },
     async () => {
       const msg = generateWAMessageFromContent(m.chat, proto.Message.fromObject({
         pinInChatMessage: {
@@ -5505,8 +5494,7 @@ const sendPinInChatCompat = async ({ quotedKey, action = 'pin', durationSec = 86
           senderTimestampMs: Date.now()
         }
       }), {
-        userJid: hydro.user.id,
-        quoted: m
+        userJid: hydro.user.id
       })
       await hydro.relayMessage(m.chat, msg.message, { messageId: msg.key.id })
     },
@@ -5515,13 +5503,31 @@ const sendPinInChatCompat = async ({ quotedKey, action = 'pin', durationSec = 86
         keepInChatMessage: {
           type: pinType,
           ...(pinType === 1 ? { time: safeDuration } : {}),
-          key: normalizedKey
+          key: normalizedKey,
+          senderTimestampMs: Date.now()
         }
       }), {
-        userJid: hydro.user.id,
-        quoted: m
+        userJid: hydro.user.id
       })
       await hydro.relayMessage(m.chat, msg.message, { messageId: msg.key.id })
+    },
+    async () => {
+      await hydro.sendMessage(m.chat, {
+        pin: {
+          type: pinType,
+          ...(pinType === 1 ? { time: safeDuration } : {}),
+          key: normalizedKey
+        }
+      })
+    },
+    async () => {
+      await hydro.sendMessage(m.chat, {
+        keep: {
+          type: pinType,
+          ...(pinType === 1 ? { time: safeDuration } : {}),
+          key: normalizedKey
+        }
+      })
     }
   ]
 
@@ -5540,8 +5546,8 @@ const buildQuotedPinKey = (quotedMsg = null) => {
   if (!quotedMsg || typeof quotedMsg !== 'object') return null
   const keySource = quotedMsg.key && typeof quotedMsg.key === 'object' ? quotedMsg.key : {}
   const messageId =
-    quotedMsg.id ||
     keySource.id ||
+    quotedMsg.id ||
     quotedMsg?.msg?.contextInfo?.stanzaId ||
     quotedMsg?.message?.extendedTextMessage?.contextInfo?.stanzaId
 
