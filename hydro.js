@@ -39205,15 +39205,15 @@ console.log('Caught exception: ', err)
 
 function autoClearSession() {
     const sessionDir = path.resolve(`./${sessionName}`)
-    const monitorInterval = 60 * 60 * 1000 // 1 jam
+    const monitorInterval = 10 * 60 * 1000 // 10 menit
 
     const RULES = [
-        { key: 'pre-key', keep: 60, minAgeMs: 2 * 60 * 60 * 1000 },          // 2 jam
-        { key: 'session-', keep: 90, minAgeMs: 24 * 60 * 60 * 1000 },        // 1 hari
-        { key: 'sender-key', keep: 90, minAgeMs: 24 * 60 * 60 * 1000 },      // 1 hari
-        { key: 'app-state', keep: 12, minAgeMs: 24 * 60 * 60 * 1000 }        // 1 hari
+        { key: 'pre-key', keep: 30 },
+        { key: 'session-', keep: 60 },
+        { key: 'sender-key', keep: 60 },
+        { key: 'app-state', keep: 8 }
     ]
-    const SESSION_HARD_CAP = 250
+    const SESSION_HARD_CAP = 180
 
     const listTrackedFiles = () => {
         if (!fs.existsSync(sessionDir)) return []
@@ -39241,8 +39241,7 @@ function autoClearSession() {
             .filter(item => item.file.startsWith(rule.key))
             .sort((a, b) => b.mtimeMs - a.mtimeMs)
         if (scoped.length <= rule.keep) return []
-        const overflow = scoped.slice(rule.keep)
-        return overflow.filter(item => item.ageMs >= rule.minAgeMs)
+        return scoped.slice(rule.keep)
     }
 
     const removeFiles = (list) => {
@@ -39269,7 +39268,7 @@ function autoClearSession() {
                 for (const item of targets) removeMap.set(item.file, item)
             }
 
-            // Safety net: kalau tetap melebihi hard cap, buang yang paling tua (minimal umur 1 hari)
+            // Safety net: kalau tetap melebihi hard cap, buang yang paling tua.
             const projectedCount = tracked.length - removeMap.size
             if (projectedCount > SESSION_HARD_CAP) {
                 const oldest = tracked
@@ -39279,7 +39278,6 @@ function autoClearSession() {
                 let extraPicked = 0
                 for (const item of oldest) {
                     if (extraPicked >= extraNeed) break
-                    if (item.ageMs < 24 * 60 * 60 * 1000) continue
                     removeMap.set(item.file, item)
                     extraPicked += 1
                 }
@@ -39297,8 +39295,11 @@ function autoClearSession() {
         }
     }
 
+    // expose manual trigger untuk debugging owner
+    global.triggerSessionPrune = runSweep
+
     // Jalankan sekali saat startup + interval berkala
-    setTimeout(runSweep, 45 * 1000)
+    setTimeout(runSweep, 10 * 1000)
     setInterval(runSweep, monitorInterval)
 }
 
