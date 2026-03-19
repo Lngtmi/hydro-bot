@@ -12,12 +12,10 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Validate required secrets
         env:
@@ -30,66 +28,31 @@ jobs:
           test -n "${SERVER_ID:-}" || { echo "Missing secret: PTERO_SERVER_ID"; exit 1; }
           test -n "${API_KEY:-}" || { echo "Missing secret: PTERO_CLIENT_API_KEY"; exit 1; }
 
-      - name: Build file change list
-        id: changes
+      - name: Build upload list (full sync)
+        id: files
         run: |
           set -euo pipefail
-
-          BASE_SHA="${{ github.event.before }}"
-          HEAD_SHA="${{ github.sha }}"
-
-          if [[ "${{ github.event_name }}" == "push" && "$BASE_SHA" != "0000000000000000000000000000000000000000" ]]; then
-            DIFF_CMD=(git diff --name-status "$BASE_SHA" "$HEAD_SHA")
-          else
-            DIFF_CMD=(git diff --name-status HEAD~1 HEAD)
-          fi
-
-          mapfile -t ROWS < <("${DIFF_CMD[@]}" || true)
 
           KEEP_REGEX='^(hydro\.js|index\.js|config\.js|settings\.js|module\.js|simple\.js|package\.json|package-lock\.json|lib/|scrape/|data/|database/|src/|scripts/|bin/|temp/)'
           SKIP_REGEX='^(\.github/|README\.md$|\.gitignore$|\.ptero\.env|\.ptero\.env\.example|tmp/|Hagima|Hagima\.|.*\.zip$|.*\.tar\.gz$|.*-player-script\.js$|yt-dlp$)'
 
           : > /tmp/upload_files.txt
-          : > /tmp/delete_files.txt
-
-          for row in "${ROWS[@]}"; do
-            [[ -z "$row" ]] && continue
-            status="${row%%$'\t'*}"
-            path="${row#*$'\t'}"
-
-            # rename support: R100<tab>old<tab>new
-            if [[ "$status" == R* ]]; then
-              old_path="$(echo "$row" | awk -F '\t' '{print $2}')"
-              new_path="$(echo "$row" | awk -F '\t' '{print $3}')"
-              [[ "$old_path" =~ $SKIP_REGEX ]] || [[ ! "$old_path" =~ $KEEP_REGEX ]] || echo "$old_path" >> /tmp/delete_files.txt
-              [[ "$new_path" =~ $SKIP_REGEX ]] || [[ ! "$new_path" =~ $KEEP_REGEX ]] || echo "$new_path" >> /tmp/upload_files.txt
-              continue
-            fi
-
-            if [[ "$path" =~ $SKIP_REGEX ]] || [[ ! "$path" =~ $KEEP_REGEX ]]; then
-              continue
-            fi
-
-            if [[ "$status" == D* ]]; then
-              echo "$path" >> /tmp/delete_files.txt
-            else
-              echo "$path" >> /tmp/upload_files.txt
-            fi
-          done
+          while IFS= read -r file; do
+            [[ -z "$file" ]] && continue
+            [[ "$file" =~ $SKIP_REGEX ]] && continue
+            [[ ! "$file" =~ $KEEP_REGEX ]] && continue
+            echo "$file" >> /tmp/upload_files.txt
+          done < <(git ls-files)
 
           sort -u /tmp/upload_files.txt -o /tmp/upload_files.txt
-          sort -u /tmp/delete_files.txt -o /tmp/delete_files.txt
+          count=$(wc -l < /tmp/upload_files.txt | tr -d ' ')
+          echo "upload_count=$count" >> "$GITHUB_OUTPUT"
 
-          echo "upload_count=$(wc -l < /tmp/upload_files.txt | tr -d ' ')" >> "$GITHUB_OUTPUT"
-          echo "delete_count=$(wc -l < /tmp/delete_files.txt | tr -d ' ')" >> "$GITHUB_OUTPUT"
+          echo "Total upload files: $count"
+          head -n 200 /tmp/upload_files.txt
 
-          echo "Upload list:"
-          cat /tmp/upload_files.txt || true
-          echo "Delete list:"
-          cat /tmp/delete_files.txt || true
-
-      - name: Upload changed files to panel
-        if: steps.changes.outputs.upload_count != '0'
+      - name: Upload files to panel
+        if: steps.files.outputs.upload_count != '0'
         env:
           PANEL_URL: ${{ secrets.PTERO_PANEL_URL }}
           SERVER_ID: ${{ secrets.PTERO_SERVER_ID }}
@@ -100,7 +63,8 @@ jobs:
           while IFS= read -r file; do
             [[ -z "$file" ]] && continue
             echo "Uploading: $file"
-            encoded="$(python3 -c 'import sys,urllib.parse;print(urllib.parse.quote(sys.argv[1], safe=\"/\"))' "$file")"
+
+            encoded="$(python3 -c 'import sys,urllib.parse;print(urllib.parse.quote(sys.argv[1], safe="/"))' "$file")"
 
             http_code="$(curl -sS -o /tmp/ptero_upload_resp.json -w '%{http_code}' \
               -X POST "${PANEL_URL}/api/client/servers/${SERVER_ID}/files/write?file=/${encoded}" \
@@ -116,35 +80,8 @@ jobs:
             fi
           done < /tmp/upload_files.txt
 
-      - name: Delete removed files from panel
-        if: steps.changes.outputs.delete_count != '0'
-        env:
-          PANEL_URL: ${{ secrets.PTERO_PANEL_URL }}
-          SERVER_ID: ${{ secrets.PTERO_SERVER_ID }}
-          API_KEY: ${{ secrets.PTERO_CLIENT_API_KEY }}
-        run: |
-          set -euo pipefail
-
-          mapfile -t FILES < /tmp/delete_files.txt
-          json_files="$(printf '%s\n' "${FILES[@]}" | python3 -c 'import json,sys;print(json.dumps([l.strip() for l in sys.stdin if l.strip()]))')"
-
-          payload="$(python3 -c 'import json,sys;print(json.dumps({"root":"/","files":json.loads(sys.argv[1])}))' "$json_files")"
-
-          http_code="$(curl -sS -o /tmp/ptero_delete_resp.json -w '%{http_code}' \
-            -X POST "${PANEL_URL}/api/client/servers/${SERVER_ID}/files/delete" \
-            -H "Authorization: Bearer ${API_KEY}" \
-            -H "Accept: application/json" \
-            -H "Content-Type: application/json" \
-            -d "$payload")"
-
-          if [[ "$http_code" -lt 200 || "$http_code" -ge 300 ]]; then
-            echo "Delete failed (HTTP $http_code)"
-            cat /tmp/ptero_delete_resp.json || true
-            exit 1
-          fi
-
       - name: Restart server
-        if: steps.changes.outputs.upload_count != '0' || steps.changes.outputs.delete_count != '0'
+        if: steps.files.outputs.upload_count != '0'
         env:
           PANEL_URL: ${{ secrets.PTERO_PANEL_URL }}
           SERVER_ID: ${{ secrets.PTERO_SERVER_ID }}
@@ -166,6 +103,5 @@ jobs:
 
       - name: Summary
         run: |
-          echo "Deploy selesai."
-          echo "Uploaded: ${{ steps.changes.outputs.upload_count }}"
-          echo "Deleted:  ${{ steps.changes.outputs.delete_count }}"
+          echo "Deploy full sync selesai"
+          echo "Uploaded files: ${{ steps.files.outputs.upload_count }}"
