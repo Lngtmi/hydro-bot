@@ -18182,61 +18182,29 @@ case 'delwl': {
 }
 break
 case 'hitamkan': case 'hytamkan': case 'hytam': case 'ireng': {
-if (!m.quoted) return m.reply(`Kirim/reply gambar dengan caption *${prefix + command}*`);
-  const { GoogleGenerativeAI } = require ("@google/generative-ai");
-  let mime = m.quoted.mimetype || "";
-  let defaultPrompt = "Ubah warna kulit menjadi hitam pekat di foto ini";
-  if (!/image\/(jpe?g|png)/.test(mime)) return m.reply(`Format ${mime} tidak didukung! Hanya jpeg/jpg/png`);
-  let promptText = text || defaultPrompt;
-  m.reply(mess.wait);
+  let qmsg = m.quoted ? m.quoted : m
+  let mime = (qmsg.msg || qmsg).mimetype || ""
+  if (!/image\/(jpe?g|png|webp)/i.test(mime)) {
+    return m.reply(`Kirim/reply gambar dengan caption *${prefix + command}*`)
+  }
+  m.reply(mess.wait)
   try {
-    let imgData = await m.quoted.download();
-    let genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
-    const base64Image = imgData.toString("base64");
-    const contents = [
-      { text: promptText },
-      {
-        inlineData: {
-          mimeType: mime,
-          data: base64Image
-        }
-      }
-    ];
-    const model = genAI.getGenerativeModel({
-      model: "gemini-2.0-flash-exp-image-generation",
-      generationConfig: {
-        responseModalities: ["Text", "Image"]
-      },
-    });
-    const response = await model.generateContent(contents);
-    let resultImage;
-    let resultText = "";
-    for (const part of response.response.candidates[0].content.parts) {
-      if (part.text) {
-        resultText += part.text;
-      } else if (part.inlineData) {
-        const imageData = part.inlineData.data;
-        resultImage = Buffer.from(imageData, "base64");
-      }
-    }
-    if (resultImage) {
-      const tempPath = `./temp/gemini_${Date.now()}.png`;
-      fs.writeFileSync(tempPath, resultImage);
-      await hydro.sendMessage(m.chat, { 
-        image: { url: tempPath },
-        caption: `✅ *Berhasil Dihitamkan*`
-      }, { quoted: m });
-      setTimeout(() => {
-        try {
-          fs.unlinkSync(tempPath);
-        } catch {}
-      }, 30000);
-    } else {
-      m.reply("Gagal...");
-    }
+    let imgData = await qmsg.download()
+    const source = await Jimp.read(imgData)
+    source
+      .color([{ apply: 'desaturate', params: [35] }])
+      .brightness(-0.28)
+      .contrast(0.18)
+      .posterize(56)
+
+    const out = await source.getBufferAsync(Jimp.MIME_JPEG)
+    await hydro.sendMessage(m.chat, {
+      image: out,
+      caption: `✅ *Berhasil Dihitamkan*`
+    }, { quoted: m })
   } catch (error) {
-    console.error(error);
-    m.reply(`Error: ${error.message}`);
+    console.error('HITAMKAN ERROR:', error)
+    m.reply('❌ Gagal memproses gambar. Coba kirim ulang foto yang jelas.')
   }
 }
 break
@@ -33129,73 +33097,29 @@ case 'listtoxic': {
 }
 break;
 case 'hytam': {
-  if (!m.quoted) return m.reply(`Kirim/reply gambar dengan caption *${prefix + command}*`);
-  const { GoogleGenerativeAI } = require ("@google/generative-ai");
-  let mime = m.quoted.mimetype || "";
-  let defaultPrompt = "Ubahlah Karakter Dari Gambar Tersebut Diubah Kulitnya Menjadi Hitam se hitam-hitam nya";
-
-  if (!/image\/(jpe?g|png)/.test(mime)) return m.reply(`Format ${mime} tidak didukung! Hanya jpeg/jpg/png`);
-
-  let promptText = text || defaultPrompt;
-  m.reply("Otw Menghitam...");
-
+  let qmsg = m.quoted ? m.quoted : m
+  let mime = (qmsg.msg || qmsg).mimetype || ""
+  if (!/image\/(jpe?g|png|webp)/i.test(mime)) {
+    return m.reply(`Kirim/reply gambar dengan caption *${prefix + command}*`)
+  }
+  m.reply('Otw Menghitam...')
   try {
-    let imgData = await m.quoted.download();
-    let genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+    let imgData = await qmsg.download()
+    const source = await Jimp.read(imgData)
+    source
+      .color([{ apply: 'desaturate', params: [35] }])
+      .brightness(-0.28)
+      .contrast(0.18)
+      .posterize(56)
 
-    const base64Image = imgData.toString("base64");
-
-    const contents = [
-      { text: promptText },
-      {
-        inlineData: {
-          mimeType: mime,
-          data: base64Image
-        }
-      }
-    ];
-
-    const model = genAI.getGenerativeModel({
-      model: "gemini-2.0-flash-exp-image-generation",
-      generationConfig: {
-        responseModalities: ["Text", "Image"]
-      },
-    });
-
-    const response = await model.generateContent(contents);
-
-    let resultImage;
-    let resultText = "";
-
-    for (const part of response.response.candidates[0].content.parts) {
-      if (part.text) {
-        resultText += part.text;
-      } else if (part.inlineData) {
-        const imageData = part.inlineData.data;
-        resultImage = Buffer.from(imageData, "base64");
-      }
-    }
-
-    if (resultImage) {
-      const tempPath = `./temp/gemini_${Date.now()}.png`;
-      fs.writeFileSync(tempPath, resultImage);
-
-      await hydro.sendMessage(m.chat, { 
-        image: { url: tempPath },
-        caption: `*berhasil menghitamkan*`
-      }, { quoted: m });
-
-      setTimeout(() => {
-        try {
-          fs.unlinkSync(tempPath);
-        } catch {}
-      }, 30000);
-    } else {
-      m.reply("Gagal Menghitamkan.");
-    }
+    const out = await source.getBufferAsync(Jimp.MIME_JPEG)
+    await hydro.sendMessage(m.chat, {
+      image: out,
+      caption: `✅ *Berhasil Dihitamkan*`
+    }, { quoted: m })
   } catch (error) {
-    console.error(error);
-    m.reply(`Error: ${error.message}`);
+    console.error('HYTAM ERROR:', error)
+    m.reply('❌ Gagal memproses gambar. Coba kirim ulang foto yang jelas.')
   }
 }
 break
