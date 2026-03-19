@@ -5536,6 +5536,36 @@ const sendPinInChatCompat = async ({ quotedKey, action = 'pin', durationSec = 86
   }
   throw lastErr || new Error('Pin message tidak didukung oleh versi Baileys ini.')
 }
+const buildQuotedPinKey = (quotedMsg = null) => {
+  if (!quotedMsg || typeof quotedMsg !== 'object') return null
+  const keySource = quotedMsg.key && typeof quotedMsg.key === 'object' ? quotedMsg.key : {}
+  const messageId =
+    quotedMsg.id ||
+    keySource.id ||
+    quotedMsg?.msg?.contextInfo?.stanzaId ||
+    quotedMsg?.message?.extendedTextMessage?.contextInfo?.stanzaId
+
+  if (!messageId) return null
+
+  const isGroupChat = String(m.chat || '').endsWith('@g.us')
+  const participantJid =
+    keySource.participant ||
+    quotedMsg.participant ||
+    quotedMsg.sender ||
+    quotedMsg?.msg?.contextInfo?.participant
+
+  const fromMe =
+    typeof keySource.fromMe === 'boolean'
+      ? keySource.fromMe
+      : areJidsSameUser(String(quotedMsg.sender || participantJid || ''), botNumber)
+
+  return {
+    remoteJid: m.chat,
+    id: messageId,
+    fromMe,
+    ...(isGroupChat && participantJid ? { participant: participantJid } : {})
+  }
+}
 const normalizeAnonymousRoom = (room = null) => {
   if (!room || typeof room !== 'object') return null
   if (typeof room.check !== 'function') {
@@ -5797,9 +5827,12 @@ replyhydro(`❌ Gagal unpin chat.\nDetail: ${msg.slice(0, 120)}`)
 }
 break
 case 'pinmsg': {
-if (!m.isGroup) return replytolak(mess.only.group)
+if (m.isGroup) {
 if (!isAdmins && !Ahmad) return replytolak(mess.only.admin)
 if (!isBotAdmins) return replyhydro('Bot harus jadi admin dulu untuk pin pesan!')
+} else {
+if (!Ahmad) return replytolak(mess.only.owner)
+}
 if (!m.quoted) return replyhydro(`Reply pesan yang mau di-pin.\nContoh: ${prefix + command}`)
 const pinDurationMap = {
   '24h': 86400,
@@ -5809,12 +5842,8 @@ const pinDurationMap = {
 }
 const requestedDuration = String(args[0] || '').toLowerCase()
 const pinDuration = pinDurationMap[requestedDuration] || 86400
-const quotedKey = m.quoted?.key || {
-  remoteJid: m.chat,
-  fromMe: areJidsSameUser(String(m.quoted?.sender || ''), botNumber),
-  id: m.quoted?.id,
-  participant: m.quoted?.sender
-}
+const quotedKey = buildQuotedPinKey(m.quoted)
+if (!quotedKey?.id) return replyhydro('❌ Gagal membaca pesan reply. Coba reply ulang pesan yang mau di-pin.')
 try {
 await sendPinInChatCompat({
   quotedKey,
@@ -5834,16 +5863,15 @@ replyhydro(`❌ Gagal pin pesan.\nDetail: ${detail.slice(0, 120)}`)
 break
 case 'unpinmsg':
 case 'unpinmasg': {
-if (!m.isGroup) return replytolak(mess.only.group)
+if (m.isGroup) {
 if (!isAdmins && !Ahmad) return replytolak(mess.only.admin)
 if (!isBotAdmins) return replyhydro('Bot harus jadi admin dulu untuk unpin pesan!')
-if (!m.quoted) return replyhydro(`Reply pesan yang mau di-unpin.\nContoh: ${prefix + command}`)
-const quotedKey = m.quoted?.key || {
-  remoteJid: m.chat,
-  fromMe: areJidsSameUser(String(m.quoted?.sender || ''), botNumber),
-  id: m.quoted?.id,
-  participant: m.quoted?.sender
+} else {
+if (!Ahmad) return replytolak(mess.only.owner)
 }
+if (!m.quoted) return replyhydro(`Reply pesan yang mau di-unpin.\nContoh: ${prefix + command}`)
+const quotedKey = buildQuotedPinKey(m.quoted)
+if (!quotedKey?.id) return replyhydro('❌ Gagal membaca pesan reply. Coba reply ulang pesan yang mau di-unpin.')
 try {
 await sendPinInChatCompat({
   quotedKey,
