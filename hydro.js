@@ -5485,7 +5485,7 @@ const sendPinInChatCompat = async ({ quotedKey, action = 'pin', durationSec = 86
   if (!normalizedKey.id) throw new Error('Key pesan target tidak valid untuk pin.')
 
   const tryMethods = [
-    async () => {
+    ['pinInChatMessage(relay)', async () => {
       const msg = generateWAMessageFromContent(m.chat, proto.Message.fromObject({
         pinInChatMessage: {
           type: pinType,
@@ -5497,8 +5497,8 @@ const sendPinInChatCompat = async ({ quotedKey, action = 'pin', durationSec = 86
         userJid: hydro.user.id
       })
       await hydro.relayMessage(m.chat, msg.message, { messageId: msg.key.id })
-    },
-    async () => {
+    }],
+    ['keepInChatMessage(relay)', async () => {
       const msg = generateWAMessageFromContent(m.chat, proto.Message.fromObject({
         keepInChatMessage: {
           type: pinType,
@@ -5510,8 +5510,8 @@ const sendPinInChatCompat = async ({ quotedKey, action = 'pin', durationSec = 86
         userJid: hydro.user.id
       })
       await hydro.relayMessage(m.chat, msg.message, { messageId: msg.key.id })
-    },
-    async () => {
+    }],
+    ['sendMessage(pin)', async () => {
       await hydro.sendMessage(m.chat, {
         pin: {
           type: pinType,
@@ -5519,8 +5519,8 @@ const sendPinInChatCompat = async ({ quotedKey, action = 'pin', durationSec = 86
           key: normalizedKey
         }
       })
-    },
-    async () => {
+    }],
+    ['sendMessage(keep)', async () => {
       await hydro.sendMessage(m.chat, {
         keep: {
           type: pinType,
@@ -5528,19 +5528,37 @@ const sendPinInChatCompat = async ({ quotedKey, action = 'pin', durationSec = 86
           key: normalizedKey
         }
       })
-    }
+    }]
   ]
 
   let lastErr = null
-  for (const fn of tryMethods) {
+  for (const [label, fn] of tryMethods) {
     try {
       await fn()
-      return true
+      return label
     } catch (err) {
       lastErr = err
+      console.error('PIN TRY FAILED:', label, String(err?.message || err))
     }
   }
   throw lastErr || new Error('Pin message tidak didukung oleh versi Baileys ini.')
+}
+const extractReplyKeyFromCommand = () => {
+  const ctx =
+    m?.msg?.contextInfo ||
+    m?.message?.extendedTextMessage?.contextInfo ||
+    m?.message?.imageMessage?.contextInfo ||
+    m?.message?.videoMessage?.contextInfo ||
+    null
+  if (!ctx?.stanzaId) return null
+  const isGroupChat = String(m.chat || '').endsWith('@g.us')
+  const participantJid = ctx.participant || m?.quoted?.sender || ''
+  return {
+    remoteJid: m.chat,
+    id: ctx.stanzaId,
+    fromMe: areJidsSameUser(String(participantJid || ''), botNumber),
+    ...(isGroupChat && participantJid ? { participant: participantJid } : {})
+  }
 }
 const buildQuotedPinKey = (quotedMsg = null) => {
   if (!quotedMsg || typeof quotedMsg !== 'object') return null
@@ -5848,14 +5866,15 @@ const pinDurationMap = {
 }
 const requestedDuration = String(args[0] || '').toLowerCase()
 const pinDuration = pinDurationMap[requestedDuration] || 86400
-const quotedKey = buildQuotedPinKey(m.quoted)
+const quotedKey = extractReplyKeyFromCommand() || buildQuotedPinKey(m.quoted)
 if (!quotedKey?.id) return replyhydro('❌ Gagal membaca pesan reply. Coba reply ulang pesan yang mau di-pin.')
 try {
-await sendPinInChatCompat({
+const pinBy = await sendPinInChatCompat({
   quotedKey,
   action: 'pin',
   durationSec: pinDuration
 })
+console.log('PINMSG OK:', { chat: m.chat, key: quotedKey, method: pinBy })
 replyhydro(`✅ Pesan berhasil di-pin (${Math.round(pinDuration / 86400)} hari).`)
 } catch (err) {
 console.error('PINMSG ERROR:', err)
@@ -5876,13 +5895,14 @@ if (!isBotAdmins) return replyhydro('Bot harus jadi admin dulu untuk unpin pesan
 if (!Ahmad) return replytolak(mess.only.owner)
 }
 if (!m.quoted) return replyhydro(`Reply pesan yang mau di-unpin.\nContoh: ${prefix + command}`)
-const quotedKey = buildQuotedPinKey(m.quoted)
+const quotedKey = extractReplyKeyFromCommand() || buildQuotedPinKey(m.quoted)
 if (!quotedKey?.id) return replyhydro('❌ Gagal membaca pesan reply. Coba reply ulang pesan yang mau di-unpin.')
 try {
-await sendPinInChatCompat({
+const unpinBy = await sendPinInChatCompat({
   quotedKey,
   action: 'unpin'
 })
+console.log('UNPINMSG OK:', { chat: m.chat, key: quotedKey, method: unpinBy })
 replyhydro('✅ Pesan berhasil di-unpin.')
 } catch (err) {
 console.error('UNPINMSG ERROR:', err)
