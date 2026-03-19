@@ -5673,21 +5673,30 @@ Type *surrender* to surrender and admit defeat`
             let poin = 10
             let poin_lose = 10
             let timeout = 60000
-            if (Object.values(this.suit).find(roof => roof.id.startsWith('suit') && [roof.p, roof.p2].includes(m.sender))) replyhydro(`Complete your previous game`)
-	    if (m.mentionedJid[0] === m.sender) return replyhydro(`Can't play with myself !`)
-            if (!m.mentionedJid[0]) return replyhydro(`_Who do you want to challenge?_\nTag the person..\n\nExample : ${prefix}suit @${owner}`, m.chat, { mentions: [owner[1] + '@s.whatsapp.net'] })
-            if (Object.values(this.suit).find(roof => roof.id.startsWith('suit') && [roof.p, roof.p2].includes(m.mentionedJid[0]))) return replyhydro(`Orang yang Anda tantang sedang bermain sesuai dengan orang lain :(`)
+            if (Object.values(this.suit).find(roof => roof.id.startsWith('suit') && [roof.p, roof.p2].includes(m.sender))) return replyhydro(`Complete your previous game`)
+
+            const mentionedRaw = Array.isArray(m.mentionedJid) ? m.mentionedJid[0] : null
+            const findTarget = (jid = '') => {
+              if (!jid || !m.isGroup) return jid
+              const hit = participants.find(p => p?.lid === jid || p?.id === jid || p?.jid === jid)
+              return hit?.jid || hit?.id || jid
+            }
+            const targetJid = findTarget(mentionedRaw || (m.quoted ? m.quoted.sender : ''))
+
+            if (!targetJid) return replyhydro(`_Who do you want to challenge?_\nTag the person..\n\nExample : ${prefix}suit @${owner}`, m.chat, { mentions: [owner[1] + '@s.whatsapp.net'] })
+	    if (targetJid === m.sender) return replyhydro(`Can't play with myself !`)
+            if (Object.values(this.suit).find(roof => roof.id.startsWith('suit') && [roof.p, roof.p2].includes(targetJid))) return replyhydro(`Orang yang Anda tantang sedang bermain sesuai dengan orang lain :(`)
             let id = 'suit_' + new Date() * 1
             let caption = `_*SUIT PvP*_
 
-@${m.sender.split`@`[0]} *Challenged* @${m.mentionedJid[0].split`@`[0]} *to play suit*
+@${m.sender.split`@`[0]} *Challenged* @${targetJid.split`@`[0]} *to play suit*
 
-*Hi* @${m.mentionedJid[0].split`@`[0]} *Silahkan ketik accept untuk menerima atau ketik reject untuk menolak`
+*Hi* @${targetJid.split`@`[0]} *Silahkan ketik accept untuk menerima atau ketik reject untuk menolak`
             this.suit[id] = {
-            chat: await hydro.sendText(m.chat, caption, m, { mentions: parseMention(caption) }),
+            chat: await hydro.sendText(m.chat, caption, m, { mentions: [m.sender, targetJid] }),
             id: id,
             p: m.sender,
-            p2: m.mentionedJid[0],
+            p2: targetJid,
             status: 'wait',
             waktu: setTimeout(() => {
             if (this.suit[id]) hydro.sendText(m.chat, `_suit waktu habis_`, m)
