@@ -292,13 +292,22 @@ hydro.ev.emit('messages.upsert', msg)
         const commandBody = isCmd ? bodyText.slice(prefix.length).trim() : ''
         const command = commandBody ? commandBody.split(/ +/).shift().toLowerCase() : ''
         const args = commandBody ? commandBody.split(/ +/).slice(1) : []
+        const normalizeOwnerDigits = (raw = '') => {
+            const base = String(raw || '').trim().split('@')[0].split(':')[0]
+            return base.replace(/[^0-9]/g, '')
+        }
 	        const pushname = m.pushName || "Misterius"
 	        const botNumber = await hydro.decodeJid(hydro.user.id)
-	        let senderDigits = String(m.sender || '').replace(/[^0-9]/g, '')
+	        let senderDigits = normalizeOwnerDigits(m.sender || (!m.isGroup ? m.chat : ''))
 	        const ownerCandidates = [botNumber, ...owner, ...(Array.isArray(global.owner) ? global.owner : []), global.ownernomer, global.ownernumber]
-	            .map(v => String(v || '').replace(/[^0-9]/g, ''))
+	            .map(v => normalizeOwnerDigits(v))
 	            .filter(Boolean)
+	        if (!senderDigits && !m.isGroup) senderDigits = normalizeOwnerDigits(m.chat)
 	        let Ahmad = ownerCandidates.includes(senderDigits)
+	        if (!Ahmad && !m.isGroup) {
+	            const chatDigits = normalizeOwnerDigits(m.chat)
+	            Ahmad = ownerCandidates.includes(chatDigits)
+	        }
         const text = q = args.join(" ")
         const quoted = m.quoted ? m.quoted : m
         const mime = (quoted.msg || quoted).mimetype || ''
@@ -325,8 +334,13 @@ hydro.ev.emit('messages.upsert', msg)
             const mappedParticipant = participants.find(p => p?.lid === m.sender || p?.id === m.sender)
             m.sender = mappedParticipant?.jid || mappedParticipant?.id || m.sender
         }
-        senderDigits = String(m.sender || '').replace(/[^0-9]/g, '')
+        senderDigits = normalizeOwnerDigits(m.sender || (!m.isGroup ? m.chat : ''))
+        if (!senderDigits && !m.isGroup) senderDigits = normalizeOwnerDigits(m.chat)
         Ahmad = ownerCandidates.includes(senderDigits)
+        if (!Ahmad && !m.isGroup) {
+            const chatDigits = normalizeOwnerDigits(m.chat)
+            Ahmad = ownerCandidates.includes(chatDigits)
+        }
 
 	        const groupAdmins = m.isGroup ? participants.filter((v) => v.admin !== null).map((i) => i.jid || i.id) : [];
 	        const groupOwner = m.isGroup ? (groupMetadata?.owner || '') : ''
@@ -39205,89 +39219,46 @@ console.log('Caught exception: ', err)
 
 function autoClearSession() {
     const sessionDir = path.resolve(`./${sessionName}`)
-    const monitorInterval = 10 * 60 * 1000 // 10 menit
+    const monitorInterval = 30 * 60 * 1000 // 30 menit
+    const PREKEY_KEEP = 120
+    const PREKEY_REGEX = /^pre-key-\d+\.json$/i
 
-    const RULES = [
-        { key: 'pre-key', keep: 30 },
-        { key: 'session-', keep: 60 },
-        { key: 'sender-key', keep: 60 },
-        { key: 'app-state', keep: 8 }
-    ]
-    const SESSION_HARD_CAP = 180
-
-    const listTrackedFiles = () => {
+    const listPreKeys = () => {
         if (!fs.existsSync(sessionDir)) return []
         const files = fs.readdirSync(sessionDir)
-        const now = Date.now()
         const tracked = []
         for (const file of files) {
-            if (!RULES.some(rule => file.startsWith(rule.key))) continue
+            if (!PREKEY_REGEX.test(file)) continue
             const abs = path.join(sessionDir, file)
             try {
                 const stat = fs.statSync(abs)
-                tracked.push({
-                    file,
-                    abs,
-                    mtimeMs: stat.mtimeMs || now,
-                    ageMs: now - (stat.mtimeMs || now)
-                })
+                tracked.push({ file, abs, mtimeMs: stat.mtimeMs || Date.now() })
             } catch {}
         }
         return tracked
     }
 
-    const pruneByRule = (items, rule) => {
-        const scoped = items
-            .filter(item => item.file.startsWith(rule.key))
-            .sort((a, b) => b.mtimeMs - a.mtimeMs)
-        if (scoped.length <= rule.keep) return []
-        return scoped.slice(rule.keep)
-    }
-
-    const removeFiles = (list) => {
-        let removed = 0
-        for (const item of list) {
-            try {
-                if (fs.existsSync(item.abs)) {
-                    fs.unlinkSync(item.abs)
-                    removed += 1
-                }
-            } catch {}
-        }
-        return removed
-    }
-
     const runSweep = () => {
         try {
-            const tracked = listTrackedFiles()
-            if (!tracked.length) return
-
-            const removeMap = new Map()
-            for (const rule of RULES) {
-                const targets = pruneByRule(tracked, rule)
-                for (const item of targets) removeMap.set(item.file, item)
+            const preKeys = listPreKeys().sort((a, b) => b.mtimeMs - a.mtimeMs)
+            if (!preKeys.length) return
+            if (preKeys.length <= PREKEY_KEEP) {
+                console.log(chalk.cyan.bold(`📂 [SESSION MONITOR] pre-key aman: ${preKeys.length}/${PREKEY_KEEP}`))
+                return
             }
-
-            // Safety net: kalau tetap melebihi hard cap, buang yang paling tua.
-            const projectedCount = tracked.length - removeMap.size
-            if (projectedCount > SESSION_HARD_CAP) {
-                const oldest = tracked
-                    .filter(item => !removeMap.has(item.file))
-                    .sort((a, b) => a.mtimeMs - b.mtimeMs)
-                const extraNeed = projectedCount - SESSION_HARD_CAP
-                let extraPicked = 0
-                for (const item of oldest) {
-                    if (extraPicked >= extraNeed) break
-                    removeMap.set(item.file, item)
-                    extraPicked += 1
-                }
+            const stale = preKeys.slice(PREKEY_KEEP)
+            let removed = 0
+            for (const item of stale) {
+                try {
+                    if (fs.existsSync(item.abs)) {
+                        fs.unlinkSync(item.abs)
+                        removed += 1
+                    }
+                } catch {}
             }
-
-            const removed = removeFiles(Array.from(removeMap.values()))
-            const finalCount = Math.max(0, tracked.length - removed)
             console.log(
                 chalk.cyan.bold(
-                    `📂 [SESSION MONITOR] sebelum: ${tracked.length}, dihapus: ${removed}, sisa: ${finalCount}`
+                    `📂 [SESSION MONITOR] pre-key: ${preKeys.length}, dihapus: ${removed}, sisa: ${Math.max(0, preKeys.length - removed)}`
                 )
             )
         } catch (error) {
@@ -39295,11 +39266,10 @@ function autoClearSession() {
         }
     }
 
-    // expose manual trigger untuk debugging owner
     global.triggerSessionPrune = runSweep
 
-    // Jalankan sekali saat startup + interval berkala
-    setTimeout(runSweep, 10 * 1000)
+    // Jalankan berkala (aman, non-destruktif untuk session sender/app-state)
+    setTimeout(runSweep, 60 * 1000)
     setInterval(runSweep, monitorInterval)
 }
 
