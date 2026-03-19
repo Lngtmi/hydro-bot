@@ -1351,7 +1351,7 @@ const MENU_MANUAL_COMMANDS = {
     'ping', 'runtime', 'status', 'owner', 'reportbug', 'tinyurl', 'toqr', 'togif', 'toimg',
     'toonce', 'toaudio', 'tovn', 'tomp3', 'tomp4', 'volume', 'ebinary', 'dbinary', 'ssweb',
     'quoted', 'readviewonce', 'cekkhodam', 'styletext', 'fliptext', 'obfuscate', 'tts', 'say',
-    'alkitab', 'paptt', 'totalfitur', 'myip', 'infobot', 'rating', 'script', 'bacaperaturan',
+    'alkitab', 'paptt', 'totalfitur', 'myip', 'infobot', 'rating', 'script', 'bacaperaturan', 'transkrip',
     'donasi'
   ],
   downloadmenu: [
@@ -1574,7 +1574,7 @@ const classifyCommandToMenu = (cmd) => {
   if (/(digitalocean|doctl|droplet)/i.test(cmd)) return 'digitaloceanmenu'
   if (/(pterodactyl|pytero|wings|egg|node)/i.test(cmd)) return 'pyterodactylemenu'
   if (/(jasher)/i.test(cmd)) return 'jashermenu'
-  if (/(ping|runtime|reportbug|jadibot|listjadibot|script|rating|infobot|bacaperaturan|friend|obfuscate|styletext|fliptext|tts|say|togif|toqr|toaudio|tovn|toimg|toonce|volume|ebinary|dbinary|ssweb|quoted|readviewonce|cekkhodam|paptt|totalfitur|tinyurl|status)/i.test(cmd)) return 'toolsmenu'
+  if (/(ping|runtime|reportbug|jadibot|listjadibot|script|rating|infobot|bacaperaturan|friend|obfuscate|styletext|fliptext|tts|say|togif|toqr|toaudio|tovn|toimg|toonce|volume|ebinary|dbinary|ssweb|quoted|readviewonce|cekkhodam|paptt|totalfitur|tinyurl|status|transkrip)/i.test(cmd)) return 'toolsmenu'
   return 'othermenu'
 }
 const getMenuCategoryMap = () => {
@@ -35286,6 +35286,60 @@ case 'toaud': case 'tomp3': case 'toaudio': {
             let { toAudio } = require('./lib/converter')
             let audio = await toAudio(media, 'mp4')
             hydro.sendMessage(m.chat, {audio: audio, mimetype: 'audio/mpeg'}, { quoted : m })
+            }
+break
+            case 'transkrip':
+            case 'transcript':
+            case 'vn2text': {
+            if (!m.quoted) return replyhydro(`Reply voice note yang mau ditranskrip.\nContoh: ${prefix + command}`)
+            if (!/audio/.test(mime)) return replyhydro('Reply pesan voice note (VN), bukan media lain.')
+            const isVoiceNote = Boolean(qmsg?.ptt || m.quoted?.ptt || m.quoted?.msg?.ptt || m.quoted?.message?.audioMessage?.ptt)
+            if (!isVoiceNote) return replyhydro('Perintah ini khusus voice note (VN). Kirim/Reply VN lalu ketik .transkrip')
+            if (!global.keyopenai || global.keyopenai === '-' || String(global.keyopenai).trim() === '') {
+              return replyhydro('OpenAI API key belum diset. Isi OPENAI_API_KEY dulu di environment/server.')
+            }
+
+            replyhydro('⏳ VN diterima, sedang diproses transkrip...')
+            const tempDir = path.join(__dirname, 'tmp')
+            if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true })
+            const tempFile = path.join(tempDir, `transkrip-${Date.now()}-${Math.floor(Math.random() * 10000)}.ogg`)
+
+            let audioBuffer
+            try {
+              if (typeof quoted.download === 'function') {
+                audioBuffer = await quoted.download()
+              }
+              if (!audioBuffer || !Buffer.isBuffer(audioBuffer)) {
+                const stream = await downloadContentFromMessage(qmsg, 'audio')
+                const chunks = []
+                for await (const chunk of stream) chunks.push(chunk)
+                audioBuffer = Buffer.concat(chunks)
+              }
+              if (!audioBuffer || !audioBuffer.length) {
+                return replyhydro('❌ Gagal mengambil audio VN dari pesan reply.')
+              }
+              fs.writeFileSync(tempFile, audioBuffer)
+
+              const { Configuration, OpenAIApi } = require('openai')
+              const openai = new OpenAIApi(new Configuration({ apiKey: global.keyopenai }))
+              const result = await openai.createTranscription(
+                fs.createReadStream(tempFile),
+                'whisper-1',
+                undefined,
+                'json',
+                0,
+                'id'
+              )
+              const transcript = String(result?.data?.text || '').trim()
+              if (!transcript) return replyhydro('❌ Transkrip kosong. Coba VN lain dengan suara lebih jelas.')
+              replyhydro(`*Transkrip VN:*\n\n${transcript}`)
+            } catch (err) {
+              console.error('TRANSKRIP ERROR:', err)
+              const detail = String(err?.response?.data?.error?.message || err?.message || err)
+              replyhydro(`❌ Gagal transkrip VN.\nDetail: ${detail.slice(0, 180)}`)
+            } finally {
+              if (fs.existsSync(tempFile)) fs.unlinkSync(tempFile)
+            }
             }
 break
             case 'tovn': case 'toptt': {

@@ -7031,5 +7031,29 @@
     "ownerOnly": false,
     "privateOnlyPrem": false,
     "premiumGroup": false
+  },
+  "transkrip": {
+    "active": true,
+    "category": "tools",
+    "cmd": [
+      "transkrip"
+    ],
+    "aliases": [
+      "transcript",
+      "vn2text"
+    ],
+    "desc": "Transkrip voice note dengan Whisper",
+    "name": "transkrip",
+    "cd": 5,
+    "limit": 1,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
   }
 }
