@@ -52,7 +52,7 @@ const scp3 = require('./scrape/scraperrr')
 const similarity = require("similarity");
 const githubstalk = require('./scrape/githubstalk')
 const npmstalk = require('./scrape/npmstalk')
-const { lirik } = require('./scrape/lirik')
+const lirikModule = require('./scrape/lirik')
 const photooxy = require('./scrape/photooxy')
 const yts = require('./scrape/yt-search')
 const vm = require('node:vm')
@@ -698,14 +698,16 @@ lastmonthly: 0
 }
 const setting = db.settings[botNumber]
 	        if (typeof setting !== 'object') db.settings[botNumber] = {}
-		    if (setting) {
-	    	    if (!('anticall' in setting)) setting.anticall = false
-	    		if (!('antigcnosewa' in setting)) setting.antigcnosewa = false
-	    		if (!isNumber(setting.status)) setting.status = 0
-	    		if (!('autobio' in setting)) setting.autobio = false
-	    		if (!('autoread' in setting)) setting.autoread = false
+			    if (setting) {
+		    	    if (!('anticall' in setting)) setting.anticall = false
+		    		if (!('antigcnosewa' in setting)) setting.antigcnosewa = false
+		    		if (!isNumber(setting.status)) setting.status = 0
+		    		if (!('autobio' in setting)) setting.autobio = false
+		    		if (!('autoread' in setting)) setting.autoread = false
         if (!('goodbye' in setting)) chats.goodbye = setting.auto_leaveMsg
         if (!('onlygrub' in setting)) setting.onlygrub = false
+        // Hard guard: cegah bot ke-lock "group only" diam-diam saat restart/session recover.
+        if (setting.onlygrub === true) setting.onlygrub = false
         if (!('onlypc' in setting)) setting.onlypc = false
         if (!('welcome' in setting)) chats.welcome = setting.auto_welcomeMsg
         if (!('whitelistMode' in setting)) setting.whitelistMode = false
@@ -34781,27 +34783,39 @@ fs.writeFileSync('./database/hyds.json', JSON.stringify(prem))
 replyhydro(`The Number ${prrkek} Has Been Own Jasher!`)
 }
 break
-case "lirik": {
+case "lirik":
+case "lyrics": {
     if (!q) return replytolak("⚠ *Masukkan Judul Lagu*");
     replyhydro(mess.wait);
     
     try {
-        const result = await lirik(q);
+        const getLirik =
+            (lirikModule && typeof lirikModule.lirik === 'function' && lirikModule.lirik) ||
+            (lirikModule && typeof lirikModule.search === 'function' && lirikModule.search) ||
+            (lirikModule && lirikModule.Lyrics && typeof lirikModule.Lyrics.search === 'function' && lirikModule.Lyrics.search);
+
+        if (typeof getLirik !== 'function') {
+            throw new Error("modul lirik tidak valid");
+        }
+
+        let result = await getLirik(q);
+        if (result && result.success && result.data) result = result.data;
         
         if (!result) {
             return replyhydro(`❌ Lirik Untuk *"${q}"* Tidak Ditemukan.\nCoba Gunakan Judul Yang Lebih Spesifik.`);
         }
         const maxLength = 1500;
-        let lirikText = result.plainLyrics || result.syncedLyrics || "Lirik Tidak Tersedia";
+        let lirikText = result.plainLyrics || result.syncedLyrics || result.lyrics || "Lirik Tidak Tersedia";
         
         if (lirikText.length > maxLength) {
             lirikText = lirikText.substring(0, maxLength) + "\n\n... (Lirik Dipotong, Terlalu Panjang)";
         }
         
-        const caption = `*Lirik Lagu ${result.trackName || result.name}*\n\n` +
-                       `Artis : ${result.artistName}\n` +
-                       `Album : ${result.albumName}\n` +
-                       `Durasi : ${Math.floor(result.duration / 60)}:${(result.duration % 60).toString().padStart(2, '0')}\n\n` +
+        const duration = Number(result.duration || 0);
+        const caption = `*Lirik Lagu ${result.trackName || result.title || result.name || q}*\n\n` +
+                       `Artis : ${result.artistName || result.artist || '-'}\n` +
+                       `Album : ${result.albumName || result.album || '-'}\n` +
+                       `Durasi : ${Math.floor(duration / 60)}:${(duration % 60).toString().padStart(2, '0')}\n\n` +
                        `*Lirik Lagu :*\n${lirikText}`
         
         await replyhydro(caption);
