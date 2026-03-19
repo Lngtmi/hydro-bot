@@ -5514,6 +5514,17 @@ const extractReplyKeyFromCommand = () => {
     ...(isGroupChat && participantJid ? { participant: participantJid } : {})
   }
 }
+const getRawQuotedKey = (quotedMsg = null) => {
+  const key = quotedMsg?.key
+  if (!key || typeof key !== 'object' || !key.id) return null
+  const isGroupChat = String(m.chat || '').endsWith('@g.us')
+  return {
+    remoteJid: key.remoteJid || m.chat,
+    id: key.id,
+    fromMe: Boolean(key.fromMe),
+    ...(isGroupChat && key.participant ? { participant: key.participant } : {})
+  }
+}
 const buildQuotedPinKey = (quotedMsg = null) => {
   if (!quotedMsg || typeof quotedMsg !== 'object') return null
   const keySource = quotedMsg.key && typeof quotedMsg.key === 'object' ? quotedMsg.key : {}
@@ -5825,7 +5836,7 @@ if (requestedDuration && !pinDurationMap[requestedDuration]) {
   return replyhydro('❌ Durasi tidak valid.\nGunakan: 24h, 7d, atau 30d\nContoh: .pinmsg 30d')
 }
 const pinDuration = pinDurationMap[requestedDuration] || 2592000
-const quotedKey = extractReplyKeyFromCommand() || buildQuotedPinKey(m.quoted)
+const quotedKey = getRawQuotedKey(m.quoted) || extractReplyKeyFromCommand() || buildQuotedPinKey(m.quoted)
 if (!quotedKey?.id) return replyhydro('❌ Gagal membaca pesan reply. Coba reply ulang pesan yang mau di-pin.')
 try {
 const pinBy = await sendPinInChatCompat({
@@ -5854,7 +5865,7 @@ if (!isBotAdmins) return replyhydro('Bot harus jadi admin dulu untuk unpin pesan
 if (!Ahmad) return replytolak(mess.only.owner)
 }
 if (!m.quoted) return replyhydro(`Reply pesan yang mau di-unpin.\nContoh: ${prefix + command}`)
-const quotedKey = extractReplyKeyFromCommand() || buildQuotedPinKey(m.quoted)
+const quotedKey = getRawQuotedKey(m.quoted) || extractReplyKeyFromCommand() || buildQuotedPinKey(m.quoted)
 if (!quotedKey?.id) return replyhydro('❌ Gagal membaca pesan reply. Coba reply ulang pesan yang mau di-unpin.')
 try {
 const unpinBy = await sendPinInChatCompat({
