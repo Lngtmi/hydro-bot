@@ -1363,19 +1363,133 @@ const MENU_MANUAL_COMMANDS = {
   rpgmenu: ['hunt', 'mining', 'adventure', 'bank', 'atm', 'mancing', 'berkebun', 'daily', 'weekly', 'monthly', 'transfer'],
   islamimenu: ['alquran', 'audiosurah', 'doaharian', 'jadwalsholat', 'asmaulhusna', 'kisahnabi', 'quotesislami']
 }
+const WIBUSOFT_COMMAND_FILE = path.join(__dirname, 'database', 'wibusoft-command.json')
+const WIBUSOFT_CATEGORY_TO_MENU = {
+  group: 'groupmenu',
+  tools: 'toolsmenu',
+  download: 'downloadmenu',
+  search: 'searchmenu',
+  sticker: 'stickermenu',
+  game: 'gamemenu',
+  ai: 'aimenu',
+  owner: 'ownermenu',
+  anonymous: 'anonymousmenu',
+  random: 'funmenu',
+  textmaker: 'toolsmenu',
+  info: 'toolsmenu',
+  general: 'toolsmenu'
+}
+const normalizeWibCategoryKey = (raw) => {
+  const key = String(raw || '').trim().toLowerCase()
+  if (!key) return ''
+  return MENU_CATEGORY_ALIASES[key] || key
+}
+const normalizeMenuCommandName = (raw) => String(raw || '').trim().toLowerCase().replace(/\s+/g, '')
+const pickCanonicalCommandName = (item, entryKey) => {
+  if (Array.isArray(item?.cmd) && item.cmd.length) {
+    for (const rawCmd of item.cmd) {
+      const cmd = normalizeMenuCommandName(rawCmd)
+      if (cmd) return cmd
+    }
+  }
+  const byName = normalizeMenuCommandName(item?.name)
+  if (byName) return byName
+  return normalizeMenuCommandName(entryKey)
+}
+const buildWibusoftMenuSource = () => {
+  const emptyCategoryMap = Object.fromEntries(MENU_CATEGORY_ORDER.map((key) => [key, []]))
+  if (!fs.existsSync(WIBUSOFT_COMMAND_FILE)) {
+    return { categoryMap: emptyCategoryMap, commandToCategory: Object.create(null), aliasCommands: [] }
+  }
+  let parsed = {}
+  try {
+    parsed = JSON.parse(fs.readFileSync(WIBUSOFT_COMMAND_FILE, 'utf8'))
+  } catch (err) {
+    console.error('Gagal baca wibusoft-command.json:', err?.message || err)
+    return { categoryMap: emptyCategoryMap, commandToCategory: Object.create(null), aliasCommands: [] }
+  }
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    return { categoryMap: emptyCategoryMap, commandToCategory: Object.create(null), aliasCommands: [] }
+  }
+
+  const categoryMap = Object.fromEntries(MENU_CATEGORY_ORDER.map((key) => [key, new Set()]))
+  const commandToCategory = Object.create(null)
+  const aliasCommands = new Set()
+  const addDisplayCommand = (category, rawCmd) => {
+    const cmd = normalizeMenuCommandName(rawCmd)
+    if (!cmd || cmd.includes(' ')) return
+    if (!categoryMap[category]) return
+    categoryMap[category].add(cmd)
+  }
+  const addCommandMapping = (category, rawCmd) => {
+    const cmd = normalizeMenuCommandName(rawCmd)
+    if (!cmd || cmd.includes(' ')) return
+    commandToCategory[cmd] = category
+  }
+
+  for (const [entryKey, entryValue] of Object.entries(parsed)) {
+    const item = entryValue && typeof entryValue === 'object' ? entryValue : null
+    if (!item) continue
+    if (item.active === false) continue
+
+    const rawCategory = String(item.category || '').trim().toLowerCase()
+    const mappedCategory = normalizeWibCategoryKey(WIBUSOFT_CATEGORY_TO_MENU[rawCategory] || '')
+    const category = item.ownerOnly === true ? 'ownermenu' : mappedCategory
+    if (!category || !categoryMap[category]) continue
+
+    const canonical = pickCanonicalCommandName(item, entryKey)
+    if (canonical) addDisplayCommand(category, canonical)
+
+    addCommandMapping(category, entryKey)
+    addCommandMapping(category, item.name)
+
+    if (Array.isArray(item.cmd)) {
+      for (const cmd of item.cmd) addCommandMapping(category, cmd)
+    }
+    if (Array.isArray(item.aliases)) {
+      for (const alias of item.aliases) {
+        const aliasKey = normalizeMenuCommandName(alias)
+        if (aliasKey) aliasCommands.add(aliasKey)
+        addCommandMapping(category, alias)
+      }
+    }
+  }
+
+  return {
+    categoryMap: Object.fromEntries(
+      Object.entries(categoryMap).map(([key, setValue]) => [key, Array.from(setValue).sort()])
+    ),
+    commandToCategory,
+    aliasCommands: Array.from(aliasCommands)
+  }
+}
+const getWibusoftMenuSource = () => {
+  const mtime = fs.existsSync(WIBUSOFT_COMMAND_FILE) ? fs.statSync(WIBUSOFT_COMMAND_FILE).mtimeMs : 0
+  const cache = global.__hydroWibusoftMenuSourceCache
+  if (cache && cache.mtime === mtime && cache.source) return cache.source
+  const source = buildWibusoftMenuSource()
+  global.__hydroWibusoftMenuSourceCache = { mtime, source }
+  return source
+}
 const MENU_COMMAND_TO_CATEGORY = (() => {
   const map = Object.create(null)
+  const wibusoftSource = getWibusoftMenuSource()
+  for (const [cmd, category] of Object.entries(wibusoftSource.commandToCategory || {})) {
+    const key = String(cmd || '').trim().toLowerCase()
+    const cat = normalizeWibCategoryKey(category)
+    if (!key || !cat) continue
+    map[key] = cat
+  }
   for (const [category, cmds] of Object.entries(MENU_MANUAL_COMMANDS)) {
     const list = Array.isArray(cmds) ? cmds : []
     for (const cmd of list) {
       const key = String(cmd || '').trim().toLowerCase()
       if (!key) continue
-      map[key] = category
+      if (!map[key]) map[key] = category
     }
   }
   return map
 })()
-const MENU_STRICT_CATEGORIES = new Set(Object.keys(MENU_MANUAL_COMMANDS))
 const MENU_EXCLUDE_CMDS = new Set([
   'menu',
   'allmenu',
@@ -1441,19 +1555,26 @@ const classifyCommandToMenu = (cmd) => {
   return 'othermenu'
 }
 const getMenuCategoryMap = () => {
-  if (global.__hydroMenuCategoryMapCache) return global.__hydroMenuCategoryMapCache
+  const wibusoftMtime = fs.existsSync(WIBUSOFT_COMMAND_FILE) ? fs.statSync(WIBUSOFT_COMMAND_FILE).mtimeMs : 0
+  if (global.__hydroMenuCategoryMapCache && global.__hydroMenuCategoryMapCacheMtime === wibusoftMtime) {
+    return global.__hydroMenuCategoryMapCache
+  }
   const allCommands = extractAllCaseCommands()
   const allCommandSet = new Set(allCommands.map((cmd) => String(cmd || '').trim().toLowerCase()).filter(Boolean))
   const map = Object.fromEntries(MENU_CATEGORY_ORDER.map((key) => [key, new Set()]))
   const assigned = new Set()
+  const wibusoftSource = getWibusoftMenuSource()
+  const wibusoftCommandMap = wibusoftSource.commandToCategory || Object.create(null)
+  const hasWibusoftData = Object.keys(wibusoftCommandMap).length > 0
+  const aliasSet = new Set(Array.isArray(wibusoftSource.aliasCommands) ? wibusoftSource.aliasCommands : [])
 
-  // 1) Isi kategori strict dari daftar manual dulu (fixed mapping)
-  for (const [rawCategory, cmds] of Object.entries(MENU_MANUAL_COMMANDS)) {
+  // 1) Isi dari command map wibusoft dulu (active only).
+  for (const [rawCategory, cmds] of Object.entries(wibusoftSource.categoryMap || {})) {
     const category = normalizeMenuCategoryKey(rawCategory)
     if (!category || !map[category]) continue
     const list = Array.isArray(cmds) ? cmds : []
-    for (const cmdRaw of list) {
-      const cmd = String(cmdRaw || '').trim().toLowerCase()
+    for (const rawCmd of list) {
+      const cmd = String(rawCmd || '').trim().toLowerCase()
       if (!cmd) continue
       if (!allCommandSet.has(cmd)) continue
       map[category].add(cmd)
@@ -1461,18 +1582,38 @@ const getMenuCategoryMap = () => {
     }
   }
 
-  // 2) Sisanya pakai classifier, tapi kategori strict tidak boleh ketambahan command liar
+  // 2) Isi kategori strict dari daftar manual dulu (fixed mapping, fallback)
+  for (const [rawCategory, cmds] of Object.entries(MENU_MANUAL_COMMANDS)) {
+    const category = normalizeMenuCategoryKey(rawCategory)
+    if (!category || !map[category]) continue
+    const list = Array.isArray(cmds) ? cmds : []
+    for (const cmdRaw of list) {
+      const cmd = String(cmdRaw || '').trim().toLowerCase()
+      if (!cmd) continue
+      if (assigned.has(cmd)) continue
+      if (!allCommandSet.has(cmd)) continue
+      if (hasWibusoftData && aliasSet.has(cmd)) continue
+      map[category].add(cmd)
+      assigned.add(cmd)
+    }
+  }
+
+  // 3) Sisanya pakai classifier (biarkan masuk ke kategori yang tepat, jangan dipaksa ke othermenu)
   for (const cmdRaw of allCommands) {
     const cmd = String(cmdRaw || '').trim().toLowerCase()
     if (!cmd || assigned.has(cmd)) continue
     let category = normalizeMenuCategoryKey(classifyCommandToMenu(cmd) || 'othermenu')
     if (!map[category]) category = 'othermenu'
-    if (MENU_STRICT_CATEGORIES.has(category)) category = 'othermenu'
+    if (hasWibusoftData && aliasSet.has(cmd)) continue
+    // Jika mapping Wibusoft aktif, command "liar" tidak dimasukkan ke othermenu
+    // agar menu tetap rapi dan fokus ke command yang memang terkurasi.
+    if (hasWibusoftData && category === 'othermenu' && !wibusoftCommandMap[cmd]) continue
     map[category].add(cmd)
   }
   global.__hydroMenuCategoryMapCache = Object.fromEntries(
     Object.entries(map).map(([k, v]) => [k, Array.from(v).sort()])
   )
+  global.__hydroMenuCategoryMapCacheMtime = wibusoftMtime
   return global.__hydroMenuCategoryMapCache
 }
 const renderMenuCategoryText = (menuKey, options = {}) => {
@@ -1495,7 +1636,7 @@ const normalizedKey = normalizeMenuCategoryKey(key === 'menugame' ? 'gamemenu' :
 const generated = (normalizedKey.endsWith('menu') && normalizedKey !== 'menu' && normalizedKey !== 'allmenu')
   ? renderMenuCategoryText(normalizedKey)
   : null
-const autoText = generated && !/Belum ada command/i.test(generated) ? generated : null
+const autoText = generated
 const finalText = autoText || String(teks || '').trim()
 if (finalText.length <= 3200) {
   await hydro.sendMessage(chat || m.chat, { text: finalText }, { quoted: jm })
@@ -1521,6 +1662,7 @@ for (let i = 0; i < chunks.length; i++) {
 }
 
 function getMainMenuList() {
+  const menuMap = getMenuCategoryMap()
   const visibleCategories = getVisibleMenuCategoryOrder()
   const quickLabels = {
     allmenu: 'Semua Fitur',
@@ -1534,9 +1676,11 @@ function getMainMenuList() {
   const toRow = (id) => {
     const key = normalizeMenuCategoryKey(id)
     if (!visibleCategories.includes(key)) return null
+    const totalCmd = Array.isArray(menuMap[key]) ? menuMap[key].length : 0
+    if (totalCmd <= 0) return null
     return {
       title: MENU_CATEGORY_TITLES[key] || key.toUpperCase(),
-      description: MENU_CATEGORY_DESCRIPTIONS[key] || 'Daftar command',
+      description: `${MENU_CATEGORY_DESCRIPTIONS[key] || 'Daftar command'} • ${totalCmd} cmd`,
       id: key
     }
   }

@@ -1,0 +1,7035 @@
+{
+  "absen": {
+    "active": true,
+    "groupOnly": true,
+    "category": "group",
+    "cmd": [
+      "absen"
+    ],
+    "aliases": [
+      "hadir"
+    ],
+    "desc": "Absen di group",
+    "example": "Kirim text {prefix}{command}",
+    "name": "absen",
+    "cd": 5,
+    "limit": 0,
+    "level": 0,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "accadmininvitechannel": {
+    "active": true,
+    "ownerOnly": true,
+    "category": "owner",
+    "cmd": [
+      "accadmininvitechannel"
+    ],
+    "aliases": [
+      "accadminch"
+    ],
+    "onlyNitro": true,
+    "desc": "Accept admin invite channel",
+    "name": "accadmininvitechannel"
+  },
+  "add": {
+    "active": false,
+    "category": "group",
+    "cmd": [
+      "add"
+    ],
+    "adminGroup": false,
+    "botGroupAdmin": true,
+    "groupOnly": false,
+    "desc": "Menambahkan orang ke group",
+    "example": "Kirim {prefix}{command} 628xx atau reply pesan peserta yang ingin di add",
+    "name": "add",
+    "cd": 5,
+    "limit": 0,
+    "level": 0,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "addalarm": {
+    "active": true,
+    "groupOnly": false,
+    "adminGroup": false,
+    "onlyNitro": true,
+    "desc": "Menambahkan Alarm",
+    "category": "group",
+    "cmd": [
+      "addalarm"
+    ],
+    "aliases": [
+      "updatealarm",
+      "upalarm"
+    ],
+    "name": "addalarm",
+    "cd": 5,
+    "limit": 5,
+    "level": 0,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "addbadword": {
+    "active": true,
+    "category": "group",
+    "adminGroup": false,
+    "onlyNitro": true,
+    "groupOnly": false,
+    "cmd": [
+      "addbadword"
+    ],
+    "desc": "Add badword",
+    "name": "addbadword",
+    "cd": 5,
+    "limit": 5,
+    "level": 0,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "addbalance": {
+    "active": true,
+    "ownerOnly": true,
+    "category": "owner",
+    "cmd": [
+      "addbalance"
+    ],
+    "aliases": [
+      "tambahbalance"
+    ],
+    "desc": "Menambahkan balance user",
+    "example": "Kirim {prefix}{command} nomor/@mention jumlah_balance",
+    "name": "addbalance",
+    "cd": 5,
+    "limit": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "addlevel": {
+    "active": true,
+    "ownerOnly": true,
+    "category": "owner",
+    "cmd": [
+      "addlevel"
+    ],
+    "aliases": [
+      "tambahlevel"
+    ],
+    "desc": "Menambahkan level user",
+    "example": "Kirim {prefix}{command} nomor/@mention jumlah_level",
+    "name": "addlevel",
+    "cd": 5,
+    "limit": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "addlimit": {
+    "active": true,
+    "ownerOnly": true,
+    "category": "owner",
+    "cmd": [
+      "addlimit"
+    ],
+    "aliases": [
+      "tambahlimit"
+    ],
+    "desc": "Menambahkan limit user",
+    "example": "Kirim {prefix}{command} nomor/@mention jumlah_limit",
+    "name": "addlimit",
+    "cd": 5,
+    "limit": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "addlist": {
+    "active": true,
+    "groupOnly": false,
+    "adminGroup": false,
+    "onlyNitro": true,
+    "desc": "Menambahkan list",
+    "example": "Reply pesan yang ingin di add dengan caption {prefix}{command} key|deskripsi(optional)",
+    "category": "group",
+    "cmd": [
+      "addlist",
+      "updatelist",
+      "uplist"
+    ],
+    "name": "addlist",
+    "cd": 5,
+    "limit": 5,
+    "level": 0,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "addpoin": {
+    "active": true,
+    "category": "group",
+    "adminGroup": false,
+    "onlyNitro": true,
+    "groupOnly": false,
+    "cmd": [
+      "addpoin"
+    ],
+    "aliases": [
+      "addpoint",
+      "tambahpoin",
+      "tambahpoint"
+    ],
+    "desc": "Add point to member group",
+    "name": "addpoin",
+    "cd": 5,
+    "limit": 5,
+    "level": 0,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "addpremium": {
+    "active": true,
+    "ownerOnly": true,
+    "onlyNitro": true,
+    "category": "owner",
+    "desc": "Menambahkan role premium kepada user",
+    "example": "Kirim {prefix}{command} nomor/@mention 30d",
+    "cmd": [
+      "addpremium"
+    ],
+    "aliases": [
+      "addprem"
+    ],
+    "name": "addpremium",
+    "cd": 5,
+    "limit": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "addreminder": {
+    "active": true,
+    "groupOnly": false,
+    "adminGroup": false,
+    "onlyNitro": true,
+    "desc": "Menambahkan reminder",
+    "category": "group",
+    "cmd": [
+      "addreminder"
+    ],
+    "aliases": [
+      "updatereminder",
+      "upreminder"
+    ],
+    "name": "addreminder",
+    "cd": 5,
+    "limit": 5,
+    "level": 0,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "addresponse": {
+    "active": true,
+    "ownerOnly": false,
+    "cmd": [
+      "addrespon"
+    ],
+    "aliases": [
+      "addres",
+      "addresponse"
+    ],
+    "category": "owner",
+    "desc": "Menambah auto response",
+    "example": "Reply message dengan caption {prefix}{command} key",
+    "name": "addresponse",
+    "cd": 5,
+    "limit": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "addsewa": {
+    "active": true,
+    "ownerOnly": true,
+    "onlyNitro": true,
+    "category": "owner",
+    "cmd": [
+      "addsewa"
+    ],
+    "desc": "Menambahkan sewa",
+    "example": "Kirim {prefix}{command} (link/id)_group 30d",
+    "name": "addsewa",
+    "cd": 5,
+    "limit": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "addsewathisgroup": {
+    "active": true,
+    "ownerOnly": false,
+    "groupOnly": false,
+    "onlyNitro": true,
+    "category": "owner",
+    "cmd": [
+      "addsewathisgroup"
+    ],
+    "aliases": [
+      "addsewathisgrup"
+    ],
+    "desc": "Menambahkan sewa group",
+    "example": "Kirim {prefix}{command} (link/id)_group 30d",
+    "name": "addsewathisgroup",
+    "cd": 5,
+    "limit": 0,
+    "level": 0,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "addxp": {
+    "active": true,
+    "ownerOnly": true,
+    "category": "owner",
+    "cmd": [
+      "addxp"
+    ],
+    "aliases": [
+      "tambahxp"
+    ],
+    "desc": "Menambahkan xp user",
+    "example": "Kirim {prefix}{command} nomor/@mention jumlah_xp",
+    "name": "addxp",
+    "cd": 5,
+    "limit": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "afk": {
+    "active": true,
+    "category": "group",
+    "groupOnly": false,
+    "cmd": [
+      "afk"
+    ],
+    "desc": "AFK ala-ala di discord gitu",
+    "name": "afk",
+    "cd": 5,
+    "limit": 5,
+    "level": 0,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "aiimage": {
+    "active": true,
+    "cmd": [
+      "aiimage"
+    ],
+    "aliases": [
+      "aiimg"
+    ],
+    "limit": 5,
+    "onlyNitro": true,
+    "premiumOnly": false,
+    "category": "ai",
+    "name": "aiimage",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "akinator": {
+    "active": true,
+    "category": "game",
+    "onlyNitro": true,
+    "privateOnly": false,
+    "cmd": [
+      "akinator"
+    ],
+    "aliases": [
+      "aki"
+    ],
+    "desc": "Bermain game akinator di whatsapp",
+    "name": "akinator",
+    "cd": 5,
+    "limit": 5,
+    "level": 0,
+    "groupOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "akinator_start": {
+    "active": true,
+    "category": "game",
+    "onlyNitro": true,
+    "privateOnly": true,
+    "limit": 1,
+    "cmd": [
+      "akinatorstart"
+    ],
+    "aliases": [
+      "akistart"
+    ],
+    "desc": "Memulai game akinator di whatsapp",
+    "name": "akinator_start"
+  },
+  "akinator_stop": {
+    "active": true,
+    "category": "game",
+    "onlyNitro": true,
+    "privateOnly": true,
+    "cmd": [
+      "akinatorstop"
+    ],
+    "aliases": [
+      "akistop"
+    ],
+    "desc": "Berhenti dari game akinator di whatsapp",
+    "name": "akinator_stop"
+  },
+  "alay": {
+    "active": true,
+    "limit": 5,
+    "cmd": [
+      "alay"
+    ],
+    "category": "random",
+    "desc": "Mengubah text biasa menjadi text alay",
+    "example": "Kirim {prefix}{command} text atau reply text",
+    "name": "alay",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "alkitab": {
+    "active": true,
+    "limit": 5,
+    "category": "search",
+    "cmd": [
+      "alkitab"
+    ],
+    "desc": "Alkitab",
+    "name": "alkitab",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "alquranaudio": {
+    "active": true,
+    "cmd": [
+      "alquranaudio"
+    ],
+    "aliases": [
+      "quranaudio"
+    ],
+    "category": "search",
+    "limit": 5,
+    "desc": "Alquran audio",
+    "name": "alquranaudio",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "anonymous": {
+    "active": true,
+    "desc": "Anonymous chat",
+    "cmd": [
+      "anonymous",
+      "start",
+      "next",
+      "leave",
+      "send"
+    ],
+    "category": "anonymous",
+    "privateOnly": false,
+    "cd": 5,
+    "name": "anonymous",
+    "limit": 5,
+    "level": 0,
+    "groupOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "antibadword": {
+    "active": true,
+    "adminGroup": false,
+    "groupOnly": false,
+    "onlyNitro": true,
+    "category": "group",
+    "cmd": [
+      "antibadword"
+    ],
+    "desc": "Mengaktifkan atau menonaktifkan antibadword",
+    "example": "Kirim {prefix}{command} enable|disable",
+    "name": "antibadword",
+    "cd": 5,
+    "limit": 5,
+    "level": 0,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "antibadwordnokick": {
+    "active": true,
+    "adminGroup": false,
+    "groupOnly": false,
+    "category": "group",
+    "onlyNitro": true,
+    "cmd": [
+      "antibadwordnokick"
+    ],
+    "desc": "Mengaktifkan atau menonaktifkan antibadwordnokick",
+    "example": "Kirim {prefix}{command} enable|disable",
+    "name": "antibadwordnokick",
+    "cd": 5,
+    "limit": 5,
+    "level": 0,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "antibot": {
+    "active": true,
+    "adminGroup": false,
+    "groupOnly": false,
+    "category": "group",
+    "cmd": [
+      "antibot"
+    ],
+    "desc": "Mengaktifkan atau menonaktifkan antibot",
+    "example": "Kirim {prefix}{command} enable|disable",
+    "name": "antibot",
+    "cd": 5,
+    "limit": 5,
+    "level": 0,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "anticall": {
+    "active": true,
+    "ownerOnly": true,
+    "category": "owner",
+    "cmd": [
+      "anticall"
+    ],
+    "desc": "Mengaktifkan atau menonaktifkan anticall",
+    "example": "Kirim {prefix}{command} enable|disable",
+    "name": "anticall",
+    "cd": 5,
+    "limit": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "anticallnoblock": {
+    "active": true,
+    "ownerOnly": true,
+    "category": "owner",
+    "cmd": [
+      "anticallnoblock"
+    ],
+    "desc": "Mengaktifkan atau menonaktifkan anticallnoblock",
+    "example": "Kirim {prefix}{command} enable|disable",
+    "name": "anticallnoblock",
+    "cd": 5,
+    "limit": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "antidelete": {
+    "active": true,
+    "adminGroup": false,
+    "groupOnly": false,
+    "category": "group",
+    "cmd": [
+      "antidelete"
+    ],
+    "desc": "Mengaktifkan atau menonaktifkan antidelete di group",
+    "example": "Kirim {prefix}{command} enable|disable",
+    "name": "antidelete",
+    "cd": 5,
+    "limit": 5,
+    "level": 0,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "antideletepc": {
+    "active": true,
+    "ownerOnly": false,
+    "category": "owner",
+    "cmd": [
+      "antideletepc"
+    ],
+    "desc": "Mengaktifkan atau menonaktifkan antideletepc",
+    "example": "Kirim {prefix}{command} enable|disable",
+    "name": "antideletepc",
+    "cd": 5,
+    "limit": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "antilink": {
+    "active": true,
+    "adminGroup": false,
+    "groupOnly": false,
+    "category": "group",
+    "cmd": [
+      "antilink"
+    ],
+    "desc": "Mengaktifkan atau menonaktifkan antilink",
+    "example": "Kirim {prefix}{command} enable|disable",
+    "name": "antilink",
+    "cd": 5,
+    "limit": 5,
+    "level": 0,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "antilinkchannel": {
+    "active": true,
+    "adminGroup": true,
+    "groupOnly": true,
+    "category": "group",
+    "cmd": [
+      "antilinkchannel"
+    ],
+    "aliases": [
+      "antilinkch"
+    ],
+    "desc": "Mengaktifkan atau menonaktifkan antilinkchannel",
+    "example": "Kirim {prefix}{command} enable|disable",
+    "name": "antilinkchannel"
+  },
+  "antilinknokick": {
+    "active": true,
+    "adminGroup": false,
+    "groupOnly": false,
+    "category": "group",
+    "cmd": [
+      "antilinknokick"
+    ],
+    "desc": "Mengaktifkan atau menonaktifkan antilinknokick",
+    "example": "Kirim {prefix}{command} enable|disable",
+    "name": "antilinknokick",
+    "cd": 5,
+    "limit": 5,
+    "level": 0,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "antilinkuniversal": {
+    "active": true,
+    "adminGroup": true,
+    "groupOnly": true,
+    "category": "group",
+    "cmd": [
+      "antilinkuniversal"
+    ],
+    "aliases": [
+      "antilinkall"
+    ],
+    "desc": "Mengaktifkan atau menonaktifkan antilink universal",
+    "example": "Kirim {prefix}{command} enable|disable mode type",
+    "name": "antilinkuniversal"
+  },
+  "antiluar": {
+    "active": true,
+    "adminGroup": false,
+    "groupOnly": false,
+    "category": "group",
+    "cmd": [
+      "antiluar"
+    ],
+    "aliases": [
+      "antibule"
+    ],
+    "desc": "Mengaktifkan atau menonaktifkan antiluar",
+    "example": "Kirim {prefix}{command} enable|disable",
+    "name": "antiluar",
+    "cd": 5,
+    "limit": 5,
+    "level": 0,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "antimentionsw": {
+    "active": true,
+    "adminGroup": true,
+    "groupOnly": true,
+    "category": "group",
+    "cmd": [
+      "antimentionsw"
+    ],
+    "aliases": [
+      "antitaggroup",
+      "antimentionswgroup"
+    ],
+    "desc": "Mengaktifkan atau menonaktifkan antimentionsw",
+    "example": "Kirim {prefix}{command} enable|disable warn(optional)",
+    "name": "antimentionsw"
+  },
+  "antisticker": {
+    "active": true,
+    "adminGroup": true,
+    "groupOnly": true,
+    "category": "group",
+    "cmd": [
+      "antisticker"
+    ],
+    "aliases": [
+      "antistick",
+      "antistiker"
+    ],
+    "desc": "Mengaktifkan atau menonaktifkan antisticker",
+    "example": "Kirim {prefix}{command} enable|disable mode type",
+    "name": "antisticker"
+  },
+  "antiviewonce": {
+    "active": true,
+    "adminGroup": false,
+    "groupOnly": false,
+    "category": "group",
+    "cmd": [
+      "antiviewonce"
+    ],
+    "desc": "Mengaktifkan atau menonaktifkan antiviewonce",
+    "example": "Kirim {prefix}{command} enable|disable",
+    "name": "antiviewonce",
+    "cd": 5,
+    "limit": 5,
+    "level": 0,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "antiwame": {
+    "active": true,
+    "adminGroup": false,
+    "groupOnly": false,
+    "category": "group",
+    "cmd": [
+      "antiwame"
+    ],
+    "desc": "Mengaktifkan atau menonaktifkan antiwame",
+    "example": "Kirim {prefix}{command} enable|disable",
+    "name": "antiwame",
+    "cd": 5,
+    "limit": 5,
+    "level": 0,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "antiwamenokick": {
+    "active": true,
+    "adminGroup": false,
+    "groupOnly": false,
+    "category": "group",
+    "cmd": [
+      "antiwamenokick"
+    ],
+    "desc": "Mengaktifkan atau menonaktifkan antiwamenokick",
+    "example": "Kirim {prefix}{command} enable|disable",
+    "name": "antiwamenokick",
+    "cd": 5,
+    "limit": 5,
+    "level": 0,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "apakah": {
+    "active": true,
+    "cmd": [
+      "apakah"
+    ],
+    "category": "random",
+    "limit": 5,
+    "desc": "Tanyakan sesuatu pada bot",
+    "name": "apakah",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "artinama": {
+    "active": true,
+    "limit": 5,
+    "category": "search",
+    "cmd": [
+      "artinama"
+    ],
+    "desc": "Cari tau apa artinamamu",
+    "name": "artinama",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "asahotak": {
+    "active": true,
+    "category": "game",
+    "cmd": [
+      "asahotak"
+    ],
+    "limit": 5,
+    "desc": "Asah otak game",
+    "name": "asahotak",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "attp": {
+    "active": true,
+    "cmd": [
+      "attp"
+    ],
+    "category": "sticker",
+    "limit": 5,
+    "onlyNitro": true,
+    "desc": "Membuat text menjadi sticker bergerak",
+    "name": "attp",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "autoleavegcnosewa": {
+    "active": true,
+    "ownerOnly": true,
+    "onlyNitro": true,
+    "category": "owner",
+    "cmd": [
+      "autoleavegcnosewa"
+    ],
+    "desc": "Mengaktifkan atau menonaktifkan autoleavegcnosewa",
+    "example": "Kirim {prefix}{command} enable|disable",
+    "name": "autoleavegcnosewa",
+    "cd": 5,
+    "limit": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "autonexara": {
+    "active": true,
+    "ownerOnly": true,
+    "category": "owner",
+    "cmd": [
+      "autonexara"
+    ],
+    "desc": "Mengaktifkan atau menonaktifkan autonexara",
+    "example": "Kirim {prefix}{command} enable|disable",
+    "name": "autonexara"
+  },
+  "autoread": {
+    "active": true,
+    "ownerOnly": true,
+    "category": "owner",
+    "cmd": [
+      "autoread"
+    ],
+    "desc": "Mengaktifkan atau menonaktifkan autoread",
+    "example": "Kirim {prefix}{command} enable|disable",
+    "name": "autoread"
+  },
+  "autotype": {
+    "active": true,
+    "ownerOnly": true,
+    "category": "owner",
+    "cmd": [
+      "autotype"
+    ],
+    "desc": "Mengaktifkan atau menonaktifkan autotype",
+    "example": "Kirim {prefix}{command} enable|disable",
+    "name": "autotype"
+  },
+  "ban": {
+    "active": true,
+    "ownerOnly": true,
+    "category": "owner",
+    "desc": "Ban user",
+    "example": "Kirim {prefix}{command} nomor/@mention 30d",
+    "cmd": [
+      "ban"
+    ],
+    "aliases": [
+      "addban"
+    ],
+    "name": "ban"
+  },
+  "banmember": {
+    "active": true,
+    "adminGroup": true,
+    "groupOnly": true,
+    "onlyNitro": true,
+    "category": "group",
+    "cmd": [
+      "banmember"
+    ],
+    "desc": "Ban member group",
+    "example": "Kirim {prefix}{command} number/@mention atau tag peserta lain yang ingin di ban",
+    "name": "banmember"
+  },
+  "bard": {
+    "active": false,
+    "cmd": [
+      "bard"
+    ],
+    "aliases": [
+      "bardimg",
+      "bardimage"
+    ],
+    "limit": 1,
+    "onlyNitro": true,
+    "premiumOnly": true,
+    "category": "ai",
+    "name": "bard"
+  },
+  "blacklist": {
+    "active": true,
+    "groupOnly": true,
+    "adminGroup": true,
+    "botGroupAdmin": true,
+    "onlyNitro": true,
+    "desc": "Blacklist",
+    "category": "group",
+    "cmd": [
+      "blacklist",
+      "delblacklist",
+      "listblacklist",
+      "resetblacklist"
+    ],
+    "name": "blacklist"
+  },
+  "blacklistglobal": {
+    "active": true,
+    "ownerOnly": true,
+    "onlyNitro": true,
+    "desc": "Blacklistglobal Global",
+    "category": "owner",
+    "cmd": [
+      "blacklistglobal",
+      "delblacklistglobal",
+      "listblacklistglobal",
+      "resetblacklistglobal"
+    ],
+    "name": "blacklistglobal"
+  },
+  "block": {
+    "active": true,
+    "category": "owner",
+    "cmd": [
+      "block"
+    ],
+    "ownerOnly": true,
+    "desc": "Block seseorang",
+    "name": "block"
+  },
+  "blur": {
+    "active": true,
+    "onlyNitro": true,
+    "cmd": [
+      "blur"
+    ],
+    "category": "tools",
+    "desc": "Gambar jadi blur",
+    "name": "blur",
+    "cd": 5,
+    "limit": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "brainly": {
+    "active": true,
+    "limit": 5,
+    "category": "search",
+    "cmd": [
+      "brainly"
+    ],
+    "desc": "Brainly search",
+    "name": "brainly",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "brat": {
+    "active": true,
+    "cmd": [
+      "brat"
+    ],
+    "category": "sticker",
+    "limit": 10,
+    "onlyNitro": true,
+    "desc": "Membuat text menjadi brat sticker",
+    "name": "brat",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "bratvideo": {
+    "active": true,
+    "cmd": [
+      "bratvideo"
+    ],
+    "aliases": [
+      "bratvid"
+    ],
+    "category": "sticker",
+    "limit": 10,
+    "onlyNitro": true,
+    "desc": "Membuat text menjadi brat video sticker",
+    "name": "bratvideo",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "broadcast": {
+    "active": true,
+    "ownerOnly": true,
+    "category": "owner",
+    "cmd": [
+      "broadcast"
+    ],
+    "aliases": [
+      "bc"
+    ],
+    "desc": "Broadcast pesan",
+    "name": "broadcast"
+  },
+  "broadcast-cancel": {
+    "active": true,
+    "ownerOnly": true,
+    "category": "owner",
+    "cmd": [
+      "bccancel"
+    ],
+    "desc": "Cancel Broadcast",
+    "name": "broadcast-cancel"
+  },
+  "broadcast-confirm": {
+    "active": true,
+    "ownerOnly": true,
+    "category": "owner",
+    "cmd": [
+      "bcconfirm"
+    ],
+    "desc": "Konfirmasi broadcast",
+    "name": "broadcast-confirm"
+  },
+  "broadcast-group": {
+    "active": true,
+    "ownerOnly": true,
+    "category": "owner",
+    "cmd": [
+      "bcgroup"
+    ],
+    "aliases": [
+      "broadcastgroup",
+      "bcgc"
+    ],
+    "desc": "Broadcast pesan ke group",
+    "name": "broadcast-group"
+  },
+  "broadcast-group-hidetag": {
+    "active": true,
+    "ownerOnly": true,
+    "category": "owner",
+    "cmd": [
+      "bcgchidetag"
+    ],
+    "aliases": [
+      "broadcastgrouphidetag",
+      "bcgch"
+    ],
+    "desc": "Broadcast pesan ke group dengan hidetag",
+    "name": "broadcast-group-hidetag"
+  },
+  "broadcast-hidetag": {
+    "active": true,
+    "ownerOnly": true,
+    "category": "owner",
+    "cmd": [
+      "bchidetag"
+    ],
+    "desc": "Broadcast pesan dengan hidetag",
+    "name": "broadcast-hidetag"
+  },
+  "broadcast-member": {
+    "active": true,
+    "ownerOnly": true,
+    "onlyNitro": true,
+    "category": "owner",
+    "cmd": [
+      "bcmember"
+    ],
+    "aliases": [
+      "pushkontak"
+    ],
+    "desc": "Broadcast pesan ke private chat member group",
+    "name": "broadcast-member"
+  },
+  "broadcast-premium": {
+    "active": true,
+    "ownerOnly": true,
+    "onlyNitro": true,
+    "category": "owner",
+    "cmd": [
+      "bcpremium"
+    ],
+    "aliases": [
+      "bcprem"
+    ],
+    "desc": "Broadcast pesan ke member premium",
+    "name": "broadcast-premium"
+  },
+  "broadcast-private": {
+    "active": true,
+    "ownerOnly": true,
+    "category": "owner",
+    "cmd": [
+      "bcpc"
+    ],
+    "aliases": [
+      "bcprivate"
+    ],
+    "desc": "Broadcast pesan ke private chat",
+    "name": "broadcast-private"
+  },
+  "broadcast-sewa": {
+    "active": true,
+    "ownerOnly": true,
+    "onlyNitro": true,
+    "category": "owner",
+    "cmd": [
+      "bcsewa"
+    ],
+    "desc": "Broadcast pesan ke group sewa",
+    "name": "broadcast-sewa"
+  },
+  "broadcast-status": {
+    "active": true,
+    "ownerOnly": true,
+    "category": "owner",
+    "cmd": [
+      "bcstat"
+    ],
+    "aliases": [
+      "broadcaststatus",
+      "bcstatus",
+      "bclist"
+    ],
+    "desc": "Status Broadcast",
+    "name": "broadcast-status"
+  },
+  "buttonmode": {
+    "active": true,
+    "ownerOnly": true,
+    "category": "owner",
+    "cmd": [
+      "buttonmode"
+    ],
+    "desc": "Mengaktifkan atau menonaktifkan buttonmode",
+    "example": "Kirim {prefix}{command} enable|disable",
+    "name": "buttonmode"
+  },
+  "buttontojson": {
+    "active": true,
+    "cmd": [
+      "buttontojson"
+    ],
+    "ownerOnly": true,
+    "desc": "Merubah buttons menjadi json",
+    "category": "owner",
+    "name": "buttontojson"
+  },
+  "buylimit": {
+    "active": true,
+    "cmd": [
+      "buylimit"
+    ],
+    "desc": "Beli limit dengan balance",
+    "category": "info",
+    "name": "buylimit",
+    "cd": 5,
+    "limit": 0,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "caklontong": {
+    "active": true,
+    "category": "game",
+    "cmd": [
+      "caklontong"
+    ],
+    "limit": 5,
+    "desc": "Cak Lontong game",
+    "name": "caklontong",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "call": {
+    "active": true,
+    "ownerOnly": true,
+    "onlyNitro": true,
+    "category": "owner",
+    "desc": "Menelpon seseorang dengan bot",
+    "example": "Kirim {prefix}{command} nomor/@mention",
+    "cmd": [
+      "call"
+    ],
+    "aliases": [
+      "sendcall"
+    ],
+    "name": "call"
+  },
+  "cekabsen": {
+    "active": true,
+    "groupOnly": true,
+    "category": "group",
+    "cmd": [
+      "cekabsen"
+    ],
+    "aliases": [
+      "cekabsensi"
+    ],
+    "desc": "Cek absen di group",
+    "example": "Kirim text {prefix}{command}",
+    "name": "cekabsen",
+    "cd": 5,
+    "limit": 0,
+    "level": 0,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": true,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "cekaccount": {
+    "active": true,
+    "ownerOnly": true,
+    "onlyNitro": true,
+    "category": "owner",
+    "cmd": [
+      "cekaccount"
+    ],
+    "aliases": [
+      "cekakun"
+    ],
+    "desc": "Cek akun wibusoft mu",
+    "name": "cekaccount"
+  },
+  "cekidff": {
+    "active": true,
+    "limit": 5,
+    "category": "search",
+    "onlyNitro": true,
+    "cmd": [
+      "cekidff"
+    ],
+    "aliases": [
+      "ffstalk"
+    ],
+    "desc": "Cek ID FreeFire",
+    "name": "cekidff",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "cekidgroup": {
+    "active": true,
+    "cmd": [
+      "cekidgroup"
+    ],
+    "aliases": [
+      "cekidgrup"
+    ],
+    "category": "group",
+    "adminGroup": true,
+    "groupOnly": true,
+    "desc": "Cek id group anda",
+    "name": "cekidgroup"
+  },
+  "cekidml": {
+    "active": true,
+    "limit": 5,
+    "category": "search",
+    "onlyNitro": true,
+    "cmd": [
+      "cekidml"
+    ],
+    "desc": "Cek ID Mobile Legend",
+    "name": "cekidml",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "cekkhodam": {
+    "active": true,
+    "cmd": [
+      "cekkhodam"
+    ],
+    "aliases": [
+      "cekkodam",
+      "kodam",
+      "khodam"
+    ],
+    "category": "random",
+    "limit": 5,
+    "desc": "Cek Khodam",
+    "name": "cekkhodam",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "cekopenaikey": {
+    "active": true,
+    "cmd": [
+      "cekopenaikey"
+    ],
+    "onlyNitro": true,
+    "ownerOnly": true,
+    "category": "owner",
+    "name": "cekopenaikey"
+  },
+  "cekplatform": {
+    "active": true,
+    "limit": 5,
+    "desc": "Check platform yang digunakan dari id pesan",
+    "category": "tools",
+    "cmd": [
+      "cekplatform"
+    ],
+    "name": "cekplatform",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "cekpoint": {
+    "active": true,
+    "category": "group",
+    "groupOnly": true,
+    "onlyNitro": true,
+    "cmd": [
+      "cekpoint"
+    ],
+    "aliases": [
+      "cekpoin",
+      "mypoint",
+      "mypoin"
+    ],
+    "name": "cekpoint"
+  },
+  "cekpremium": {
+    "active": true,
+    "cmd": [
+      "cekpremium"
+    ],
+    "aliases": [
+      "cekprem"
+    ],
+    "category": "info",
+    "desc": "Cek nomor apakah termasuk user premium atau tidak",
+    "name": "cekpremium"
+  },
+  "ceksewa": {
+    "active": true,
+    "cmd": [
+      "ceksewa"
+    ],
+    "category": "group",
+    "adminGroup": true,
+    "groupOnly": true,
+    "onlyNitro": true,
+    "desc": "Cek masa sewa group anda",
+    "name": "ceksewa"
+  },
+  "ceksewabyid": {
+    "active": true,
+    "cmd": [
+      "ceksewabyid"
+    ],
+    "category": "group",
+    "ownerOnly": true,
+    "onlyNitro": true,
+    "desc": "Cek masa sewa group by id",
+    "name": "ceksewabyid"
+  },
+  "cekwarn": {
+    "active": true,
+    "groupOnly": true,
+    "adminGroup": true,
+    "botGroupAdmin": true,
+    "desc": "Warn",
+    "category": "group",
+    "cmd": [
+      "cekwarn"
+    ],
+    "name": "cekwarn"
+  },
+  "chatgroup": {
+    "active": true,
+    "cmd": [
+      "chatgroup"
+    ],
+    "aliases": [
+      "chatgrup"
+    ],
+    "category": "owner",
+    "ownerOnly": true,
+    "name": "chatgroup"
+  },
+  "clearchat": {
+    "active": true,
+    "category": "owner",
+    "ownerOnly": false,
+    "desc": "Menghapus chat",
+    "cmd": [
+      "clearchat"
+    ],
+    "name": "clearchat",
+    "cd": null,
+    "limit": 0,
+    "level": null,
+    "groupOnly": null,
+    "privateOnly": null,
+    "premiumOnly": null,
+    "sewaOnly": null,
+    "adminGroup": null,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "convertstring": {
+    "active": true,
+    "category": "tools",
+    "cmd": [
+      "ehex",
+      "dhex",
+      "ebase64",
+      "dbase64",
+      "enc",
+      "dec"
+    ],
+    "limit": 5,
+    "name": "convertstring",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "copythumbnail": {
+    "active": true,
+    "cmd": [
+      "copythumbnail"
+    ],
+    "ownerOnly": true,
+    "desc": "Copy thumbnail",
+    "category": "owner",
+    "name": "copythumbnail"
+  },
+  "createbutton": {
+    "active": true,
+    "cmd": [
+      "createbutton"
+    ],
+    "aliases": [
+      "createbuttons"
+    ],
+    "ownerOnly": true,
+    "desc": "Membuat buttons message",
+    "category": "owner",
+    "name": "createbutton"
+  },
+  "createfullbuttons": {
+    "active": true,
+    "cmd": [
+      "createfullbutton"
+    ],
+    "aliases": [
+      "createfullbuttons"
+    ],
+    "ownerOnly": true,
+    "desc": "Membuat full buttons message",
+    "category": "owner",
+    "name": "createfullbuttons"
+  },
+  "createlist": {
+    "active": true,
+    "cmd": [
+      "createlist"
+    ],
+    "ownerOnly": true,
+    "desc": "Membuat list message",
+    "category": "owner",
+    "name": "createlist"
+  },
+  "createredeem": {
+    "active": true,
+    "ownerOnly": true,
+    "category": "owner",
+    "cmd": [
+      "createredeem"
+    ],
+    "desc": "Create redeem",
+    "name": "createredeem"
+  },
+  "createschedulecall": {
+    "active": true,
+    "adminGroup": true,
+    "groupOnly": true,
+    "botGroupAdmin": true,
+    "onlyNitro": true,
+    "category": "group",
+    "cmd": [
+      "createschedulecall"
+    ],
+    "aliases": [
+      "createscheduledcall"
+    ],
+    "desc": "Membuat schedule call",
+    "name": "createschedulecall"
+  },
+  "createtemplate": {
+    "active": true,
+    "cmd": [
+      "createlist"
+    ],
+    "ownerOnly": true,
+    "desc": "Membuat list message",
+    "category": "owner",
+    "name": "createtemplate"
+  },
+  "createthumbnail": {
+    "active": true,
+    "cmd": [
+      "createthumbnail"
+    ],
+    "ownerOnly": true,
+    "desc": "Membuat thumbnail message",
+    "category": "owner",
+    "name": "createthumbnail"
+  },
+  "cuaca": {
+    "active": true,
+    "limit": 5,
+    "category": "search",
+    "onlyNitro": true,
+    "cmd": [
+      "cuaca"
+    ],
+    "aliases": [
+      "weather"
+    ],
+    "desc": "Cuaca",
+    "name": "cuaca",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "dare": {
+    "active": true,
+    "category": "game",
+    "cmd": [
+      "dare"
+    ],
+    "limit": 5,
+    "desc": "Truth and Dare game",
+    "name": "dare",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "delalarm": {
+    "active": true,
+    "groupOnly": true,
+    "adminGroup": true,
+    "onlyNitro": true,
+    "desc": "Menghapus Alarm",
+    "category": "group",
+    "cmd": [
+      "delalarm"
+    ],
+    "aliases": [
+      "deletealarm"
+    ],
+    "name": "delalarm"
+  },
+  "delbadword": {
+    "active": true,
+    "category": "group",
+    "adminGroup": true,
+    "onlyNitro": true,
+    "groupOnly": true,
+    "cmd": [
+      "delbadword"
+    ],
+    "desc": "Delete badword",
+    "name": "delbadword"
+  },
+  "delbalance": {
+    "active": true,
+    "ownerOnly": true,
+    "category": "owner",
+    "cmd": [
+      "delbalance"
+    ],
+    "aliases": [
+      "kurangbalance"
+    ],
+    "desc": "Mengurangi balance user",
+    "example": "Kirim {prefix}{command} nomor/@mention jumlah_balance",
+    "name": "delbalance"
+  },
+  "delete": {
+    "active": true,
+    "category": "group",
+    "adminGroup": true,
+    "desc": "Menghapus pesan",
+    "cmd": [
+      "delete"
+    ],
+    "aliases": [
+      "d",
+      "del"
+    ],
+    "name": "delete",
+    "cd": null,
+    "limit": null,
+    "level": null,
+    "groupOnly": null,
+    "privateOnly": null,
+    "premiumOnly": null,
+    "sewaOnly": null,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "deleteabsen": {
+    "active": true,
+    "groupOnly": true,
+    "category": "group",
+    "cmd": [
+      "deleteabsen"
+    ],
+    "aliases": [
+      "delabsen"
+    ],
+    "desc": "Menghapus absen di group",
+    "example": "Kirim text {prefix}{command}",
+    "name": "deleteabsen",
+    "cd": 5,
+    "limit": 0,
+    "level": 0,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": true,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "deletepoin": {
+    "active": true,
+    "category": "group",
+    "adminGroup": true,
+    "onlyNitro": true,
+    "groupOnly": true,
+    "cmd": [
+      "deletepoin"
+    ],
+    "aliases": [
+      "deletepoint",
+      "kurangpoin",
+      "kurangpoint"
+    ],
+    "desc": "Delete point to member group",
+    "name": "deletepoin"
+  },
+  "deletetotalpesan": {
+    "active": true,
+    "category": "group",
+    "adminGroup": true,
+    "onlyNitro": true,
+    "groupOnly": true,
+    "cmd": [
+      "deletetotalpesan"
+    ],
+    "desc": "Delete totalpesan member group",
+    "name": "deletetotalpesan"
+  },
+  "dellevel": {
+    "active": true,
+    "ownerOnly": true,
+    "category": "owner",
+    "cmd": [
+      "dellevel"
+    ],
+    "desc": "Mengurangi level user",
+    "example": "Kirim {prefix}{command} nomor/@mention jumlah_level",
+    "name": "dellevel"
+  },
+  "dellimit": {
+    "active": true,
+    "ownerOnly": true,
+    "category": "owner",
+    "cmd": [
+      "dellimit"
+    ],
+    "desc": "Mengurangi limit user",
+    "example": "Kirim {prefix}{command} nomor/@mention jumlah_limit",
+    "name": "dellimit"
+  },
+  "dellist": {
+    "active": true,
+    "groupOnly": true,
+    "adminGroup": true,
+    "onlyNitro": true,
+    "desc": "Menghapus list",
+    "example": "Kirim {prefix}{command} key",
+    "category": "group",
+    "cmd": [
+      "dellist"
+    ],
+    "name": "dellist"
+  },
+  "delpremium": {
+    "active": true,
+    "ownerOnly": true,
+    "onlyNitro": true,
+    "category": "owner",
+    "desc": "Menghapus role premium pada user",
+    "example": "Kirim {prefix}{command} nomor/@mention",
+    "cmd": [
+      "delpremium"
+    ],
+    "aliases": [
+      "delprem"
+    ],
+    "name": "delpremium"
+  },
+  "delredeem": {
+    "active": true,
+    "category": "owner",
+    "ownerOnly": true,
+    "cmd": [
+      "deleteredeem"
+    ],
+    "aliases": [
+      "delredeem"
+    ],
+    "desc": "Menghapus redeem",
+    "name": "delredeem"
+  },
+  "delreminder": {
+    "active": true,
+    "groupOnly": true,
+    "adminGroup": true,
+    "onlyNitro": true,
+    "desc": "Menghapus reminder",
+    "category": "group",
+    "cmd": [
+      "delreminder"
+    ],
+    "aliases": [
+      "deletereminder"
+    ],
+    "name": "delreminder"
+  },
+  "delresponse": {
+    "active": true,
+    "ownerOnly": true,
+    "cmd": [
+      "delrespon"
+    ],
+    "aliases": [
+      "delres",
+      "delresponse"
+    ],
+    "category": "owner",
+    "desc": "Menghapus auto response",
+    "example": "Kirim {prefix}{command} key",
+    "name": "delresponse"
+  },
+  "delsetwm": {
+    "active": true,
+    "onlyNitro": true,
+    "premiumOnly": true,
+    "cmd": [
+      "delsetwm"
+    ],
+    "category": "sticker",
+    "example": "Kirim {prefix}{command}",
+    "desc": "Menghapus konfigurasiwatermark sticker",
+    "name": "delsetwm"
+  },
+  "delsewa": {
+    "active": true,
+    "ownerOnly": true,
+    "onlyNitro": true,
+    "category": "owner",
+    "cmd": [
+      "delsewa"
+    ],
+    "desc": "Menghapus sewa",
+    "example": "Kirim {prefix}{command} id",
+    "name": "delsewa"
+  },
+  "delultahku": {
+    "active": true,
+    "category": "group",
+    "groupOnly": true,
+    "onlyNitro": true,
+    "cmd": [
+      "delultahku"
+    ],
+    "aliases": [
+      "delultah"
+    ],
+    "name": "delultahku"
+  },
+  "delwarn": {
+    "active": true,
+    "groupOnly": true,
+    "adminGroup": true,
+    "botGroupAdmin": true,
+    "desc": "Warn",
+    "category": "group",
+    "cmd": [
+      "delwarn"
+    ],
+    "name": "delwarn",
+    "cd": null,
+    "limit": null,
+    "level": null,
+    "privateOnly": null,
+    "premiumOnly": null,
+    "sewaOnly": null,
+    "ownerOnly": true,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "delxp": {
+    "active": true,
+    "ownerOnly": true,
+    "category": "owner",
+    "cmd": [
+      "delxp"
+    ],
+    "desc": "Mengurangi xp user",
+    "example": "Kirim {prefix}{command} nomor/@mention jumlah_xp",
+    "name": "delxp"
+  },
+  "demote": {
+    "active": true,
+    "adminGroup": true,
+    "groupOnly": true,
+    "botGroupAdmin": true,
+    "category": "group",
+    "cmd": [
+      "demote"
+    ],
+    "desc": "Unadmin seseorang di group",
+    "example": "Kirim {prefix}{command} number/@mention atau tag peserta lain yang ingin di demote",
+    "name": "demote"
+  },
+  "demote-detector": {
+    "active": true,
+    "adminGroup": true,
+    "groupOnly": true,
+    "category": "group",
+    "cmd": [
+      "demotedetector"
+    ],
+    "aliases": [
+      "demotedetect",
+      "detectdemote",
+      "dotect"
+    ],
+    "desc": "Mengaktifkan atau menonaktifkan demote",
+    "example": "Kirim {prefix}{command} enable|disable",
+    "name": "demote-detector"
+  },
+  "descgc": {
+    "active": true,
+    "cmd": [
+      "descgc"
+    ],
+    "aliases": [
+      "groupdesc",
+      "deskgc",
+      "gdesc",
+      "gcdesc",
+      "descgroup",
+      "descgrup",
+      "deskgroup",
+      "deskgrup"
+    ],
+    "category": "group",
+    "groupOnly": true,
+    "botGroupAdmin": true,
+    "adminGroup": true,
+    "desc": "Desc group",
+    "name": "descgc"
+  },
+  "disablealarm": {
+    "active": true,
+    "groupOnly": true,
+    "adminGroup": true,
+    "onlyNitro": true,
+    "desc": "Menonaktifkan Alarm",
+    "category": "group",
+    "cmd": [
+      "disablealarm"
+    ],
+    "name": "disablealarm"
+  },
+  "done": {
+    "active": true,
+    "cmd": [
+      "done"
+    ],
+    "category": "group",
+    "groupOnly": true,
+    "adminGroup": true,
+    "onlyNitro": true,
+    "desc": "Add done",
+    "name": "done"
+  },
+  "dorama": {
+    "active": true,
+    "limit": 5,
+    "cmd": [
+      "dorama"
+    ],
+    "category": "search",
+    "onlyNitro": true,
+    "desc": "Drama search https://id.doramaindo.ai/",
+    "name": "dorama",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "douyin": {
+    "active": true,
+    "limit": 5,
+    "onlyNitro": true,
+    "cmd": [
+      "douyin"
+    ],
+    "aliases": [
+      "douyindl"
+    ],
+    "category": "download",
+    "name": "douyin",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "enablealarm": {
+    "active": true,
+    "groupOnly": true,
+    "adminGroup": true,
+    "onlyNitro": true,
+    "desc": "Mengaktifkan Alarm",
+    "category": "group",
+    "cmd": [
+      "enablealarm"
+    ],
+    "name": "enablealarm"
+  },
+  "ephoto": {
+    "active": true,
+    "category": "textmaker",
+    "onlyNitro": true,
+    "limit": 5,
+    "cmd": [
+      "window",
+      "blankpink",
+      "thunder",
+      "bear",
+      "cloud",
+      "neonlight",
+      "sand",
+      "glow",
+      "neon",
+      "sky",
+      "cartoon",
+      "greenneon",
+      "halloween",
+      "bokeh",
+      "firework",
+      "narutologo",
+      "colorneon",
+      "digitalglitch",
+      "wetglass",
+      "watercolor",
+      "pubglogo",
+      "fflogo"
+    ],
+    "name": "ephoto",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "ephoto2": {
+    "active": true,
+    "category": "textmaker",
+    "onlyNitro": true,
+    "limit": 5,
+    "cmd": [
+      "glitch",
+      "thor",
+      "wolf",
+      "phlogo",
+      "avangers",
+      "spacetext",
+      "marvel",
+      "graffiti",
+      "deadpool"
+    ],
+    "name": "ephoto2",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "facebook": {
+    "active": true,
+    "limit": 5,
+    "onlyNitro": true,
+    "cmd": [
+      "facebook"
+    ],
+    "aliases": [
+      "fbdl",
+      "fb"
+    ],
+    "category": "download",
+    "name": "facebook",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "fakereply": {
+    "active": true,
+    "category": "tools",
+    "cmd": [
+      "fakereply"
+    ],
+    "aliases": [
+      "fr"
+    ],
+    "desc": "Fake reply in whatsapp",
+    "name": "fakereply",
+    "cd": 5,
+    "limit": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "faktaunik": {
+    "active": true,
+    "cmd": [
+      "faktaunik"
+    ],
+    "aliases": [
+      "fakta"
+    ],
+    "limit": 5,
+    "category": "random",
+    "desc": "Random fakta unik",
+    "name": "faktaunik",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "family100": {
+    "active": true,
+    "category": "game",
+    "cmd": [
+      "family100"
+    ],
+    "limit": 5,
+    "desc": "Family 100 game",
+    "name": "family100",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "freeautores": {
+    "active": true,
+    "ownerOnly": true,
+    "onlyNitro": true,
+    "desc": "Free Auto Response",
+    "category": "owner",
+    "cmd": [
+      "freeautores",
+      "delfreeautores",
+      "listfreeautores",
+      "resetfreeautores"
+    ],
+    "aliases": [
+      "addfreeautores"
+    ],
+    "name": "freeautores"
+  },
+  "freecommand": {
+    "active": true,
+    "ownerOnly": true,
+    "onlyNitro": true,
+    "desc": "Free Command",
+    "category": "owner",
+    "cmd": [
+      "freecommand",
+      "delfreecommand",
+      "listfreecommand",
+      "resetfreecommand"
+    ],
+    "aliases": [
+      "addfreecommand"
+    ],
+    "name": "freecommand"
+  },
+  "gamemode": {
+    "active": true,
+    "adminGroup": false,
+    "groupOnly": false,
+    "onlyNitro": true,
+    "category": "group",
+    "cmd": [
+      "gamemode"
+    ],
+    "desc": "Mengaktifkan atau menonaktifkan game",
+    "example": "Kirim {prefix}{command} enable|disable",
+    "name": "gamemode",
+    "cd": 5,
+    "limit": 0,
+    "level": 0,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "ownerOnly": true,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "getlist": {
+    "active": true,
+    "category": "group",
+    "cmd": [
+      "getlist"
+    ],
+    "onlyNitro": true,
+    "groupOnly": true,
+    "name": "getlist"
+  },
+  "globalgamemode": {
+    "active": true,
+    "ownerOnly": false,
+    "category": "owner",
+    "cmd": [
+      "globalgamemode"
+    ],
+    "aliases": [
+      "gamemodeglobal"
+    ],
+    "desc": "Mengaktifkan atau menonaktifkan globalgamemode",
+    "example": "Kirim {prefix}{command} enable|disable",
+    "name": "globalgamemode",
+    "cd": 5,
+    "limit": 0,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "golink": {
+    "active": true,
+    "category": "owner",
+    "ownerOnly": true,
+    "cmd": [
+      "golink"
+    ],
+    "desc": "Dapatkan link group dengan id",
+    "name": "golink"
+  },
+  "google": {
+    "active": true,
+    "limit": 5,
+    "category": "search",
+    "cmd": [
+      "google"
+    ],
+    "desc": "Mencari sesuatu di google",
+    "name": "google",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "googleimage": {
+    "active": true,
+    "limit": 5,
+    "onlyNitro": true,
+    "category": "search",
+    "cmd": [
+      "googleimage"
+    ],
+    "aliases": [
+      "gimage",
+      "image"
+    ],
+    "desc": "Mencari foto dengan query di google",
+    "name": "googleimage",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "grabcontact": {
+    "active": true,
+    "category": "owner",
+    "ownerOnly": true,
+    "cmd": [
+      "grabcontact"
+    ],
+    "aliases": [
+      "grabkontak"
+    ],
+    "desc": "Dapatkan csv participan group",
+    "name": "grabcontact"
+  },
+  "groupadmin": {
+    "groupOnly": true,
+    "active": true,
+    "cmd": [
+      "groupadmin"
+    ],
+    "aliases": [
+      "grupadmin",
+      "admingroup",
+      "admingroup"
+    ],
+    "desc": "Group admin",
+    "category": "group",
+    "name": "groupadmin"
+  },
+  "groupinfo": {
+    "groupOnly": true,
+    "active": true,
+    "cmd": [
+      "groupinfo"
+    ],
+    "aliases": [
+      "grupinfo",
+      "infogroup",
+      "infogrup"
+    ],
+    "desc": "Group info",
+    "category": "group",
+    "name": "groupinfo"
+  },
+  "grouponlyprem": {
+    "active": true,
+    "adminGroup": true,
+    "groupOnly": true,
+    "onlyNitro": true,
+    "category": "owner",
+    "cmd": [
+      "grouponlypremium"
+    ],
+    "aliases": [
+      "gconlyprem",
+      "gruponlyprem",
+      "grouponlyprem"
+    ],
+    "desc": "Mengaktifkan atau menonaktifkan onlypremium",
+    "example": "Kirim {prefix}{command} enable|disable",
+    "name": "grouponlyprem"
+  },
+  "groupschedule": {
+    "active": true,
+    "adminGroup": true,
+    "groupOnly": true,
+    "botGroupAdmin": true,
+    "onlyNitro": true,
+    "category": "group",
+    "cmd": [
+      "groupschedule"
+    ],
+    "aliases": [
+      "jadwalgroup",
+      "jadwalgrup"
+    ],
+    "desc": "Membuka atau menutup group dengan jadwal",
+    "name": "groupschedule"
+  },
+  "groupsetting": {
+    "active": true,
+    "adminGroup": true,
+    "groupOnly": true,
+    "botGroupAdmin": true,
+    "category": "group",
+    "cmd": [
+      "groupsetting"
+    ],
+    "aliases": [
+      "grup",
+      "group"
+    ],
+    "desc": "Membuka atau menutup group",
+    "name": "groupsetting"
+  },
+  "grouptime": {
+    "active": true,
+    "adminGroup": true,
+    "groupOnly": true,
+    "botGroupAdmin": true,
+    "onlyNitro": true,
+    "category": "group",
+    "cmd": [
+      "grouptime"
+    ],
+    "aliases": [
+      "gruptime"
+    ],
+    "desc": "Membuka atau menutup group dengan waktu",
+    "name": "grouptime"
+  },
+  "hartatahta": {
+    "active": true,
+    "limit": 5,
+    "onlyNitro": true,
+    "cmd": [
+      "hartatahta"
+    ],
+    "aliases": [
+      "harta",
+      "tahta"
+    ],
+    "desc": "Harta tahta maker",
+    "category": "tools",
+    "name": "hartatahta",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "hidetag": {
+    "active": true,
+    "cmd": [
+      "hidetag"
+    ],
+    "aliases": [
+      "h"
+    ],
+    "groupOnly": false,
+    "adminGroup": false,
+    "desc": "Hidetag",
+    "category": "group",
+    "name": "hidetag",
+    "cd": 5,
+    "limit": 5,
+    "level": 0,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "hint": {
+    "active": true,
+    "category": "game",
+    "cmd": [
+      "hint"
+    ],
+    "desc": "Game hint",
+    "name": "hint",
+    "cd": 5,
+    "limit": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "husbu": {
+    "active": true,
+    "cmd": [
+      "husbu"
+    ],
+    "aliases": [
+      "randomhusbu"
+    ],
+    "limit": 5,
+    "onlyNitro": true,
+    "category": "random",
+    "desc": "Random gambar husbu",
+    "name": "husbu",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "igstalk": {
+    "active": true,
+    "limit": 5,
+    "cmd": [
+      "igstalk"
+    ],
+    "aliases": [
+      "stalkig"
+    ],
+    "category": "search",
+    "onlyNitro": true,
+    "desc": "Instagram stalker dengan query username",
+    "name": "igstalk",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "igstory": {
+    "active": true,
+    "limit": 5,
+    "onlyNitro": true,
+    "cmd": [
+      "igstory"
+    ],
+    "category": "download",
+    "name": "igstory",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "infobot": {
+    "active": true,
+    "cmd": [
+      "infobot"
+    ],
+    "category": "general",
+    "name": "infobot"
+  },
+  "infocovid": {
+    "active": true,
+    "cmd": [
+      "infocovid"
+    ],
+    "aliases": [
+      "covid"
+    ],
+    "category": "info",
+    "limit": 5,
+    "desc": "Info covid dunia atau negara",
+    "name": "infocovid",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "infogempa": {
+    "active": true,
+    "cmd": [
+      "infogempa"
+    ],
+    "aliases": [
+      "gempa"
+    ],
+    "limit": 5,
+    "desc": "Info gempa terbaru dari bmkg",
+    "category": "info",
+    "name": "infogempa",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "inforedeem": {
+    "active": true,
+    "cmd": [
+      "inforedeem"
+    ],
+    "category": "owner",
+    "ownerOnly": true,
+    "desc": "Info redeem",
+    "name": "inforedeem"
+  },
+  "infounsur": {
+    "active": true,
+    "cmd": [
+      "infounsur"
+    ],
+    "limit": 5,
+    "desc": "Info unsur",
+    "category": "info",
+    "name": "infounsur",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "instagram": {
+    "active": true,
+    "limit": 5,
+    "onlyNitro": true,
+    "cmd": [
+      "igdl",
+      "igtv",
+      "igreel"
+    ],
+    "aliases": [
+      "ig",
+      "instagram",
+      "igpost"
+    ],
+    "category": "download",
+    "name": "instagram",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "inviteme": {
+    "active": true,
+    "category": "owner",
+    "ownerOnly": true,
+    "cmd": [
+      "inviteme"
+    ],
+    "desc": "Menambahkan owner ke group dengan id",
+    "name": "inviteme"
+  },
+  "ipchecker": {
+    "active": true,
+    "cmd": [
+      "ipchecker"
+    ],
+    "aliases": [
+      "ip",
+      "checkip",
+      "cekip"
+    ],
+    "limit": 5,
+    "desc": "Check IP",
+    "category": "search",
+    "name": "ipchecker",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "iqc": {
+    "active": true,
+    "cmd": [
+      "iqc"
+    ],
+    "aliases": [
+      "iphonequoted"
+    ],
+    "category": "tools",
+    "limit": 1,
+    "onlyNitro": true,
+    "desc": "Membuat iphonechat",
+    "name": "iqc"
+  },
+  "jadian": {
+    "active": true,
+    "cmd": [
+      "jadian"
+    ],
+    "groupOnly": false,
+    "category": "random",
+    "limit": 5,
+    "desc": "Random Jadian",
+    "name": "jadian",
+    "cd": 5,
+    "level": 0,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "jadianime": {
+    "active": true,
+    "onlyNitro": true,
+    "limit": 5,
+    "cmd": [
+      "jadianime"
+    ],
+    "category": "ai",
+    "aliases": [
+      "toanime"
+    ],
+    "desc": "Gambar jadi anime",
+    "name": "jadianime",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": true,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "jadwalshalat": {
+    "active": true,
+    "cmd": [
+      "jadwalshalat"
+    ],
+    "aliases": [
+      "jshalat",
+      "jadwalsholat",
+      "jsholat"
+    ],
+    "category": "search",
+    "limit": 5,
+    "desc": "Jadwal shalat dari kemenetiran agama Indonesia",
+    "name": "jadwalshalat",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "join": {
+    "active": true,
+    "ownerOnly": true,
+    "category": "owner",
+    "cmd": [
+      "join"
+    ],
+    "desc": "Join ke group dengan link group",
+    "example": "Kirim {prefix}{command} link_group",
+    "name": "join"
+  },
+  "kapankah": {
+    "active": true,
+    "cmd": [
+      "kapankah"
+    ],
+    "aliases": [
+      "kapan"
+    ],
+    "category": "random",
+    "limit": 5,
+    "desc": "Tanyakan sesuatu pada bot",
+    "name": "kapankah",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "katabijak": {
+    "active": true,
+    "cmd": [
+      "katabijak"
+    ],
+    "limit": 5,
+    "category": "random",
+    "desc": "Random fakta unik",
+    "name": "katabijak",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "kick": {
+    "active": true,
+    "cmd": [
+      "kick"
+    ],
+    "category": "group",
+    "groupOnly": false,
+    "botGroupAdmin": true,
+    "adminGroup": true,
+    "desc": "Kick seseorang dari group",
+    "name": "kick",
+    "cd": 5,
+    "limit": 0,
+    "level": 0,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "kickme": {
+    "active": true,
+    "cmd": [
+      "kickme"
+    ],
+    "category": "group",
+    "groupOnly": true,
+    "botGroupAdmin": true,
+    "desc": "Kick diri sendiri",
+    "name": "kickme"
+  },
+  "kirim": {
+    "active": true,
+    "category": "tools",
+    "cmd": [
+      "kirim"
+    ],
+    "ownerOnly": false,
+    "desc": "Send message kepada orang melalui bot",
+    "name": "kirim",
+    "cd": 5,
+    "limit": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "kodebahasa": {
+    "active": true,
+    "category": "info",
+    "cmd": [
+      "kodebahasa"
+    ],
+    "desc": "Kode bahasa untuk tts dan translate",
+    "name": "kodebahasa",
+    "cd": 5,
+    "limit": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "leaveall": {
+    "active": true,
+    "category": "owner",
+    "ownerOnly": false,
+    "cmd": [
+      "leaveall"
+    ],
+    "desc": "Keluar dari semua group",
+    "name": "leaveall",
+    "cd": 5,
+    "limit": 0,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "leavegc": {
+    "active": true,
+    "groupOnly": true,
+    "adminGroup": true,
+    "cmd": [
+      "leavegc"
+    ],
+    "aliases": [
+      "leavegroup"
+    ],
+    "desc": "Leave group",
+    "category": "group",
+    "name": "leavegc"
+  },
+  "leavegcbyid": {
+    "active": true,
+    "category": "owner",
+    "ownerOnly": true,
+    "cmd": [
+      "leavegcbyid"
+    ],
+    "desc": "Keluar dari satu group by id",
+    "name": "leavegcbyid"
+  },
+  "leavegcnosewa": {
+    "active": true,
+    "ownerOnly": true,
+    "category": "info",
+    "cmd": [
+      "leavenosewa"
+    ],
+    "aliases": [
+      "leavegcnosewa",
+      "leavegroupnosewa",
+      "leavegrupnosewa"
+    ],
+    "desc": "List group no sewa",
+    "name": "leavegcnosewa"
+  },
+  "left": {
+    "active": true,
+    "adminGroup": true,
+    "groupOnly": true,
+    "category": "group",
+    "cmd": [
+      "left"
+    ],
+    "desc": "Mengaktifkan atau menonaktifkan left",
+    "example": "Kirim {prefix}{command} enable|disable",
+    "name": "left"
+  },
+  "level": {
+    "active": true,
+    "category": "info",
+    "onlyNitro": true,
+    "cmd": [
+      "level"
+    ],
+    "aliases": [
+      "tier"
+    ],
+    "desc": "Level & Tier",
+    "name": "level"
+  },
+  "levelling-group": {
+    "active": true,
+    "adminGroup": true,
+    "groupOnly": true,
+    "category": "group",
+    "cmd": [
+      "levelling"
+    ],
+    "aliases": [
+      "leveling"
+    ],
+    "desc": "Mengaktifkan atau menonaktifkan levelling",
+    "example": "Kirim {prefix}{command} enable|disable",
+    "name": "levelling-group"
+  },
+  "levelling-pc": {
+    "active": true,
+    "ownerOnly": true,
+    "category": "owner",
+    "cmd": [
+      "levellingpc"
+    ],
+    "desc": "Mengaktifkan atau menonaktifkan levelling pada private chat",
+    "example": "Kirim {prefix}{command} enable|disable",
+    "name": "levelling-pc"
+  },
+  "limit": {
+    "active": true,
+    "category": "info",
+    "cmd": [
+      "limit",
+      "balance"
+    ],
+    "desc": "Info limit dan balance",
+    "name": "limit"
+  },
+  "linkgc": {
+    "active": true,
+    "cmd": [
+      "linkgc"
+    ],
+    "aliases": [
+      "grouplink",
+      "glink",
+      "gclink",
+      "linkgroup",
+      "linkgrup"
+    ],
+    "category": "group",
+    "groupOnly": true,
+    "botGroupAdmin": true,
+    "adminGroup": true,
+    "desc": "Link group",
+    "name": "linkgc"
+  },
+  "linkgcrevoke": {
+    "active": true,
+    "cmd": [
+      "revokelink"
+    ],
+    "aliases": [
+      "revokelinkgroup"
+    ],
+    "category": "group",
+    "groupOnly": true,
+    "botGroupAdmin": true,
+    "adminGroup": true,
+    "desc": "Reset link group",
+    "name": "linkgcrevoke"
+  },
+  "lirik": {
+    "active": true,
+    "category": "search",
+    "limit": 5,
+    "cmd": [
+      "lirik"
+    ],
+    "aliases": [
+      "lyric"
+    ],
+    "desc": "Mencari lirik suatu lagu",
+    "name": "lirik",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "list": {
+    "active": true,
+    "groupOnly": true,
+    "onlyNitro": true,
+    "desc": "Menampilkan list",
+    "category": "group",
+    "cmd": [
+      "list"
+    ],
+    "name": "list"
+  },
+  "listalarm": {
+    "active": true,
+    "groupOnly": true,
+    "adminGroup": true,
+    "onlyNitro": true,
+    "desc": "Menampilkan list Alarm",
+    "category": "group",
+    "cmd": [
+      "listalarm"
+    ],
+    "name": "listalarm"
+  },
+  "listbadword": {
+    "active": true,
+    "groupOnly": true,
+    "onlyNitro": true,
+    "desc": "Menampilkan list badword",
+    "category": "group",
+    "cmd": [
+      "listbadword"
+    ],
+    "name": "listbadword"
+  },
+  "listban": {
+    "active": true,
+    "category": "info",
+    "cmd": [
+      "listban"
+    ],
+    "desc": "List ban",
+    "name": "listban"
+  },
+  "listbanmember": {
+    "active": true,
+    "category": "group",
+    "groupOnly": true,
+    "onlyNitro": true,
+    "cmd": [
+      "listbanmember"
+    ],
+    "name": "listbanmember"
+  },
+  "listblock": {
+    "active": true,
+    "category": "info",
+    "cmd": [
+      "listblock"
+    ],
+    "desc": "List block",
+    "name": "listblock"
+  },
+  "listcommand": {
+    "active": true,
+    "ownerOnly": true,
+    "category": "info",
+    "cmd": [
+      "listcommand"
+    ],
+    "aliases": [],
+    "desc": "List command",
+    "name": "listcommand"
+  },
+  "listgroup": {
+    "active": true,
+    "category": "info",
+    "cmd": [
+      "listgroup"
+    ],
+    "aliases": [
+      "listgc",
+      "listgrup"
+    ],
+    "desc": "List group",
+    "name": "listgroup"
+  },
+  "listgroupnosewa": {
+    "active": true,
+    "ownerOnly": true,
+    "category": "info",
+    "cmd": [
+      "listgroupnosewa"
+    ],
+    "aliases": [
+      "listgcnosewa",
+      "listgrupnosewa"
+    ],
+    "desc": "List group no sewa",
+    "name": "listgroupnosewa"
+  },
+  "listonline": {
+    "active": true,
+    "category": "info",
+    "cmd": [
+      "listonline"
+    ],
+    "aliases": [
+      "online"
+    ],
+    "desc": "List online di group",
+    "groupOnly": true,
+    "name": "listonline"
+  },
+  "listpoint": {
+    "active": true,
+    "category": "group",
+    "groupOnly": true,
+    "onlyNitro": true,
+    "cmd": [
+      "listpoint"
+    ],
+    "aliases": [
+      "listpoin"
+    ],
+    "name": "listpoint"
+  },
+  "listpremium": {
+    "active": true,
+    "category": "info",
+    "cmd": [
+      "listpremium"
+    ],
+    "aliases": [
+      "listprem"
+    ],
+    "name": "listpremium",
+    "cd": null,
+    "limit": null,
+    "level": null,
+    "groupOnly": null,
+    "privateOnly": null,
+    "premiumOnly": null,
+    "sewaOnly": null,
+    "adminGroup": null,
+    "ownerOnly": true,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "listpremiumgroup": {
+    "active": true,
+    "ownerOnly": true,
+    "category": "info",
+    "cmd": [
+      "listpremiumgroup"
+    ],
+    "aliases": [
+      "listpremiumgrup",
+      "listpremgroup",
+      "listpremgrup"
+    ],
+    "desc": "List group premium",
+    "name": "listpremiumgroup"
+  },
+  "listredeem": {
+    "active": true,
+    "cmd": [
+      "listredeem"
+    ],
+    "category": "owner",
+    "ownerOnly": true,
+    "desc": "List redeem",
+    "name": "listredeem"
+  },
+  "listreminder": {
+    "active": true,
+    "groupOnly": true,
+    "adminGroup": true,
+    "onlyNitro": true,
+    "desc": "Menampilkan list reminder",
+    "category": "group",
+    "cmd": [
+      "listreminder"
+    ],
+    "name": "listreminder"
+  },
+  "listresponse": {
+    "active": true,
+    "cmd": [
+      "listrespon"
+    ],
+    "aliases": [
+      "listres",
+      "listresponse"
+    ],
+    "category": "owner",
+    "desc": "Menampilkan list response",
+    "name": "listresponse"
+  },
+  "listsewa": {
+    "active": true,
+    "ownerOnly": true,
+    "onlyNitro": true,
+    "category": "owner",
+    "cmd": [
+      "listsewa"
+    ],
+    "desc": "List sewa group",
+    "name": "listsewa"
+  },
+  "listsewapermanent": {
+    "active": true,
+    "ownerOnly": true,
+    "onlyNitro": true,
+    "category": "owner",
+    "cmd": [
+      "listsewapermanent"
+    ],
+    "aliases": [
+      "listsewapermanen"
+    ],
+    "desc": "List sewa group permanent",
+    "name": "listsewapermanent"
+  },
+  "listtotalpesan": {
+    "active": true,
+    "category": "group",
+    "groupOnly": true,
+    "onlyNitro": true,
+    "cmd": [
+      "listtotalpesan"
+    ],
+    "name": "listtotalpesan"
+  },
+  "listultah": {
+    "active": true,
+    "category": "group",
+    "groupOnly": true,
+    "onlyNitro": true,
+    "cmd": [
+      "listultah"
+    ],
+    "name": "listultah"
+  },
+  "listwarn": {
+    "active": true,
+    "groupOnly": true,
+    "adminGroup": true,
+    "botGroupAdmin": true,
+    "desc": "List warn",
+    "category": "group",
+    "cmd": [
+      "listwarn"
+    ],
+    "name": "listwarn"
+  },
+  "loli": {
+    "active": true,
+    "cmd": [
+      "loli"
+    ],
+    "limit": 5,
+    "category": "random",
+    "onlyNitro": true,
+    "desc": "Random gambar loli",
+    "name": "loli",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "math": {
+    "active": true,
+    "category": "game",
+    "cmd": [
+      "math"
+    ],
+    "limit": 5,
+    "desc": "Math game",
+    "name": "math",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "mediafire": {
+    "active": true,
+    "category": "download",
+    "cmd": [
+      "mediafire"
+    ],
+    "cd": 15,
+    "onlyNitro": true,
+    "limit": 5,
+    "desc": "Download mediafire",
+    "premiumOnly": false,
+    "name": "mediafire",
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "menfess": {
+    "active": true,
+    "cmd": [
+      "confess",
+      "menfess"
+    ],
+    "aliases": [
+      "confes"
+    ],
+    "category": "tools",
+    "desc": "Menfess cuy",
+    "privateOnly": false,
+    "limit": 5,
+    "onlyNitro": true,
+    "name": "menfess",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "premiumOnly": true,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "menu": {
+    "active": false,
+    "cmd": [
+      "menu"
+    ],
+    "aliases": [
+      "help"
+    ],
+    "name": "menu",
+    "cd": 5,
+    "limit": 0,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "mulaiabsen": {
+    "active": true,
+    "groupOnly": false,
+    "category": "group",
+    "cmd": [
+      "mulaiabsen"
+    ],
+    "desc": "Memulai absen di group",
+    "example": "Kirim text {prefix}{command}",
+    "name": "mulaiabsen",
+    "cd": 5,
+    "limit": 0,
+    "level": 0,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": true,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "mute": {
+    "active": true,
+    "adminGroup": true,
+    "groupOnly": true,
+    "category": "group",
+    "cmd": [
+      "mute"
+    ],
+    "desc": "Mengaktifkan atau menonaktifkan mute",
+    "example": "Kirim {prefix}{command} enable|disable",
+    "name": "mute"
+  },
+  "mutebc": {
+    "active": true,
+    "cmd": [
+      "mutebc"
+    ],
+    "ownerOnly": true,
+    "desc": "Mute broadcast",
+    "category": "owner",
+    "name": "mutebc"
+  },
+  "mutebyid": {
+    "active": true,
+    "ownerOnly": true,
+    "category": "owner",
+    "cmd": [
+      "mutebyid"
+    ],
+    "desc": "Mengaktifkan atau menonaktifkan mute by id",
+    "example": "Kirim {prefix}{command} idgroup enable|disable",
+    "name": "mutebyid"
+  },
+  "mycontacts": {
+    "active": true,
+    "ownerOnly": true,
+    "category": "owner",
+    "cmd": [
+      "mycontacts"
+    ],
+    "aliases": [
+      "mycontact",
+      "mykontak"
+    ],
+    "desc": "Contacts yang tersimpan dalam bot",
+    "name": "mycontacts"
+  },
+  "nexara": {
+    "active": true,
+    "onlyNitro": true,
+    "premiumOnly": true,
+    "category": "ai",
+    "cmd": [
+      "nexara",
+      "byenexara"
+    ],
+    "name": "nexara"
+  },
+  "nulis": {
+    "active": true,
+    "cmd": [
+      "nulis",
+      "folio"
+    ],
+    "category": "tools",
+    "limit": 5,
+    "onlyNitro": true,
+    "desc": "Males nulis bang?",
+    "name": "nulis",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "nyerah": {
+    "active": true,
+    "category": "game",
+    "cmd": [
+      "nyerah"
+    ],
+    "desc": "Nyerah game",
+    "name": "nyerah"
+  },
+  "ocr": {
+    "active": true,
+    "cmd": [
+      "ocr"
+    ],
+    "aliases": [
+      "imgtotext"
+    ],
+    "limit": 5,
+    "onlyNitro": true,
+    "category": "tools",
+    "name": "ocr",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "onlygroup": {
+    "active": true,
+    "ownerOnly": true,
+    "category": "owner",
+    "cmd": [
+      "onlygroup"
+    ],
+    "aliases": [
+      "onlygc"
+    ],
+    "desc": "Mengaktifkan atau menonaktifkan onlygroup",
+    "example": "Kirim {prefix}{command} enable|disable",
+    "name": "onlygroup"
+  },
+  "onlyindo": {
+    "active": true,
+    "ownerOnly": true,
+    "category": "owner",
+    "cmd": [
+      "onlyindo"
+    ],
+    "aliases": [
+      "onlymalaysia",
+      "onlyindonesia",
+      "onlymalay",
+      "onlysg"
+    ],
+    "desc": "Mengaktifkan atau menonaktifkan onlyindonesia",
+    "example": "Kirim {prefix}{command} enable|disable",
+    "name": "onlyindo"
+  },
+  "onlypremium": {
+    "active": true,
+    "ownerOnly": true,
+    "category": "owner",
+    "cmd": [
+      "onlyprem"
+    ],
+    "aliases": [
+      "onlypremium"
+    ],
+    "desc": "Mengaktifkan atau menonaktifkan onlyprem",
+    "example": "Kirim {prefix}{command} enable|disable",
+    "name": "onlypremium"
+  },
+  "openai": {
+    "active": true,
+    "cmd": [
+      "openai"
+    ],
+    "aliases": [
+      "ai",
+      "open-ai"
+    ],
+    "limit": 1,
+    "onlyNitro": true,
+    "premiumOnly": true,
+    "category": "ai",
+    "name": "openai"
+  },
+  "otakudesu-download": {
+    "active": true,
+    "limit": 5,
+    "onlyNitro": true,
+    "premiumOnly": false,
+    "category": "download",
+    "cmd": [
+      "otakudesudl"
+    ],
+    "aliases": [
+      "dlotakudesu"
+    ],
+    "name": "otakudesu-download",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "otakudesu-info": {
+    "active": true,
+    "limit": 1,
+    "onlyNitro": true,
+    "premiumOnly": true,
+    "category": "search",
+    "cmd": [
+      "otakudesuinfo"
+    ],
+    "name": "otakudesu-info"
+  },
+  "otakudesu-ongoing": {
+    "active": true,
+    "limit": 1,
+    "onlyNitro": true,
+    "premiumOnly": true,
+    "category": "search",
+    "cmd": [
+      "otakudesuongoing"
+    ],
+    "aliases": [
+      "otakuongoing"
+    ],
+    "desc": "Otakudesu Ongoing",
+    "name": "otakudesu-ongoing"
+  },
+  "otakudesu-search": {
+    "active": true,
+    "limit": 1,
+    "onlyNitro": true,
+    "premiumOnly": true,
+    "category": "search",
+    "cmd": [
+      "otakudesu"
+    ],
+    "aliases": [
+      "otakudesusearch"
+    ],
+    "desc": "Otakudesu search",
+    "name": "otakudesu-search"
+  },
+  "owner": {
+    "active": true,
+    "cmd": [
+      "owner"
+    ],
+    "category": "general",
+    "name": "owner"
+  },
+  "pantun": {
+    "active": true,
+    "cmd": [
+      "pantun"
+    ],
+    "limit": 1,
+    "desc": "Pantun",
+    "category": "random",
+    "name": "pantun"
+  },
+  "pconlyprem": {
+    "active": true,
+    "ownerOnly": true,
+    "category": "owner",
+    "cmd": [
+      "pconlyprem"
+    ],
+    "desc": "Mengaktifkan atau menonaktifkan pconlyprem",
+    "example": "Kirim {prefix}{command} enable|disable",
+    "name": "pconlyprem"
+  },
+  "ping": {
+    "active": true,
+    "cmd": [
+      "ping"
+    ],
+    "aliases": [
+      "speed"
+    ],
+    "category": "general",
+    "name": "ping"
+  },
+  "pinmsg": {
+    "active": true,
+    "adminGroup": true,
+    "groupOnly": true,
+    "botGroupAdmin": true,
+    "category": "group",
+    "cmd": [
+      "pinmsg"
+    ],
+    "desc": "Melakukan pin pada sebuah pesan",
+    "example": "Kirim {prefix}{command} 1d|7d|30d",
+    "name": "pinmsg"
+  },
+  "pinterest-download": {
+    "active": true,
+    "limit": 1,
+    "onlyNitro": true,
+    "category": "download",
+    "cmd": [
+      "pindl"
+    ],
+    "aliases": [
+      "pinterestdl"
+    ],
+    "desc": "Pinterest Download",
+    "name": "pinterest-download"
+  },
+  "pinterest-search": {
+    "active": true,
+    "limit": 1,
+    "onlyNitro": true,
+    "category": "search",
+    "cmd": [
+      "pinterest"
+    ],
+    "aliases": [
+      "pin",
+      "pinsearch"
+    ],
+    "desc": "Pinterest search",
+    "name": "pinterest-search"
+  },
+  "play": {
+    "active": true,
+    "limit": 5,
+    "onlyNitro": true,
+    "category": "search",
+    "cmd": [
+      "play"
+    ],
+    "desc": "Play video/audio",
+    "name": "play",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "polling": {
+    "active": true,
+    "limit": 5,
+    "cmd": [
+      "poll"
+    ],
+    "aliases": [
+      "polling"
+    ],
+    "desc": "Polling message",
+    "category": "tools",
+    "name": "polling",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "ppcp": {
+    "active": true,
+    "cmd": [
+      "ppcouple"
+    ],
+    "aliases": [
+      "ppcp"
+    ],
+    "category": "random",
+    "limit": 5,
+    "onlyNitro": true,
+    "name": "ppcp",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "premiumgroup": {
+    "active": true,
+    "ownerOnly": true,
+    "premiumOnly": true,
+    "category": "owner",
+    "cmd": [
+      "premiumgroup"
+    ],
+    "aliases": [
+      "premgroup",
+      "premiumgrup",
+      "premgrup"
+    ],
+    "desc": "Mengaktifkan atau menonaktifkan preium by id",
+    "example": "Kirim {prefix}{command} idgroup enable|disable",
+    "name": "premiumgroup"
+  },
+  "profile": {
+    "active": true,
+    "cmd": [
+      "profile"
+    ],
+    "aliases": [
+      "profil",
+      "me"
+    ],
+    "category": "info",
+    "desc": "Cek profile seseorang",
+    "name": "profile"
+  },
+  "promote": {
+    "active": true,
+    "adminGroup": true,
+    "groupOnly": true,
+    "botGroupAdmin": true,
+    "category": "group",
+    "cmd": [
+      "promote"
+    ],
+    "desc": "Adminin seseorang di group",
+    "example": "Kirim {prefix}{command} number/@mention atau tag peserta lain yang ingin di promote",
+    "name": "promote"
+  },
+  "promote-detector": {
+    "active": true,
+    "adminGroup": true,
+    "groupOnly": true,
+    "category": "group",
+    "cmd": [
+      "promotedetector"
+    ],
+    "aliases": [
+      "promotedetect",
+      "detectpromote",
+      "protect"
+    ],
+    "desc": "Mengaktifkan atau menonaktifkan promote",
+    "example": "Kirim {prefix}{command} enable|disable",
+    "name": "promote-detector"
+  },
+  "promoteme": {
+    "active": true,
+    "category": "owner",
+    "ownerOnly": true,
+    "cmd": [
+      "promoteme"
+    ],
+    "desc": "Menjadikan owner admin di group dengan id",
+    "name": "promoteme"
+  },
+  "proses": {
+    "active": true,
+    "cmd": [
+      "proses"
+    ],
+    "category": "group",
+    "groupOnly": true,
+    "adminGroup": true,
+    "onlyNitro": true,
+    "desc": "Add proses",
+    "name": "proses"
+  },
+  "ptvtovideo": {
+    "active": true,
+    "cmd": [
+      "ptvtovideo"
+    ],
+    "limit": 5,
+    "onlyNitro": true,
+    "desc": "Video to quick video",
+    "category": "tools",
+    "name": "ptvtovideo",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "public": {
+    "active": true,
+    "ownerOnly": true,
+    "category": "owner",
+    "cmd": [
+      "public"
+    ],
+    "aliases": [
+      "publik"
+    ],
+    "name": "public"
+  },
+  "publicbyid": {
+    "active": true,
+    "category": "owner",
+    "ownerOnly": true,
+    "cmd": [
+      "publicbyid"
+    ],
+    "aliases": [
+      "publikbyid"
+    ],
+    "desc": "Public group by id",
+    "name": "publicbyid"
+  },
+  "puisi": {
+    "active": true,
+    "limit": 5,
+    "category": "random",
+    "cmd": [
+      "puisi"
+    ],
+    "aliases": [
+      "randompuisi"
+    ],
+    "desc": "Random puisi",
+    "name": "puisi",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "qc": {
+    "active": true,
+    "category": "sticker",
+    "cmd": [
+      "quickchat"
+    ],
+    "aliases": [
+      "qc"
+    ],
+    "onlyNitro": true,
+    "premiumOnly": false,
+    "limit": 10,
+    "name": "qc",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "qrcode": {
+    "active": true,
+    "limit": 5,
+    "category": "tools",
+    "cmd": [
+      "qrcode"
+    ],
+    "aliases": [
+      "qr"
+    ],
+    "desc": "Create qr",
+    "name": "qrcode",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "qrcodereader": {
+    "active": true,
+    "cmd": [
+      "qrcodereader"
+    ],
+    "aliases": [
+      "qrread",
+      "qrreader",
+      "readqr"
+    ],
+    "limit": 5,
+    "onlyNitro": true,
+    "category": "tools",
+    "name": "qrcodereader",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "queue": {
+    "active": true,
+    "ownerOnly": true,
+    "category": "owner",
+    "cmd": [
+      "queue"
+    ],
+    "aliases": [
+      "queuemode"
+    ],
+    "desc": "Mengaktifkan atau menonaktifkan queue",
+    "example": "Kirim {prefix}{command} enable|disable",
+    "name": "queue"
+  },
+  "quotesanime": {
+    "active": true,
+    "limit": 5,
+    "onlyNitro": true,
+    "category": "random",
+    "cmd": [
+      "quotesanime"
+    ],
+    "aliases": [
+      "quotesnime"
+    ],
+    "desc": "Random quotes anime",
+    "name": "quotesanime",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "randomanime": {
+    "active": true,
+    "cmd": [
+      "randomanime"
+    ],
+    "category": "random",
+    "limit": 5,
+    "desc": "Random fakta unik",
+    "name": "randomanime",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "randommeme": {
+    "active": true,
+    "cmd": [
+      "randommeme"
+    ],
+    "category": "random",
+    "limit": 5,
+    "onlyNitro": true,
+    "desc": "Random meme",
+    "name": "randommeme",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "randomnumber": {
+    "active": true,
+    "cmd": [
+      "randomnumber"
+    ],
+    "aliases": [
+      "randomnumber"
+    ],
+    "category": "random",
+    "desc": "Random number",
+    "name": "randomnumber"
+  },
+  "randomtag": {
+    "active": true,
+    "cmd": [
+      "randomtag"
+    ],
+    "groupOnly": false,
+    "category": "random",
+    "limit": 5,
+    "desc": "Random Tag",
+    "name": "randomtag",
+    "cd": 5,
+    "level": 0,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "rate": {
+    "active": true,
+    "cmd": [
+      "rate"
+    ],
+    "category": "random",
+    "limit": 5,
+    "desc": "Rating 1-100%",
+    "name": "rate",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "react": {
+    "active": true,
+    "ownerOnly": true,
+    "category": "owner",
+    "cmd": [
+      "react"
+    ],
+    "desc": "Send react message",
+    "name": "react"
+  },
+  "readmore": {
+    "active": true,
+    "limit": 5,
+    "category": "tools",
+    "cmd": [
+      "readmore"
+    ],
+    "desc": "Readmore (...baca selengkapnya)",
+    "name": "readmore",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "readviewonce": {
+    "active": true,
+    "category": "tools",
+    "cmd": [
+      "readviewonce"
+    ],
+    "aliases": [
+      "readvo",
+      "rvo"
+    ],
+    "desc": "Read view Once",
+    "name": "readviewonce",
+    "cd": 5,
+    "limit": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "redeem": {
+    "active": true,
+    "category": "game",
+    "cmd": [
+      "redeem"
+    ],
+    "name": "redeem"
+  },
+  "refreshgroup": {
+    "active": true,
+    "adminGroup": true,
+    "groupOnly": true,
+    "category": "group",
+    "cmd": [
+      "refreshgroup"
+    ],
+    "aliases": [
+      "refreshgrup"
+    ],
+    "name": "refreshgroup"
+  },
+  "refreshgroupbyid": {
+    "active": true,
+    "cmd": [
+      "refreshgroupbyid"
+    ],
+    "category": "owner",
+    "ownerOnly": true,
+    "name": "refreshgroupbyid"
+  },
+  "refreshpremiumlist": {
+    "active": true,
+    "cmd": [
+      "refreshpremiumlist"
+    ],
+    "aliases": [
+      "refreshpremium"
+    ],
+    "category": "owner",
+    "ownerOnly": true,
+    "desc": "Refresh premium list",
+    "onlyNitro": true,
+    "name": "refreshpremiumlist"
+  },
+  "removebackground": {
+    "active": true,
+    "onlyNitro": true,
+    "limit": 5,
+    "cmd": [
+      "removebackground"
+    ],
+    "category": "tools",
+    "aliases": [
+      "removebg"
+    ],
+    "desc": "Remove background from image or sticker",
+    "name": "removebackground",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "report": {
+    "active": true,
+    "cmd": [
+      "report"
+    ],
+    "aliases": [
+      "lapor"
+    ],
+    "category": "info",
+    "desc": "Mengirim laporan ke owner",
+    "name": "report"
+  },
+  "reqjoin": {
+    "active": true,
+    "adminGroup": true,
+    "groupOnly": true,
+    "botGroupAdmin": true,
+    "category": "group",
+    "cmd": [
+      "reqjoin"
+    ],
+    "aliases": [
+      "acc"
+    ],
+    "desc": "approve/reject group participant request",
+    "name": "reqjoin"
+  },
+  "resetalarm": {
+    "active": true,
+    "groupOnly": true,
+    "adminGroup": true,
+    "onlyNitro": true,
+    "desc": "Menghapus Semua Alarm",
+    "category": "group",
+    "cmd": [
+      "resetalarm"
+    ],
+    "name": "resetalarm"
+  },
+  "resetanonymous": {
+    "active": true,
+    "ownerOnly": true,
+    "cmd": [
+      "resetanonymous"
+    ],
+    "desc": "Reset database anonymous",
+    "category": "owner",
+    "name": "resetanonymous"
+  },
+  "resetbadword": {
+    "active": true,
+    "category": "group",
+    "adminGroup": true,
+    "onlyNitro": true,
+    "groupOnly": true,
+    "cmd": [
+      "resetbadword"
+    ],
+    "desc": "Reset badword",
+    "name": "resetbadword"
+  },
+  "resetbalance": {
+    "active": true,
+    "ownerOnly": true,
+    "cmd": [
+      "resetbalance"
+    ],
+    "desc": "Reset all balance",
+    "category": "owner",
+    "name": "resetbalance"
+  },
+  "resetlevel": {
+    "active": true,
+    "ownerOnly": true,
+    "cmd": [
+      "resetlevel",
+      "resetxp"
+    ],
+    "desc": "Reset all level & xp",
+    "category": "owner",
+    "name": "resetlevel"
+  },
+  "resetlimit": {
+    "active": true,
+    "ownerOnly": true,
+    "cmd": [
+      "resetlimit"
+    ],
+    "desc": "Reset all limit",
+    "category": "owner",
+    "name": "resetlimit"
+  },
+  "resetlimitreceivedgroup": {
+    "active": true,
+    "ownerOnly": true,
+    "onlyNitro": true,
+    "category": "owner",
+    "cmd": [
+      "resetlimitreceivedgroup"
+    ],
+    "aliases": [
+      "resetlimitreceivgroup"
+    ],
+    "desc": "Melakukan reset limit received group",
+    "example": "Kirim {prefix}{command} id_group",
+    "name": "resetlimitreceivedgroup"
+  },
+  "resetlist": {
+    "active": true,
+    "groupOnly": true,
+    "adminGroup": true,
+    "onlyNitro": true,
+    "desc": "Reset list",
+    "cmd": [
+      "resetlist"
+    ],
+    "category": "group",
+    "name": "resetlist"
+  },
+  "resetpoint": {
+    "active": true,
+    "category": "group",
+    "adminGroup": true,
+    "onlyNitro": true,
+    "groupOnly": true,
+    "cmd": [
+      "resetpoint"
+    ],
+    "aliases": [
+      "resetpoin"
+    ],
+    "desc": "Reset Point",
+    "name": "resetpoint"
+  },
+  "resetpremium": {
+    "active": true,
+    "ownerOnly": true,
+    "cmd": [
+      "resetpremium"
+    ],
+    "aliases": [
+      "resetprem"
+    ],
+    "category": "owner",
+    "desc": "Reset all premium",
+    "name": "resetpremium"
+  },
+  "resetreminder": {
+    "active": true,
+    "groupOnly": true,
+    "adminGroup": true,
+    "onlyNitro": true,
+    "desc": "Menghapus semua reminder",
+    "category": "group",
+    "cmd": [
+      "resetreminder"
+    ],
+    "name": "resetreminder"
+  },
+  "resetresponse": {
+    "active": true,
+    "ownerOnly": true,
+    "cmd": [
+      "resetresponsee"
+    ],
+    "aliases": [
+      "resetrespon"
+    ],
+    "category": "owner",
+    "desc": "Reset auto response",
+    "name": "resetresponse"
+  },
+  "resettotalpesan": {
+    "active": true,
+    "category": "group",
+    "adminGroup": true,
+    "onlyNitro": true,
+    "groupOnly": true,
+    "cmd": [
+      "resettotalpesan"
+    ],
+    "desc": "Reset totalpesan",
+    "name": "resettotalpesan"
+  },
+  "resetultahku": {
+    "active": true,
+    "category": "group",
+    "groupOnly": true,
+    "onlyNitro": true,
+    "cmd": [
+      "resetultahku"
+    ],
+    "aliases": [
+      "resetultah"
+    ],
+    "name": "resetultahku"
+  },
+  "resetwarn": {
+    "active": true,
+    "groupOnly": true,
+    "adminGroup": true,
+    "botGroupAdmin": true,
+    "desc": "Reset warn",
+    "category": "group",
+    "cmd": [
+      "resetwarn"
+    ],
+    "name": "resetwarn"
+  },
+  "runtime": {
+    "active": true,
+    "cmd": [
+      "runtime"
+    ],
+    "aliases": [
+      "uptime"
+    ],
+    "category": "general",
+    "name": "runtime"
+  },
+  "sambungkata": {
+    "active": true,
+    "cmd": [
+      "sambungkata"
+    ],
+    "category": "game",
+    "groupOnly": false,
+    "onlyNitro": true,
+    "desc": "Sambung kata game",
+    "name": "sambungkata",
+    "cd": 5,
+    "limit": 5,
+    "level": 0,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "screenshot": {
+    "active": true,
+    "cmd": [
+      "screenshot"
+    ],
+    "aliases": [
+      "ss"
+    ],
+    "limit": 5,
+    "onlyNitro": true,
+    "desc": "Screen shot",
+    "category": "tools",
+    "name": "screenshot",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "self": {
+    "active": true,
+    "ownerOnly": true,
+    "category": "owner",
+    "cmd": [
+      "self"
+    ],
+    "name": "self"
+  },
+  "selfbyid": {
+    "active": true,
+    "category": "owner",
+    "ownerOnly": true,
+    "cmd": [
+      "selfbyid"
+    ],
+    "desc": "Self group by id",
+    "name": "selfbyid"
+  },
+  "semoji": {
+    "active": true,
+    "cmd": [
+      "semoji"
+    ],
+    "category": "sticker",
+    "limit": 5,
+    "onlyNitro": true,
+    "desc": "Emoji to Sticker",
+    "name": "semoji",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "semojimix": {
+    "active": true,
+    "cmd": [
+      "semojimix"
+    ],
+    "aliases": [
+      "emojimix"
+    ],
+    "category": "sticker",
+    "limit": 5,
+    "onlyNitro": true,
+    "desc": "Two Emoji to Sticker",
+    "name": "semojimix",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "setbio": {
+    "active": true,
+    "cmd": [
+      "setbio"
+    ],
+    "category": "owner",
+    "ownerOnly": true,
+    "desc": "Setting bio bot",
+    "name": "setbio"
+  },
+  "setcommand": {
+    "active": true,
+    "ownerOnly": true,
+    "cmd": [
+      "setcommand"
+    ],
+    "category": "owner",
+    "desc": "Set setting command",
+    "example": "Reply message dengan caption {prefix}{command} command [options]",
+    "name": "setcommand"
+  },
+  "setdefaultweltype": {
+    "active": true,
+    "cmd": [
+      "setdefaultweltype"
+    ],
+    "aliases": [
+      "setdefweltype"
+    ],
+    "category": "owner",
+    "ownerOnly": true,
+    "desc": "Setting welcome/left type default bot",
+    "name": "setdefaultweltype"
+  },
+  "setdescgc": {
+    "active": true,
+    "groupOnly": true,
+    "adminGroup": true,
+    "botGroupAdmin": true,
+    "category": "group",
+    "cmd": [
+      "setdescgc"
+    ],
+    "name": "setdescgc"
+  },
+  "setlimitgroup": {
+    "active": true,
+    "ownerOnly": true,
+    "onlyNitro": true,
+    "category": "owner",
+    "cmd": [
+      "setlimitgroup"
+    ],
+    "desc": "Melakukan set limit group",
+    "example": "Kirim {prefix}{command} id_group limit",
+    "name": "setlimitgroup"
+  },
+  "setlimitreceivedgroup": {
+    "active": true,
+    "ownerOnly": true,
+    "onlyNitro": true,
+    "category": "owner",
+    "cmd": [
+      "setlimitreceivedgroup"
+    ],
+    "aliases": [
+      "setlimitreceivgroup"
+    ],
+    "desc": "Melakukan set limit received group",
+    "example": "Kirim {prefix}{command} id_group limit",
+    "name": "setlimitreceivedgroup"
+  },
+  "setname": {
+    "active": true,
+    "cmd": [
+      "setname"
+    ],
+    "category": "owner",
+    "ownerOnly": true,
+    "desc": "Setting nama bot",
+    "name": "setname"
+  },
+  "setnamegc": {
+    "active": true,
+    "groupOnly": true,
+    "adminGroup": true,
+    "botGroupAdmin": true,
+    "category": "group",
+    "cmd": [
+      "setnamegc"
+    ],
+    "name": "setnamegc"
+  },
+  "setopen": {
+    "active": true,
+    "cmd": [
+      "setopen",
+      "setclose"
+    ],
+    "category": "group",
+    "groupOnly": true,
+    "adminGroup": true,
+    "onlyNitro": true,
+    "desc": "Set proses/done text",
+    "name": "setopen"
+  },
+  "setopenaikey": {
+    "active": true,
+    "cmd": [
+      "setopenaikey"
+    ],
+    "aliases": [
+      "setaikey"
+    ],
+    "category": "owner",
+    "ownerOnly": true,
+    "desc": "Setting open ai key",
+    "name": "setopenaikey"
+  },
+  "setpp": {
+    "active": true,
+    "ownerOnly": true,
+    "category": "owner",
+    "cmd": [
+      "setpp"
+    ],
+    "desc": "Setting photo profile bot",
+    "name": "setpp"
+  },
+  "setppgc": {
+    "active": true,
+    "groupOnly": true,
+    "adminGroup": true,
+    "botGroupAdmin": true,
+    "category": "group",
+    "cmd": [
+      "setppgc"
+    ],
+    "aliases": [
+      "setppgroup"
+    ],
+    "desc": "Setting pp group dek",
+    "name": "setppgc"
+  },
+  "setppgcpanjang": {
+    "active": true,
+    "groupOnly": true,
+    "adminGroup": true,
+    "botGroupAdmin": true,
+    "category": "group",
+    "cmd": [
+      "setppgcpanjang"
+    ],
+    "aliases": [
+      "setppgrouppanjang"
+    ],
+    "desc": "Setting pp group dek",
+    "name": "setppgcpanjang"
+  },
+  "setpppanjang": {
+    "active": true,
+    "ownerOnly": true,
+    "category": "owner",
+    "cmd": [
+      "setpppanjang"
+    ],
+    "desc": "Setting photo profile bot panjang",
+    "name": "setpppanjang"
+  },
+  "setproses": {
+    "active": true,
+    "cmd": [
+      "setproses",
+      "setdone"
+    ],
+    "category": "group",
+    "groupOnly": true,
+    "adminGroup": true,
+    "onlyNitro": true,
+    "desc": "Set proses/done text",
+    "name": "setproses"
+  },
+  "setwarn": {
+    "active": true,
+    "groupOnly": true,
+    "adminGroup": true,
+    "botGroupAdmin": true,
+    "desc": "Warn",
+    "category": "group",
+    "cmd": [
+      "setwarn"
+    ],
+    "name": "setwarn"
+  },
+  "setwelcome": {
+    "active": true,
+    "cmd": [
+      "setwelcome",
+      "setleft"
+    ],
+    "category": "group",
+    "groupOnly": true,
+    "adminGroup": true,
+    "onlyNitro": true,
+    "desc": "Set welcome/left text",
+    "name": "setwelcome"
+  },
+  "setwelcometype": {
+    "active": true,
+    "cmd": [
+      "setwelcometype",
+      "setlefttype"
+    ],
+    "aliases": [
+      "setweltype"
+    ],
+    "category": "group",
+    "groupOnly": true,
+    "adminGroup": true,
+    "onlyNitro": true,
+    "desc": "Set welcome/left type",
+    "name": "setwelcometype"
+  },
+  "setwm": {
+    "active": true,
+    "onlyNitro": true,
+    "premiumOnly": true,
+    "cmd": [
+      "setwm"
+    ],
+    "aliases": [
+      "setswm",
+      "setexif"
+    ],
+    "category": "sticker",
+    "example": "Kirim {prefix}{command} packname|author",
+    "desc": "Mensetting watermark sticker",
+    "name": "setwm"
+  },
+  "setwrsuit": {
+    "active": true,
+    "ownerOnly": true,
+    "category": "owner",
+    "cmd": [
+      "setwrsuit"
+    ],
+    "aliases": [
+      "setwinratesuit"
+    ],
+    "desc": "Setting Winrate Game suit",
+    "example": "Kirim {prefix}{command} nomor/@mention jumlah_menang jumlah_kalah jumlah_seri",
+    "name": "setwrsuit"
+  },
+  "setwrttt": {
+    "active": true,
+    "ownerOnly": true,
+    "category": "owner",
+    "cmd": [
+      "setwrttt"
+    ],
+    "aliases": [
+      "setwinratettt"
+    ],
+    "desc": "Setting Winrate Game tictactoe",
+    "example": "Kirim {prefix}{command} nomor/@mention jumlah_menang jumlah_kalah jumlah_seri",
+    "name": "setwrttt"
+  },
+  "shortlink": {
+    "active": true,
+    "limit": 5,
+    "category": "tools",
+    "cmd": [
+      "shortlink"
+    ],
+    "aliases": [
+      "shorturl"
+    ],
+    "desc": "Short url tools",
+    "name": "shortlink",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "siapakah": {
+    "active": true,
+    "cmd": [
+      "siapakah"
+    ],
+    "groupOnly": false,
+    "category": "random",
+    "limit": 5,
+    "desc": "Random Tag",
+    "name": "siapakah",
+    "cd": 5,
+    "level": 0,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "siapakahaku": {
+    "active": true,
+    "category": "game",
+    "cmd": [
+      "siapakahaku"
+    ],
+    "limit": 5,
+    "desc": "Siapakah Aku game",
+    "name": "siapakahaku",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "sider": {
+    "active": true,
+    "category": "group",
+    "groupOnly": true,
+    "adminGroup": true,
+    "cmd": [
+      "sider"
+    ],
+    "name": "sider"
+  },
+  "sloth": {
+    "active": true,
+    "cmd": [
+      "sloth"
+    ],
+    "aliases": [
+      "slot",
+      "slots"
+    ],
+    "limit": 5,
+    "cd": 10,
+    "desc": "Sloth game",
+    "category": "game",
+    "name": "sloth",
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "spotify": {
+    "active": true,
+    "limit": 5,
+    "onlyNitro": true,
+    "cmd": [
+      "spotify"
+    ],
+    "aliases": [
+      "spotifydl"
+    ],
+    "category": "download",
+    "name": "spotify",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "status": {
+    "active": true,
+    "category": "info",
+    "cmd": [
+      "status"
+    ],
+    "ownerOnly": true,
+    "aliases": [
+      "botstat",
+      "botstatus"
+    ],
+    "name": "status"
+  },
+  "sticker": {
+    "active": true,
+    "cmd": [
+      "sticker"
+    ],
+    "aliases": [
+      "s",
+      "stiker"
+    ],
+    "category": "sticker",
+    "limit": 5,
+    "example": "Kirim/balas image/video(1-10 detik) dengan caption {prefix}{command}",
+    "desc": "Mengubah foto atau video menjadi sticker dalam waktu sekejap",
+    "name": "sticker",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "stickercircle": {
+    "active": true,
+    "cmd": [
+      "stickercircle"
+    ],
+    "aliases": [
+      "cs",
+      "circlesticker",
+      "stickerbulat"
+    ],
+    "category": "sticker",
+    "limit": 5,
+    "example": "Kirim/balas image/sticker dengan caption {prefix}{command}",
+    "desc": "Sticker circle/lingkaran",
+    "name": "stickercircle",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "stickerinfo": {
+    "active": true,
+    "limit": 5,
+    "onlyNitro": true,
+    "cmd": [
+      "stickerinfo"
+    ],
+    "aliases": [
+      "getexif",
+      "stikerinfo",
+      "extractsticker"
+    ],
+    "desc": "Extract metadata sticker",
+    "category": "sticker",
+    "name": "stickerinfo",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "stickerly": {
+    "active": true,
+    "limit": 3,
+    "onlyNitro": true,
+    "category": "sticker",
+    "cmd": [
+      "stickerly"
+    ],
+    "desc": "Stickerly to whatsapp sticker",
+    "name": "stickerly",
+    "cd": null,
+    "level": null,
+    "groupOnly": null,
+    "privateOnly": false,
+    "premiumOnly": null,
+    "sewaOnly": null,
+    "adminGroup": null,
+    "ownerOnly": null,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "stickermeme": {
+    "active": true,
+    "cmd": [
+      "smeme"
+    ],
+    "aliases": [
+      "stickermeme",
+      "meme",
+      "mememaker"
+    ],
+    "limit": 5,
+    "onlyNitro": true,
+    "category": "sticker",
+    "name": "stickermeme",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "stickernobg": {
+    "active": true,
+    "onlyNitro": true,
+    "limit": 5,
+    "cmd": [
+      "snobg"
+    ],
+    "category": "sticker",
+    "aliases": [
+      "stickernobg",
+      "stikernobg"
+    ],
+    "desc": "Sticker no background",
+    "name": "stickernobg",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "stickerwm": {
+    "active": true,
+    "cmd": [
+      "stickerwm"
+    ],
+    "aliases": [
+      "swm",
+      "stikerwm",
+      "wm"
+    ],
+    "category": "sticker",
+    "limit": 5,
+    "example": "Kirim/balas image/video(1-10 detik) dengan caption {prefix}{command}",
+    "desc": "Mengubah foto atau video menjadi sticker dalam waktu sekejap",
+    "name": "stickerwm",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "suit": {
+    "active": true,
+    "limit": 5,
+    "groupOnly": false,
+    "desc": "Game suit",
+    "category": "game",
+    "cmd": [
+      "suit"
+    ],
+    "name": "suit",
+    "cd": 5,
+    "level": 0,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "susunkalimat": {
+    "active": true,
+    "category": "game",
+    "cmd": [
+      "susunkalimat"
+    ],
+    "limit": 5,
+    "desc": "Susun Kalimat game",
+    "name": "susunkalimat",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "susunkata": {
+    "active": true,
+    "category": "game",
+    "cmd": [
+      "susunkata"
+    ],
+    "limit": 5,
+    "desc": "Susun Kata game",
+    "name": "susunkata",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "susunlirik": {
+    "active": true,
+    "category": "game",
+    "cmd": [
+      "susunlirik"
+    ],
+    "limit": 5,
+    "desc": "Susun Lirik game",
+    "name": "susunlirik",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "tagall": {
+    "active": true,
+    "groupOnly": true,
+    "adminGroup": true,
+    "cmd": [
+      "tagall"
+    ],
+    "aliases": [
+      "alltag"
+    ],
+    "desc": "Tag all di group",
+    "category": "group",
+    "name": "tagall"
+  },
+  "takesticker": {
+    "active": true,
+    "cmd": [
+      "takesticker"
+    ],
+    "aliases": [
+      "takestick",
+      "takestik",
+      "takes"
+    ],
+    "category": "sticker",
+    "limit": 5,
+    "example": "Reply dengan caption {prefix}{command}",
+    "name": "takesticker",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "tebakbendera": {
+    "active": true,
+    "category": "game",
+    "cmd": [
+      "tebakbendera"
+    ],
+    "limit": 5,
+    "desc": "Tebak Bendera game",
+    "name": "tebakbendera",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "tebakbom": {
+    "active": true,
+    "limit": 5,
+    "category": "game",
+    "cmd": [
+      "tebakbom"
+    ],
+    "desc": "Tebak bom",
+    "name": "tebakbom",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "tebakchara": {
+    "active": true,
+    "category": "game",
+    "cmd": [
+      "tebakchara"
+    ],
+    "onlyNitro": true,
+    "aliases": [
+      "tebakcharacter"
+    ],
+    "limit": 5,
+    "desc": "Tebak Chracter game",
+    "name": "tebakchara",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "tebakgambar": {
+    "active": true,
+    "category": "game",
+    "cmd": [
+      "tebakgambar"
+    ],
+    "onlyNitro": true,
+    "limit": 5,
+    "desc": "Tebak Gambar game",
+    "name": "tebakgambar",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "tebakkata": {
+    "active": true,
+    "category": "game",
+    "cmd": [
+      "tebakkata"
+    ],
+    "limit": 5,
+    "desc": "Asah otak game",
+    "name": "tebakkata",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "tebaklagu": {
+    "active": true,
+    "category": "game",
+    "cmd": [
+      "tebaklagu"
+    ],
+    "limit": 5,
+    "onlyNitro": true,
+    "desc": "Tebak Lagu game",
+    "name": "tebaklagu",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "tebaklaguanime": {
+    "active": true,
+    "category": "game",
+    "cmd": [
+      "tebaklaguanime"
+    ],
+    "limit": 5,
+    "onlyNitro": true,
+    "desc": "Tebak Lagu k-pop game",
+    "name": "tebaklaguanime",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "tebaklagukpop": {
+    "active": true,
+    "category": "game",
+    "cmd": [
+      "tebaklagukpop"
+    ],
+    "limit": 5,
+    "onlyNitro": true,
+    "desc": "Tebak Lagu k-pop game",
+    "name": "tebaklagukpop",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "tekateki": {
+    "active": true,
+    "category": "game",
+    "cmd": [
+      "tekateki"
+    ],
+    "limit": 5,
+    "desc": "Teka Teki game",
+    "name": "tekateki",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "telestick": {
+    "active": true,
+    "limit": 5,
+    "onlyNitro": true,
+    "category": "sticker",
+    "cmd": [
+      "telestick"
+    ],
+    "aliases": [
+      "tstick",
+      "tstik",
+      "telestik"
+    ],
+    "desc": "Telegram sticker to whatsapp sticker",
+    "name": "telestick",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": true,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "tempmail": {
+    "active": true,
+    "limit": 5,
+    "category": "tools",
+    "desc": "Temp mail",
+    "cmd": [
+      "myemail",
+      "getemail"
+    ],
+    "privateOnly": false,
+    "name": "tempmail",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "testbutton": {
+    "active": true,
+    "ownerOnly": true,
+    "category": "owner",
+    "cmd": [
+      "testbutton"
+    ],
+    "aliases": [
+      "testbuttons"
+    ],
+    "desc": "Test Button",
+    "name": "testbutton"
+  },
+  "textpro": {
+    "active": false,
+    "category": "textmaker",
+    "onlyNitro": true,
+    "limit": 1,
+    "cmd": [
+      "lightglow",
+      "thunder",
+      "blackpink",
+      "bear",
+      "cloud",
+      "neonlight",
+      "sand",
+      "dropwater",
+      "magma",
+      "glow",
+      "neon",
+      "window",
+      "sky",
+      "pencil",
+      "cartoon",
+      "spacetext",
+      "greenneon",
+      "bisnissign",
+      "bokeh",
+      "firework",
+      "batman",
+      "holo",
+      "narutologo"
+    ],
+    "name": "textpro"
+  },
+  "textpro2": {
+    "active": false,
+    "category": "textmaker",
+    "onlyNitro": true,
+    "limit": 1,
+    "cmd": [
+      "glitch",
+      "thor",
+      "wolf",
+      "phlogo",
+      "avangers",
+      "marvel",
+      "halloween",
+      "graffiti"
+    ],
+    "name": "textpro2"
+  },
+  "tfbalance": {
+    "active": true,
+    "cmd": [
+      "tfbalance"
+    ],
+    "aliases": [
+      "transferbalance",
+      "tfb"
+    ],
+    "category": "game",
+    "desc": "Transfer balance sesama user",
+    "name": "tfbalance"
+  },
+  "tfpoint": {
+    "active": true,
+    "cmd": [
+      "tfpoint"
+    ],
+    "aliases": [
+      "transferpoint",
+      "tfpoin"
+    ],
+    "category": "group",
+    "onlyNitro": true,
+    "groupOnly": true,
+    "desc": "Transfer point sesama user",
+    "name": "tfpoint"
+  },
+  "threads": {
+    "active": true,
+    "limit": 5,
+    "onlyNitro": true,
+    "cmd": [
+      "threads"
+    ],
+    "aliases": [
+      "threadsdl"
+    ],
+    "category": "download",
+    "desc": "Threads.net downloader",
+    "name": "threads",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "tictactoe": {
+    "active": true,
+    "cmd": [
+      "tictactoe"
+    ],
+    "limit": 5,
+    "desc": "Tic tac toe game",
+    "aliases": [
+      "ttt"
+    ],
+    "name": "tictactoe",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "tiktok": {
+    "active": true,
+    "category": "download",
+    "limit": 5,
+    "onlyNitro": true,
+    "cmd": [
+      "tiktoknowm",
+      "tiktokwm",
+      "tiktokmusic"
+    ],
+    "aliases": [
+      "tt",
+      "ttdl",
+      "tiktok",
+      "ttdlnowm",
+      "ttdlwm",
+      "ttmusic",
+      "ttmp3",
+      "tiktokmp3"
+    ],
+    "name": "tiktok",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "toimg": {
+    "active": true,
+    "limit": 5,
+    "onlyNitro": true,
+    "cmd": [
+      "toimg"
+    ],
+    "aliases": [
+      "tovideo",
+      "tomp4",
+      "stickertoimg"
+    ],
+    "desc": "Sticker to image/video",
+    "category": "sticker",
+    "name": "toimg",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "tomp3": {
+    "active": true,
+    "cmd": [
+      "tomp3",
+      "tovn"
+    ],
+    "aliases": [
+      "toaudio"
+    ],
+    "limit": 5,
+    "onlyNitro": true,
+    "desc": "Video to audio",
+    "category": "tools",
+    "name": "tomp3",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "topglobal": {
+    "active": true,
+    "cmd": [
+      "topglobal"
+    ],
+    "category": "info",
+    "name": "topglobal",
+    "cd": 5,
+    "limit": 0,
+    "level": 0,
+    "groupOnly": true,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": true,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "toplocal": {
+    "active": true,
+    "cmd": [
+      "toplocal"
+    ],
+    "groupOnly": false,
+    "category": "info",
+    "name": "toplocal",
+    "cd": 5,
+    "limit": 0,
+    "level": 0,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": true,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "toquickvideo": {
+    "active": true,
+    "cmd": [
+      "toquickvideo"
+    ],
+    "aliases": [
+      "toptv"
+    ],
+    "limit": 5,
+    "onlyNitro": true,
+    "desc": "Video to quick video",
+    "category": "tools",
+    "name": "toquickvideo",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "totag": {
+    "active": true,
+    "groupOnly": true,
+    "adminGroup": true,
+    "cmd": [
+      "totag"
+    ],
+    "desc": "To tag",
+    "category": "group",
+    "name": "totag"
+  },
+  "totalpesan": {
+    "active": true,
+    "adminGroup": true,
+    "groupOnly": true,
+    "category": "group",
+    "onlyNitro": true,
+    "cmd": [
+      "totalpesan"
+    ],
+    "desc": "Mengaktifkan atau menonaktifkan totalpesan",
+    "example": "Kirim {prefix}{command} enable|disable",
+    "name": "totalpesan"
+  },
+  "tourl": {
+    "active": true,
+    "onlyNitro": true,
+    "premiumOnly": false,
+    "cmd": [
+      "tourl"
+    ],
+    "category": "tools",
+    "limit": 5,
+    "name": "tourl",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "toviewonce": {
+    "active": true,
+    "cmd": [
+      "toviewonce"
+    ],
+    "aliases": [
+      "tovo"
+    ],
+    "desc": "Image/Video/Audio to View Once Message",
+    "category": "tools",
+    "name": "toviewonce",
+    "cd": 5,
+    "limit": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "translate": {
+    "active": true,
+    "limit": 5,
+    "category": "tools",
+    "cmd": [
+      "translate"
+    ],
+    "aliases": [
+      "tr"
+    ],
+    "desc": "Translate text cuy",
+    "name": "translate",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "trigger": {
+    "active": true,
+    "cmd": [
+      "trigger"
+    ],
+    "category": "sticker",
+    "limit": 5,
+    "onlyNitro": true,
+    "desc": "Trigger effect",
+    "name": "trigger",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "truth": {
+    "active": true,
+    "category": "game",
+    "cmd": [
+      "truth"
+    ],
+    "limit": 5,
+    "desc": "Truth and Dare game",
+    "name": "truth",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "ttp": {
+    "active": true,
+    "cmd": [
+      "ttp"
+    ],
+    "category": "sticker",
+    "limit": 5,
+    "onlyNitro": true,
+    "desc": "Membuat text menjadi sticker",
+    "name": "ttp",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "tts": {
+    "active": true,
+    "limit": 5,
+    "onlyNitro": true,
+    "category": "tools",
+    "cmd": [
+      "tts"
+    ],
+    "aliases": [
+      "gtts"
+    ],
+    "desc": "Text to sound",
+    "name": "tts",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "tts2": {
+    "active": true,
+    "limit": 5,
+    "onlyNitro": true,
+    "category": "tools",
+    "cmd": [
+      "tts2"
+    ],
+    "desc": "Text to sound",
+    "name": "tts2",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "twitter": {
+    "active": true,
+    "limit": 5,
+    "onlyNitro": true,
+    "cmd": [
+      "twitterdl"
+    ],
+    "aliases": [
+      "twitter",
+      "twt",
+      "tweetdl",
+      "xdl",
+      "x"
+    ],
+    "category": "download",
+    "name": "twitter",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "ulartangga": {
+    "active": true,
+    "onlyNitro": true,
+    "groupOnly": true,
+    "category": "game",
+    "cmd": [
+      "ulartangga"
+    ],
+    "aliases": [
+      "ut"
+    ],
+    "name": "ulartangga"
+  },
+  "ultahku": {
+    "active": true,
+    "category": "group",
+    "groupOnly": true,
+    "onlyNitro": true,
+    "cmd": [
+      "ultahku"
+    ],
+    "name": "ultahku"
+  },
+  "unban": {
+    "active": true,
+    "ownerOnly": true,
+    "category": "owner",
+    "desc": "Unban user",
+    "example": "Kirim {prefix}{command} nomor/@mention",
+    "cmd": [
+      "unban"
+    ],
+    "aliases": [
+      "delban"
+    ],
+    "name": "unban"
+  },
+  "unbanmember": {
+    "active": true,
+    "adminGroup": true,
+    "groupOnly": true,
+    "onlyNitro": true,
+    "category": "group",
+    "cmd": [
+      "unbanmember"
+    ],
+    "aliases": [
+      "delbanmember"
+    ],
+    "desc": "Unban member group",
+    "example": "Kirim {prefix}{command} number/@mention atau tag peserta lain yang ingin di unban",
+    "name": "unbanmember"
+  },
+  "unblock": {
+    "active": true,
+    "category": "owner",
+    "cmd": [
+      "unblock"
+    ],
+    "ownerOnly": true,
+    "desc": "Unblock seseorang",
+    "name": "unblock"
+  },
+  "uno": {
+    "active": true,
+    "onlyNitro": true,
+    "category": "game",
+    "cmd": [
+      "uno"
+    ],
+    "name": "uno"
+  },
+  "unpinmsg": {
+    "active": true,
+    "adminGroup": true,
+    "groupOnly": true,
+    "botGroupAdmin": true,
+    "category": "group",
+    "cmd": [
+      "unpinmsg"
+    ],
+    "aliases": [
+      "unpin"
+    ],
+    "desc": "Melakukan pin pada sebuah pesan",
+    "example": "Kirim {prefix}{command} 1d|7d|30d",
+    "name": "unpinmsg"
+  },
+  "unreact": {
+    "active": true,
+    "ownerOnly": true,
+    "category": "owner",
+    "cmd": [
+      "unreact"
+    ],
+    "desc": "Unsend react message",
+    "name": "unreact"
+  },
+  "upchannel": {
+    "active": true,
+    "ownerOnly": true,
+    "category": "owner",
+    "cmd": [
+      "upchannel"
+    ],
+    "aliases": [
+      "upch"
+    ],
+    "onlyNitro": true,
+    "desc": "Send message to channel",
+    "name": "upchannel"
+  },
+  "updateresponse": {
+    "active": true,
+    "ownerOnly": true,
+    "cmd": [
+      "upres"
+    ],
+    "aliases": [
+      "updaterespon",
+      "updateres",
+      "updateresponse"
+    ],
+    "category": "owner",
+    "desc": "Menambah atau update auto response",
+    "example": "Reply message dengan caption {prefix}{command} key",
+    "name": "updateresponse"
+  },
+  "upscale": {
+    "active": true,
+    "onlyNitro": true,
+    "premiumOnly": true,
+    "limit": 3,
+    "cmd": [
+      "upscale"
+    ],
+    "category": "tools",
+    "aliases": [
+      "hd",
+      "hdr",
+      "remini"
+    ],
+    "desc": "Gambar jadi hd\nOptions:\n--server/-s: pilih server (1=remini, 2=iloveimg, 3=ihancer, auto)\n--type/-t: pilih type remini (enhance, upscale)\n--scale: pilih scale iloveimg (2, 4, 6, 8)\n--method/-m: pilih method ihancer (1, 2, 3, 4)\n--size: pilih size ihancer (low, medium, high)",
+    "name": "upscale"
+  },
+  "upsw": {
+    "active": true,
+    "ownerOnly": true,
+    "category": "owner",
+    "cmd": [
+      "upsw"
+    ],
+    "onlyNitro": true,
+    "desc": "Send Stories",
+    "name": "upsw"
+  },
+  "upswgroup": {
+    "active": true,
+    "ownerOnly": true,
+    "category": "owner",
+    "cmd": [
+      "upswgroup"
+    ],
+    "aliases": [
+      "upswgrup",
+      "upswgc"
+    ],
+    "onlyNitro": true,
+    "desc": "Send Stories",
+    "name": "upswgroup"
+  },
+  "upswgroupv2": {
+    "active": true,
+    "adminGroup": true,
+    "category": "owner",
+    "cmd": [
+      "upswgroupv2"
+    ],
+    "aliases": [
+      "upswgrupv2",
+      "upswgcv2"
+    ],
+    "onlyNitro": true,
+    "desc": "Send Stories",
+    "name": "upswgroupv2"
+  },
+  "upswgroupv2byid": {
+    "active": true,
+    "ownerOnly": true,
+    "category": "owner",
+    "cmd": [
+      "upswgroupv2byid"
+    ],
+    "aliases": [
+      "upswgrupv2byid",
+      "upswgcv2byid"
+    ],
+    "onlyNitro": true,
+    "desc": "Send Stories",
+    "name": "upswgroupv2byid"
+  },
+  "upswmentiongroup": {
+    "active": true,
+    "ownerOnly": true,
+    "category": "owner",
+    "cmd": [
+      "upswmentiongroup",
+      "upswmentiongroupsilent"
+    ],
+    "aliases": [
+      "upswmentiongrup",
+      "upswmentiongrupsilent"
+    ],
+    "onlyNitro": true,
+    "desc": "Send Stories",
+    "name": "upswmentiongroup"
+  },
+  "upswpremium": {
+    "active": true,
+    "ownerOnly": true,
+    "category": "owner",
+    "cmd": [
+      "upswpremium"
+    ],
+    "onlyNitro": true,
+    "desc": "Send Stories",
+    "name": "upswpremium"
+  },
+  "version": {
+    "active": true,
+    "ownerOnly": true,
+    "cmd": [
+      "version",
+      "changelog"
+    ],
+    "category": "general",
+    "name": "version"
+  },
+  "videocall": {
+    "active": true,
+    "ownerOnly": true,
+    "onlyNitro": true,
+    "category": "owner",
+    "desc": "Videocall seseorang dengan bot",
+    "example": "Kirim {prefix}{command} nomor/@mention",
+    "cmd": [
+      "videocall"
+    ],
+    "aliases": [
+      "vc"
+    ],
+    "name": "videocall"
+  },
+  "voicechanger": {
+    "active": true,
+    "limit": 5,
+    "onlyNitro": true,
+    "desc": "Voice changer",
+    "cmd": [
+      "bass",
+      "blown",
+      "deep",
+      "earrape",
+      "fast",
+      "fat",
+      "nightcore",
+      "reverse",
+      "robot",
+      "slow",
+      "smooth",
+      "tupai"
+    ],
+    "name": "voicechanger",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "voicejapan": {
+    "active": true,
+    "onlyNitro": true,
+    "premiumOnly": false,
+    "category": "ai",
+    "desc": "Voice Japan",
+    "cmd": [
+      "voicejapan"
+    ],
+    "aliases": [
+      "specialweek",
+      "silencesuzuka",
+      "tokaiteio",
+      "maruzensky",
+      "fujikiseki",
+      "oguricap",
+      "goldship",
+      "vodka",
+      "daiwascarlet",
+      "taikishuttle",
+      "grasswonder",
+      "hishiamazon",
+      "mejiromcqueen",
+      "elcondorpasa",
+      "opera",
+      "naritabrian",
+      "symbolirudolf",
+      "airgroove",
+      "agnesdigital",
+      "seiunsky",
+      "tamamocross",
+      "finemotion",
+      "biwahayahide",
+      "mayanotopgun",
+      "manhattancafe",
+      "mihonobourbon",
+      "mejiroryan",
+      "yukinobijin",
+      "riceshower",
+      "inesfujin",
+      "agnestachyon",
+      "admirevega",
+      "inarione",
+      "winningticket",
+      "airshakur",
+      "eishinflash",
+      "currenchan",
+      "kawakamiprincess",
+      "goldcity",
+      "sakurabakushin",
+      "seekingthepearl",
+      "shinkowindy",
+      "sweeptosho",
+      "supercreek",
+      "smartfalcon",
+      "zennorobroy",
+      "tosenjordan",
+      "nakayamafesta",
+      "naritataishin",
+      "nishinoflower",
+      "haruurara",
+      "bamboomemory",
+      "matikanefukukitaru",
+      "meishodoto",
+      "mejirodober",
+      "nicenature",
+      "kinghalo",
+      "matikanetannhauser",
+      "ikunodictus",
+      "mejiropalmer",
+      "daitakuhelios",
+      "twinturbo",
+      "satonodiamond",
+      "kitasanblack",
+      "sakurachiyono",
+      "siriussymboli",
+      "mejiroardan",
+      "yaenomuteki",
+      "tsurumarutsuyoshi",
+      "mejirobright",
+      "sakuralaurel",
+      "naritatoproad",
+      "yamaninzephyr",
+      "astonmachan",
+      "hayakawatazuna",
+      "kopanorickey",
+      "wonderacute",
+      "presidentakikawa",
+      "ayachinene",
+      "inabameguru",
+      "shiibatsumugi",
+      "kariyawakama",
+      "togakushitouko",
+      "kujousara",
+      "barbara",
+      "paimon",
+      "aratakiitto",
+      "sayu",
+      "xiangling",
+      "kamisatoayaka",
+      "chongyun",
+      "wanderer",
+      "eula",
+      "ningguang",
+      "zhongli",
+      "raidenshogun",
+      "kaedeharakazuha",
+      "cyno",
+      "noelle",
+      "yaemiko",
+      "kaeya",
+      "xiao",
+      "thoma",
+      "klee",
+      "diluc",
+      "yelan",
+      "shikanoinheizou",
+      "xinyan",
+      "lisa",
+      "yunjin",
+      "candace",
+      "rosaria",
+      "beidou",
+      "sangonomiyakokomi",
+      "yanfei",
+      "kukishinobu",
+      "yoimiya",
+      "amber",
+      "diona",
+      "bennett",
+      "razor",
+      "albedo",
+      "venti",
+      "playermale",
+      "kamisatoayato",
+      "jean",
+      "alhaitham",
+      "mona",
+      "nilou",
+      "hutao",
+      "ganyu",
+      "nahida",
+      "keqing",
+      "playerfemale",
+      "aloy",
+      "collei",
+      "dori",
+      "tighnari",
+      "sucrose",
+      "xingqiu",
+      "oz",
+      "gorou",
+      "tartalia",
+      "qiqi",
+      "shenhe",
+      "layla",
+      "fishl"
+    ],
+    "name": "voicejapan",
+    "cd": 5,
+    "limit": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "vote": {
+    "active": true,
+    "groupOnly": true,
+    "cmd": [
+      "vote"
+    ],
+    "category": "group",
+    "name": "vote"
+  },
+  "vowelchanger": {
+    "active": true,
+    "limit": 5,
+    "desc": "Vowel changer (aiueo)",
+    "category": "tools",
+    "cmd": [
+      "halah",
+      "hilih",
+      "huluh",
+      "heleh",
+      "holoh"
+    ],
+    "name": "vowelchanger",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "waifu.pics": {
+    "active": true,
+    "limit": 5,
+    "onlyNitro": true,
+    "category": "random",
+    "cmd": [
+      "neko",
+      "waifu"
+    ],
+    "desc": "Random waifu picture from https://waifu.pics",
+    "name": "waifu.pics",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "wait": {
+    "active": true,
+    "limit": 5,
+    "onlyNitro": true,
+    "cmd": [
+      "wait"
+    ],
+    "category": "tools",
+    "desc": "Search anime by image | What Anime It This",
+    "name": "wait",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "warn": {
+    "active": true,
+    "groupOnly": true,
+    "adminGroup": true,
+    "botGroupAdmin": true,
+    "desc": "Warn",
+    "category": "group",
+    "cmd": [
+      "warn"
+    ],
+    "name": "warn"
+  },
+  "welcome": {
+    "active": true,
+    "adminGroup": true,
+    "groupOnly": true,
+    "category": "group",
+    "cmd": [
+      "welcome"
+    ],
+    "desc": "Mengaktifkan atau menonaktifkan welcome",
+    "example": "Kirim {prefix}{command} enable|disable",
+    "name": "welcome"
+  },
+  "werewolf": {
+    "active": true,
+    "onlyNitro": true,
+    "category": "game",
+    "cmd": [
+      "werewolf"
+    ],
+    "aliases": [
+      "ww"
+    ],
+    "name": "werewolf"
+  },
+  "wiki": {
+    "active": true,
+    "limit": 5,
+    "onlyNitro": true,
+    "category": "search",
+    "cmd": [
+      "wikipedia"
+    ],
+    "aliases": [
+      "wiki"
+    ],
+    "desc": "Wikipedia search",
+    "name": "wiki",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "ytcomment": {
+    "active": true,
+    "limit": 5,
+    "onlyNitro": true,
+    "category": "tools",
+    "cmd": [
+      "ytcomment"
+    ],
+    "desc": "Membuat ytcomment",
+    "name": "ytcomment",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "ytmp3": {
+    "active": true,
+    "limit": 5,
+    "onlyNitro": true,
+    "category": "download",
+    "cmd": [
+      "ytmp3"
+    ],
+    "aliases": [
+      "yta",
+      "getaudio"
+    ],
+    "desc": "Download audio youtube",
+    "name": "ytmp3",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "ytmp4": {
+    "active": true,
+    "limit": 5,
+    "onlyNitro": true,
+    "category": "download",
+    "cmd": [
+      "ytmp4"
+    ],
+    "aliases": [
+      "ytv",
+      "getvideo"
+    ],
+    "desc": "Download video youtube",
+    "name": "ytmp4",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "ytsearch": {
+    "active": true,
+    "limit": 5,
+    "onlyNitro": true,
+    "category": "search",
+    "cmd": [
+      "ytsearch"
+    ],
+    "aliases": [
+      "yts"
+    ],
+    "desc": "Youtube search",
+    "name": "ytsearch",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "premiumOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  },
+  "ziptelestick": {
+    "active": true,
+    "limit": 5,
+    "premiumOnly": false,
+    "onlyNitro": true,
+    "category": "sticker",
+    "cmd": [
+      "ziptelestick"
+    ],
+    "aliases": [
+      "ziptstick",
+      "ziptstik",
+      "ziptelestik"
+    ],
+    "desc": "Telegram sticker to whatsapp sticker package",
+    "name": "ziptelestick",
+    "cd": 5,
+    "level": 0,
+    "groupOnly": false,
+    "privateOnly": false,
+    "sewaOnly": false,
+    "adminGroup": false,
+    "ownerOnly": false,
+    "privateOnlyPrem": false,
+    "premiumGroup": false
+  }
+}
