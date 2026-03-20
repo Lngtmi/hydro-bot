@@ -39458,25 +39458,11 @@ function autoClearSession() {
         try {
             const preKeys = listPreKeys().sort((a, b) => b.mtimeMs - a.mtimeMs)
             if (!preKeys.length) return
-            if (preKeys.length <= PREKEY_KEEP) {
-                console.log(chalk.cyan.bold(`📂 [SESSION MONITOR] pre-key aman: ${preKeys.length}/${PREKEY_KEEP}`))
-                return
-            }
-            const stale = preKeys.slice(PREKEY_KEEP)
-            let removed = 0
-            for (const item of stale) {
-                try {
-                    if (fs.existsSync(item.abs)) {
-                        fs.unlinkSync(item.abs)
-                        removed += 1
-                    }
-                } catch {}
-            }
-            console.log(
-                chalk.cyan.bold(
-                    `📂 [SESSION MONITOR] pre-key: ${preKeys.length}, dihapus: ${removed}, sisa: ${Math.max(0, preKeys.length - removed)}`
-                )
-            )
+            // Monitor-only mode:
+            // penghapusan pre-key dinonaktifkan untuk mencegah risiko badSession
+            // pada instance yang butuh rotasi key lebih tinggi.
+            const status = preKeys.length <= PREKEY_KEEP ? 'aman' : 'tinggi'
+            console.log(chalk.cyan.bold(`📂 [SESSION MONITOR] pre-key ${status}: ${preKeys.length}/${PREKEY_KEEP} (no-prune mode)`))
         } catch (error) {
             console.error(chalk.red.bold('📑 [SESSION MONITOR ERROR]'), chalk.red.bold(error))
         }

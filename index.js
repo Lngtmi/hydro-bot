@@ -401,27 +401,33 @@ hydro.ev.on('creds.update', await saveCreds)
     })
 		hydro.ev.on('messages.upsert', async chatUpdate => {
 		try {
-		markSocketActivity()
 		const messages = Array.isArray(chatUpdate?.messages) ? chatUpdate.messages : []
-	if (!messages.length) return
-	const kay = messages[0]
-	if (!kay.message) return
-	kay.message = (Object.keys(kay.message)[0] === 'ephemeralMessage') ? kay.message.ephemeralMessage.message : kay.message
-	if (kay.key && kay.key.remoteJid === 'status@broadcast')  {
-	await hydro.readMessages([kay.key]) }
-	// Mode public/self difilter di hydro.js setelah normalisasi sender (termasuk LID -> JID)
-	// agar pesan owner di grup tidak ter-drop sebelum diproses.
-	const msgId = String(kay.key?.id || '')
-	if (msgId.startsWith('BAE5') && msgId.length === 16 && kay.key.fromMe) return
-const m = smsg(hydro, kay, store)
-	if (m?.isGroup && m?.chat && global.triggerAntiGcNoSewaCheck) {
-		setTimeout(() => {
-			global.triggerAntiGcNoSewaCheck?.(m.chat, 'messages.upsert')
-		}, 500)
-	}
-	require('./hydro')(hydro, m, chatUpdate, store)
-	} catch (err) {
-console.log(err)}})
+		if (!messages.length) return
+		for (const rawMsg of messages) {
+			if (!rawMsg?.message) continue
+			markSocketActivity()
+			const kay = rawMsg
+			kay.message = (Object.keys(kay.message)[0] === 'ephemeralMessage') ? kay.message.ephemeralMessage.message : kay.message
+			if (kay.key?.remoteJid === 'status@broadcast') {
+				await hydro.readMessages([kay.key]).catch(() => {})
+				continue
+			}
+			// Mode public/self difilter di hydro.js setelah normalisasi sender (termasuk LID -> JID)
+			// agar pesan owner di grup tidak ter-drop sebelum diproses.
+			const msgId = String(kay.key?.id || '')
+			if (msgId.startsWith('BAE5') && msgId.length === 16 && kay.key?.fromMe) continue
+			const m = smsg(hydro, kay, store)
+			if (m?.isGroup && m?.chat && global.triggerAntiGcNoSewaCheck) {
+				setTimeout(() => {
+					global.triggerAntiGcNoSewaCheck?.(m.chat, 'messages.upsert')
+				}, 500)
+			}
+			await require('./hydro')(hydro, m, chatUpdate, store)
+		}
+		} catch (err) {
+			console.log(err)
+		}
+		})
     async function getMessage(key){
         if (store) {
             const msg = await store.loadMessage(key.remoteJid, key.id)
