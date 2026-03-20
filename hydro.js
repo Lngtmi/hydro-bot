@@ -203,6 +203,7 @@ function saveAutoClose() {
 
 const OPENAI_KEY_STORE = path.join(__dirname, 'session', 'openai_api_key.txt')
 const GROQ_KEY_STORE = path.join(__dirname, 'session', 'groq_api_key.txt')
+const GEMINI_KEY_STORE = path.join(__dirname, 'session', 'gemini_api_key.txt')
 const maskSecret = (raw = '') => {
     const v = String(raw || '').trim()
     if (!v) return '-'
@@ -264,6 +265,36 @@ const clearPersistedGroqKey = () => {
         if (fs.existsSync(GROQ_KEY_STORE)) fs.unlinkSync(GROQ_KEY_STORE)
     } catch {}
 }
+const readStoredGeminiKey = () => {
+    try {
+        if (!fs.existsSync(GEMINI_KEY_STORE)) return ''
+        return String(fs.readFileSync(GEMINI_KEY_STORE, 'utf8') || '').trim()
+    } catch {
+        return ''
+    }
+}
+const resolveGeminiKey = () => {
+    const envKey = String(process.env.GEMINI_API_KEY || '').trim()
+    if (envKey) return envKey
+    if (global.keygemini && String(global.keygemini).trim() && String(global.keygemini).trim() !== '-') {
+        return String(global.keygemini).trim()
+    }
+    const stored = readStoredGeminiKey()
+    return stored || ''
+}
+const persistGeminiKey = (rawKey = '') => {
+    const key = String(rawKey || '').trim()
+    const dir = path.dirname(GEMINI_KEY_STORE)
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
+    fs.writeFileSync(GEMINI_KEY_STORE, key, 'utf8')
+    global.keygemini = key
+}
+const clearPersistedGeminiKey = () => {
+    try {
+        if (fs.existsSync(GEMINI_KEY_STORE)) fs.unlinkSync(GEMINI_KEY_STORE)
+    } catch {}
+    global.keygemini = '-'
+}
 const detectTranscriptLang = (raw = '') => {
     const text = String(raw || '').toLowerCase()
     if (!text.trim()) return 'UNKNOWN'
@@ -284,6 +315,8 @@ const detectTranscriptLang = (raw = '') => {
 
 const bootOpenAIKey = resolveOpenAIKey()
 if (bootOpenAIKey) global.keyopenai = bootOpenAIKey
+const bootGeminiKey = resolveGeminiKey()
+if (bootGeminiKey) global.keygemini = bootGeminiKey
 const DB_FILE = './database/database.json';
 function loadDB() {
   if (fs.existsSync(DB_FILE)) {
@@ -300,6 +333,87 @@ function loadDB() {
 }
 function saveDB(db) {
   fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
+}
+const AI_HISTORY_MAX_TURNS = 14 // user+assistant pair disimpan seperlunya agar konteks nyambung
+const getAiSessionKey = (m) => {
+  if (m?.isGroup) return `${m.chat}|${m.sender}`
+  return String(m?.chat || m?.sender || 'global')
+}
+const getAiMemoryStore = () => {
+  global.db = global.db || {}
+  global.db.others = global.db.others || {}
+  global.db.others.aiMemory = global.db.others.aiMemory || {}
+  return global.db.others.aiMemory
+}
+const trimAiHistory = (history = []) => {
+  const normalized = Array.isArray(history)
+    ? history.filter(x => x && (x.role === 'user' || x.role === 'model') && String(x.text || '').trim())
+    : []
+  if (normalized.length <= AI_HISTORY_MAX_TURNS * 2) return normalized
+  return normalized.slice(normalized.length - (AI_HISTORY_MAX_TURNS * 2))
+}
+const getAiHistory = (sessionKey) => {
+  const store = getAiMemoryStore()
+  return trimAiHistory(store[sessionKey] || [])
+}
+const setAiHistory = (sessionKey, history) => {
+  const store = getAiMemoryStore()
+  store[sessionKey] = trimAiHistory(history)
+  saveDB(global.db)
+}
+const clearAiHistory = (sessionKey) => {
+  const store = getAiMemoryStore()
+  delete store[sessionKey]
+  saveDB(global.db)
+}
+const AI_PERSONA_PROMPT = (botName, ownerName) => `Kamu adalah ${botName}, asisten WhatsApp yang ramah, nyambung, dan natural.
+Gaya bicara santai tapi tetap sopan, jelas, dan membantu.
+Jawab singkat-menengah, tidak terlalu kaku, dan nyesuaiin konteks chat sebelumnya.
+Jika user ngobrol santai, balas santai. Jika user minta teknis, balas lebih teknis.
+Kalau tidak tahu jawaban, jujur bilang tidak tahu lalu kasih saran langkah lanjut.
+Pemilik bot ini adalah ${ownerName}.`
+const toGeminiHistoryPayload = (history = []) =>
+  (Array.isArray(history) ? history : [])
+    .filter((item) => item && (item.role === 'user' || item.role === 'model') && String(item.text || '').trim())
+    .map((item) => ({
+      role: item.role,
+      parts: [{ text: String(item.text || '') }]
+    }))
+const runGeminiAiChat = async ({ m, userText, botName, ownerName }) => {
+  const apiKey = resolveGeminiKey()
+  if (!apiKey) throw new Error('Gemini API key belum diset. Pakai .setgeminikey AIza... atau isi GEMINI_API_KEY di environment.')
+  const Gemini = require('@google/generative-ai')
+  const genAI = new Gemini.GoogleGenerativeAI(apiKey)
+  const model = genAI.getGenerativeModel({
+    model: 'gemini-2.0-flash',
+    systemInstruction: AI_PERSONA_PROMPT(botName, ownerName),
+    generationConfig: {
+      temperature: 0.85,
+      topP: 0.95,
+      topK: 40,
+      maxOutputTokens: 1200
+    }
+  })
+
+  const sessionKey = getAiSessionKey(m)
+  const history = getAiHistory(sessionKey)
+  const chat = model.startChat({
+    history: toGeminiHistoryPayload(history)
+  })
+  const result = await chat.sendMessage(String(userText || '').trim())
+  const answer = String(result?.response?.text?.() || '').trim()
+  if (!answer) throw new Error('Respons AI kosong. Coba ulangi pertanyaan dengan kalimat lebih jelas.')
+  const nextHistory = trimAiHistory([
+    ...history,
+    { role: 'user', text: String(userText || '').trim() },
+    { role: 'model', text: answer }
+  ])
+  setAiHistory(sessionKey, nextHistory)
+  return {
+    answer,
+    sessionKey,
+    historyCount: nextHistory.length
+  }
 }
 global.db = loadDB();
 if (global.db) global.db = {
@@ -1452,11 +1566,12 @@ const MENU_MANUAL_COMMANDS = {
     'tebakkabupaten', 'tebaksurah', 'tebakkimia', 'asahotak', 'siapaaku', 'susunkata', 'tekateki',
     'blackjack', 'slot', 'truth', 'dare', 'tictactoe', 'ttt', 'ttc', 'suit', 'hint', 'nyerah'
   ],
-  aimenu: ['ai', 'gpt', 'chatgpt', 'openai', 'gemini', 'claude', 'hydromind', 'simi', 'bing'],
+  aimenu: ['ai', 'gpt', 'chatgpt', 'openai', 'gemini', 'claude', 'hydromind', 'simi', 'bing', 'aireset'],
   storemenu: ['addsewa', 'delsewa', 'listsewa', 'ceksewa', 'addprem', 'delprem', 'listprem', 'premium', 'buyprem'],
   ownermenu: [
     'autoread', 'antigcnosewa', 'public', 'self', 'onlypc', 'onlygc', 'setppbot', 'delppbot',
     'setbotname', 'setbotbio', 'addowner', 'delowner', 'setopenaikey', 'cekopenaikey', 'delopenaikey',
+    'setgeminikey', 'cekgeminikey', 'delgeminikey',
     'setgroqkey', 'cekgroqkey', 'delgroqkey',
     'restart', 'shutdown', 'backup'
   ],
@@ -1643,9 +1758,9 @@ const classifyCommandToMenu = (cmd) => {
   if (/(sticker|stiker|take|emoji|fstik|smeme|qc|iqc|swm|brat|ttp|attp)/i.test(cmd)) return 'stickermenu'
   if (/(ytmp3|ytmp4|play|tiktok|ttslide|tiktokaudio|instagram|igdl|facebook|fbdl|mediafire|gdrive|terabox|spotify|soundcloud|capcut|gitclone|twittervid|snackvideo|download|ytv|yta)/i.test(cmd)) return 'downloadmenu'
   if (/(yts|ytsearch|ttsearch|google|imdb|weather|wanumber|stalk|cekid|whois|trackip|myip|host|genshinstalk|npmstalk|githubstalk|news|berita|cnn|kompas|detik)/i.test(cmd)) return 'searchmenu'
-  if (/(ai|gpt|chatgpt|openai|gemini|claude|simi|bing|hydromind|aimath|ai4chat)/i.test(cmd)) return 'aimenu'
+  if (/(ai|gpt|chatgpt|openai|gemini|claude|simi|bing|hydromind|aimath|ai4chat|aireset|resetai|aiclear)/i.test(cmd)) return 'aimenu'
   if (/(buy|sewa|premium|prem|donasi|donate|payment|dana|gopay|ovo|produk|order|store)/i.test(cmd)) return 'storemenu'
-  if (/(owner|addowner|delowner|autoread|antigcnosewa|public|self|setppbot|restart|shutdown|backup|setopenaikey|cekopenaikey|delopenaikey|setgroqkey|cekgroqkey|delgroqkey)/i.test(cmd)) return 'ownermenu'
+  if (/(owner|addowner|delowner|autoread|antigcnosewa|public|self|setppbot|restart|shutdown|backup|setopenaikey|cekopenaikey|delopenaikey|setgeminikey|cekgeminikey|delgeminikey|setgroqkey|cekgroqkey|delgroqkey)/i.test(cmd)) return 'ownermenu'
   if (/(anonymous|menfess|menfes|confess|balasmenfess|balasmenfes|tolakmenfess|tolakmenfes|stopmenfess|stopmenfes|startchat|nextchat|leavechat)/i.test(cmd)) return 'anonymousmenu'
   if (/(rpg|hunt|mining|adventure|mulung|berkebun|dagang|bank|atm|gajian|bonus|upgrade|mancing|pet|heal|craft|work|rob|misi|nguli)/i.test(cmd)) return 'rpgmenu'
   if (/(islam|doa|quran|surah|hadis|sholat|asmaul|kisahnabi|alkitab)/i.test(cmd)) return 'islamimenu'
@@ -1672,21 +1787,25 @@ const getMenuCategoryMap = () => {
   const wibusoftSource = getWibusoftMenuSource()
   const wibusoftCommandMap = wibusoftSource.commandToCategory || Object.create(null)
   const hasWibusoftData = Object.keys(wibusoftCommandMap).length > 0
-  const sourceMap = hasWibusoftData ? (wibusoftSource.categoryMap || {}) : MENU_MANUAL_COMMANDS
+  const sourceMaps = hasWibusoftData
+    ? [wibusoftSource.categoryMap || {}, MENU_MANUAL_COMMANDS]
+    : [MENU_MANUAL_COMMANDS]
   const assigned = new Set()
 
   // Mode ketat: hanya tampilkan command yang terkurasi di source map.
   // Tidak ada auto-inject command liar ke othermenu.
-  for (const [rawCategory, cmds] of Object.entries(sourceMap)) {
-    const category = normalizeMenuCategoryKey(rawCategory)
-    if (!category || !map[category]) continue
-    const list = Array.isArray(cmds) ? cmds : []
-    for (const rawCmd of list) {
-      const cmd = normalizeMenuCommandName(rawCmd)
-      if (!cmd) continue
-      if (allCommandSet.size && !allCommandSet.has(cmd)) continue
-      map[category].add(cmd)
-      assigned.add(cmd)
+  for (const sourceMap of sourceMaps) {
+    for (const [rawCategory, cmds] of Object.entries(sourceMap)) {
+      const category = normalizeMenuCategoryKey(rawCategory)
+      if (!category || !map[category]) continue
+      const list = Array.isArray(cmds) ? cmds : []
+      for (const rawCmd of list) {
+        const cmd = normalizeMenuCommandName(rawCmd)
+        if (!cmd) continue
+        if (allCommandSet.size && !allCommandSet.has(cmd)) continue
+        map[category].add(cmd)
+        assigned.add(cmd)
+      }
     }
   }
 
@@ -5860,6 +5979,16 @@ persistGroqKey(candidate)
 replyhydro(`✅ Groq API key berhasil disimpan.\nKey: ${maskSecret(candidate)}\n\nPerintah cek: ${prefix}cekgroqkey`)
 }
 break
+case 'setgeminikey':
+case 'setkeygemini': {
+if (!Ahmad) return replytolak(mess.only.owner)
+if (!text) return replyhydro(`Format salah.\nContoh: ${prefix}setgeminikey AIza...`)
+const candidate = String(text || '').trim()
+if (candidate.length < 20) return replyhydro('API key Gemini terlalu pendek. Pastikan key valid.')
+persistGeminiKey(candidate)
+replyhydro(`✅ Gemini API key berhasil disimpan.\nKey: ${maskSecret(candidate)}\n\nPerintah cek: ${prefix}cekgeminikey`)
+}
+break
 case 'cekopenaikey':
 case 'checkopenaikey': {
 if (!Ahmad) return replytolak(mess.only.owner)
@@ -5892,6 +6021,22 @@ Gunakan *${prefix}setgroqkey gsk_...* untuk set key gratis.`
 )
 }
 break
+case 'cekgeminikey':
+case 'checkgeminikey': {
+if (!Ahmad) return replytolak(mess.only.owner)
+const envKey = String(process.env.GEMINI_API_KEY || '').trim()
+const storedKey = readStoredGeminiKey()
+const activeKey = resolveGeminiKey()
+const source = envKey ? 'ENV (GEMINI_API_KEY)' : (storedKey ? 'LOCAL (session/gemini_api_key.txt)' : '-')
+replyhydro(
+`🔐 *Status Gemini Key*
+• Sumber aktif: ${source}
+• Key aktif: ${maskSecret(activeKey)}
+
+Gunakan *${prefix}setgeminikey AIza...* untuk set key.`
+)
+}
+break
 case 'delopenaikey':
 case 'hapusopenaikey': {
 if (!Ahmad) return replytolak(mess.only.owner)
@@ -5904,6 +6049,13 @@ case 'hapusgroqkey': {
 if (!Ahmad) return replytolak(mess.only.owner)
 clearPersistedGroqKey()
 replyhydro('✅ Groq key lokal berhasil dihapus. Jika env GROQ_API_KEY masih terisi, bot tetap akan memakai env.')
+}
+break
+case 'delgeminikey':
+case 'hapusgeminikey': {
+if (!Ahmad) return replytolak(mess.only.owner)
+clearPersistedGeminiKey()
+replyhydro('✅ Gemini key lokal berhasil dihapus. Jika env GEMINI_API_KEY masih terisi, bot tetap akan memakai env.')
 }
 break
 
@@ -27847,39 +27999,41 @@ break
 case 'ai':
 case 'openai':
 case 'chatgpt':
-case 'open-ai': {
-	if (!text) return replyhydro(`*• Example:* ${prefix + command} Siapakah orang yang telah menemukan Komputer di jaman Majapahit`) 
-await hydro.sendMessage(m.chat, { react: { text: "⏱️",key: m.key,}})
-try {
-    const data = await fetchJson(`https://btch.us.kg/openai?text=${encodeURIComponent(text)}`);
-    if (data && data.result) {
-      reply(`≈ ${botname}: ${data.result}`);
-    } else {
-      HydroAI(pushname, text);
-  }
-} catch (e) {
-  reply('Terjadi error, coba lagi nanti.');
+case 'open-ai':
+case 'gemini': {
+	if (!text) {
+		return replyhydro(`Contoh:\n${prefix + command} siapa nama kamu?\n\nReset memori chat:\n${prefix}aireset`)
+	}
+	await hydro.sendMessage(m.chat, { react: { text: '⏱️', key: m.key } })
+	try {
+		const { answer, historyCount } = await runGeminiAiChat({
+			m,
+			userText: text,
+			botName: botname,
+			ownerName: ownername
+		})
+		const pairCount = Math.max(1, Math.floor(historyCount / 2))
+		reply(`🤖 *${botname}*\n\n${answer}\n\n💬 ${pairCount} pesan tersimpan • ketik ${prefix}aireset untuk reset`)
+	} catch (e) {
+		console.error('AI COMMAND ERROR:', e)
+		const msgErr = String(e?.message || '').trim()
+		if (/gemini api key belum diset/i.test(msgErr)) {
+			return replyhydro(`Gemini API key belum diset.\nOwner: *${prefix}setgeminikey AIza...*`)
+		}
+		replyhydro(`AI lagi error sementara.\nDetail: ${msgErr || 'unknown error'}`)
+	}
 }
-
+break
+case 'aireset':
+case 'resetai':
+case 'aiclear': {
+	const sessionKey = getAiSessionKey(m)
+	clearAiHistory(sessionKey)
+	replyhydro('✅ Memori chat AI untuk sesi ini berhasil direset.')
 }
 break
 case 'mangap': {
 reply(`Makasi Kakak ${pushname} Atas Pujiannya`) 
-}
-break
-//=========================================\\======
-case 'gemini': {
-if (!q) return reply(`🍃 *Mau Nanya Apa Sama Gemini?*`)
-try {
-const data = await fetchJson(`https://btch.us.kg/openai?text=${encodeURIComponent(text)}`);
-    if (data && data.result) {
-        reply(`${data.result}`);
-    } else {
-        HydroAI(pushname, text);
-    }
- } catch(e) {
- reply('eror')
-}
 }
 break
 //=========================================\\======
