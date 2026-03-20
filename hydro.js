@@ -264,6 +264,23 @@ const clearPersistedGroqKey = () => {
         if (fs.existsSync(GROQ_KEY_STORE)) fs.unlinkSync(GROQ_KEY_STORE)
     } catch {}
 }
+const detectTranscriptLang = (raw = '') => {
+    const text = String(raw || '').toLowerCase()
+    if (!text.trim()) return 'UNKNOWN'
+    const idHints = ['yang', 'dan', 'dengan', 'saya', 'kamu', 'tidak', 'ini', 'itu', 'untuk', 'lagi', 'jadi', 'bisa']
+    const enHints = ['the', 'and', 'with', 'you', 'this', 'that', 'for', 'not', 'are', 'is', 'have', 'can']
+    let idScore = 0
+    let enScore = 0
+    for (const w of idHints) {
+        if (new RegExp(`\\b${w}\\b`, 'i').test(text)) idScore += 1
+    }
+    for (const w of enHints) {
+        if (new RegExp(`\\b${w}\\b`, 'i').test(text)) enScore += 1
+    }
+    if (idScore === 0 && enScore === 0) return 'UNKNOWN'
+    if (idScore >= enScore) return 'ID'
+    return 'EN'
+}
 
 const bootOpenAIKey = resolveOpenAIKey()
 if (bootOpenAIKey) global.keyopenai = bootOpenAIKey
@@ -35472,7 +35489,6 @@ atau
                 const form = new FormData()
                 form.append('file', fs.createReadStream(tempFile))
                 form.append('model', 'whisper-large-v3-turbo')
-                form.append('language', 'id')
                 form.append('response_format', 'json')
                 const groqResp = await axios.post(
                   'https://api.groq.com/openai/v1/audio/transcriptions',
@@ -35497,12 +35513,21 @@ atau
                   undefined,
                   'json',
                   0,
-                  'id'
+                  undefined
                 )
                 transcript = String(result?.data?.text || '').trim()
               }
               if (!transcript) return replyhydro('❌ Transkrip kosong. Coba VN lain dengan suara lebih jelas.')
-              replyhydro(`*Transkrip VN:*\n\n${transcript}`)
+              const detectedLang = detectTranscriptLang(transcript)
+              const provider = groqKey ? 'Groq Whisper (Gratis)' : 'OpenAI Whisper'
+              const cleanTranscript = transcript.replace(/\s+\n/g, '\n').trim()
+              replyhydro(
+`*TRANSKRIP VN*
+• Bahasa terdeteksi: *${detectedLang}*
+• Engine: *${provider}*
+
+${cleanTranscript}`
+              )
             } catch (err) {
               console.error('TRANSKRIP ERROR:', err)
               const detail = String(err?.response?.data?.error?.message || err?.message || err)
