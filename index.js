@@ -88,7 +88,10 @@ global.__hydroRuntime = global.__hydroRuntime || {
 		replacedCount: 0,
 		replacedWindowStart: 0,
 		pauseReconnectUntil: 0,
-		startupOnlineNotified: false
+		startupOnlineNotified: false,
+		idleProbeAt: 0,
+		badSessionCount: 0,
+		badSessionWindowStart: 0
 	}
 
 const getOwnerNotifyJids = () => {
@@ -213,8 +216,10 @@ console.log('Pairing code aktif tapi nomor belum diisi di settings.js (global.ow
 	const WS_READY_OPEN = 1
 	const SOCKET_WATCHDOG_INTERVAL_MS = 60 * 1000
 	const SOCKET_INACTIVE_TTL_MS = 30 * 60 * 1000
+	const SOCKET_IDLE_PROBE_GRACE_MS = 5 * 60 * 1000
 	const markSocketActivity = () => {
 		lastSocketActivityAt = Date.now()
+		global.__hydroRuntime.idleProbeAt = 0
 	}
 	const stopSocketWatchdog = () => {
 		if (!socketWatchdogTimer) return
@@ -244,10 +249,17 @@ console.log('Pairing code aktif tapi nomor belum diisi di settings.js (global.ow
 					console.log(`[SOCKET WATCHDOG] readyState=${wsState} -> reconnect`)
 					return restartSocket(4000, `watchdog-readyState-${wsState}`)
 				}
-				if (Date.now() - lastSocketActivityAt >= SOCKET_INACTIVE_TTL_MS) {
-					console.log('[SOCKET WATCHDOG] idle terlalu lama, kirim keepalive presence')
-					await hydro.sendPresenceUpdate('available').catch(() => {})
-					markSocketActivity()
+				const idleMs = Date.now() - lastSocketActivityAt
+				if (idleMs >= SOCKET_INACTIVE_TTL_MS) {
+					const runtime = global.__hydroRuntime
+					if (!runtime.idleProbeAt) {
+						runtime.idleProbeAt = Date.now()
+						console.log('[SOCKET WATCHDOG] idle terlalu lama, kirim keepalive probe')
+						await hydro.sendPresenceUpdate('available').catch(() => {})
+					} else if (Date.now() - runtime.idleProbeAt >= SOCKET_IDLE_PROBE_GRACE_MS) {
+						console.log('[SOCKET WATCHDOG] idle tetap tidak pulih setelah probe -> reconnect')
+						return restartSocket(4000, 'watchdog-idle-stuck')
+					}
 				}
 			} catch (watchdogErr) {
 				console.log('[SOCKET WATCHDOG] error:', watchdogErr)
@@ -267,8 +279,23 @@ hydro.ev.on('connection.update', async (update) => {
 			if (connection === 'close') {
 				let reason = new Boom(lastDisconnect?.error)?.output.statusCode
 				if (reason === DisconnectReason.badSession) {
-					console.log(`Bad Session File, Please Delete Session and Scan Again`);
-					restartSocket(5000, 'badSession')
+					const runtime = global.__hydroRuntime
+					const now = Date.now()
+					if (!runtime.badSessionWindowStart || now - runtime.badSessionWindowStart > 15 * 60 * 1000) {
+						runtime.badSessionWindowStart = now
+						runtime.badSessionCount = 0
+					}
+					runtime.badSessionCount += 1
+					console.log(`[SOCKET] badSession terdeteksi (count=${runtime.badSessionCount})`)
+					if (runtime.badSessionCount <= 3) {
+						restartSocket(10000, 'badSession-retry')
+					} else if (runtime.badSessionCount <= 6) {
+						restartSocket(60000, 'badSession-backoff')
+					} else {
+						runtime.pauseReconnectUntil = Date.now() + 30 * 60 * 1000
+						console.log('[SOCKET GUARD] badSession berulang. Jeda reconnect 30 menit untuk cegah loop.')
+						stopSocketWatchdog()
+					}
 				} else if (reason === DisconnectReason.connectionClosed) {
 					console.log("Connection closed, reconnecting....");
 					restartSocket(3000, 'connectionClosed');
@@ -334,6 +361,8 @@ cfonts.say(botname || 'BOT', {
 							}
 							}
 						}
+						global.__hydroRuntime.badSessionCount = 0
+						global.__hydroRuntime.badSessionWindowStart = 0
 						setTimeout(() => {
 							global.triggerAntiGcNoSewaSweep?.('connection.open')
 						}, 12000)
