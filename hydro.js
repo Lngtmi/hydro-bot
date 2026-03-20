@@ -1675,6 +1675,7 @@ const getMenuCategoryMap = () => {
   const wibusoftCommandMap = wibusoftSource.commandToCategory || Object.create(null)
   const hasWibusoftData = Object.keys(wibusoftCommandMap).length > 0
   const sourceMap = hasWibusoftData ? (wibusoftSource.categoryMap || {}) : MENU_MANUAL_COMMANDS
+  const assigned = new Set()
 
   // Mode ketat: hanya tampilkan command yang terkurasi di source map.
   // Tidak ada auto-inject command liar ke othermenu.
@@ -1687,7 +1688,18 @@ const getMenuCategoryMap = () => {
       if (!cmd) continue
       if (allCommandSet.size && !allCommandSet.has(cmd)) continue
       map[category].add(cmd)
+      assigned.add(cmd)
     }
+  }
+
+  // Auto-include command yang belum masuk source map agar tidak ada fitur "hilang" dari list kategori.
+  // Tetap diarahkan ke kategori via classifier yang sama.
+  for (const cmd of allCommandSet) {
+    if (!cmd || assigned.has(cmd) || MENU_EXCLUDE_CMDS.has(cmd)) continue
+    const category = normalizeMenuCategoryKey(classifyCommandToMenu(cmd))
+    if (!category || !map[category]) continue
+    map[category].add(cmd)
+    assigned.add(cmd)
   }
 
   global.__hydroMenuCategoryMapCache = Object.fromEntries(
