@@ -92,7 +92,8 @@ global.__hydroRuntime = global.__hydroRuntime || {
 			idleProbeAt: 0,
 			badSessionCount: 0,
 			badSessionWindowStart: 0,
-			sewaIntervalStarted: false
+			sewaIntervalStarted: false,
+			lastInboundAt: 0
 		}
 
 const getOwnerNotifyJids = () => {
@@ -216,8 +217,8 @@ console.log('Pairing code aktif tapi nomor belum diisi di settings.js (global.ow
 	let socketWatchdogTimer = global.__hydroRuntime.socketWatchdogTimer || null
 	const WS_READY_OPEN = 1
 	const SOCKET_WATCHDOG_INTERVAL_MS = 60 * 1000
-	const SOCKET_INACTIVE_TTL_MS = 30 * 60 * 1000
-	const SOCKET_IDLE_PROBE_GRACE_MS = 5 * 60 * 1000
+		const SOCKET_INACTIVE_TTL_MS = 8 * 60 * 1000
+		const SOCKET_IDLE_PROBE_GRACE_MS = 2 * 60 * 1000
 	const markSocketActivity = () => {
 		lastSocketActivityAt = Date.now()
 		global.__hydroRuntime.idleProbeAt = 0
@@ -243,25 +244,26 @@ console.log('Pairing code aktif tapi nomor belum diisi di settings.js (global.ow
 	const startSocketWatchdog = () => {
 		stopSocketWatchdog()
 		socketWatchdogTimer = setInterval(async () => {
-			try {
-				const wsState = hydro?.ws?.readyState
-				const hasNumericWsState = typeof wsState === 'number'
-				if (hasNumericWsState && wsState !== WS_READY_OPEN) {
-					console.log(`[SOCKET WATCHDOG] readyState=${wsState} -> reconnect`)
-					return restartSocket(4000, `watchdog-readyState-${wsState}`)
-				}
-				const idleMs = Date.now() - lastSocketActivityAt
-				if (idleMs >= SOCKET_INACTIVE_TTL_MS) {
-					const runtime = global.__hydroRuntime
-					if (!runtime.idleProbeAt) {
-						runtime.idleProbeAt = Date.now()
-						console.log('[SOCKET WATCHDOG] idle terlalu lama, kirim keepalive probe')
-						await hydro.sendPresenceUpdate('available').catch(() => {})
-					} else if (Date.now() - runtime.idleProbeAt >= SOCKET_IDLE_PROBE_GRACE_MS) {
-						console.log('[SOCKET WATCHDOG] idle tetap tidak pulih setelah probe -> reconnect')
-						return restartSocket(4000, 'watchdog-idle-stuck')
+				try {
+					const wsState = hydro?.ws?.readyState
+					const hasNumericWsState = typeof wsState === 'number'
+					if (hasNumericWsState && wsState !== WS_READY_OPEN) {
+						console.log(`[SOCKET WATCHDOG] readyState=${wsState} -> reconnect`)
+						return restartSocket(4000, `watchdog-readyState-${wsState}`)
 					}
-				}
+					const idleMs = Date.now() - lastSocketActivityAt
+					if (idleMs >= SOCKET_INACTIVE_TTL_MS) {
+						const runtime = global.__hydroRuntime
+						if (!runtime.idleProbeAt) {
+							runtime.idleProbeAt = Date.now()
+							console.log('[SOCKET WATCHDOG] idle terlalu lama, kirim keepalive probe')
+							await hydro.sendPresenceUpdate('available').catch(() => {})
+							await hydro.groupFetchAllParticipating().catch(() => {})
+						} else if (Date.now() - runtime.idleProbeAt >= SOCKET_IDLE_PROBE_GRACE_MS) {
+							console.log('[SOCKET WATCHDOG] idle tetap tidak pulih setelah probe -> reconnect')
+							return restartSocket(4000, 'watchdog-idle-stuck')
+						}
+					}
 			} catch (watchdogErr) {
 				console.log('[SOCKET WATCHDOG] error:', watchdogErr)
 			}
@@ -419,6 +421,7 @@ hydro.ev.on('creds.update', await saveCreds)
 				const msgId = String(kay.key?.id || '')
 				if (msgId.startsWith('BAE5') && msgId.length === 16 && kay.key?.fromMe) continue
 				const m = smsg(hydro, kay, store)
+				if (!kay.key?.fromMe) global.__hydroRuntime.lastInboundAt = Date.now()
 				if (m?.isGroup && m?.chat && global.triggerAntiGcNoSewaCheck) {
 					setTimeout(() => {
 						global.triggerAntiGcNoSewaCheck?.(m.chat, 'messages.upsert')

@@ -382,16 +382,20 @@ hydro.ev.emit('messages.upsert', msg)
         }
 	        const pushname = m.pushName || "Misterius"
 	        const botNumber = await hydro.decodeJid(hydro.user.id)
-	        let senderDigits = normalizeOwnerDigits(m.sender || (!m.isGroup ? m.chat : ''))
 	        const ownerCandidates = [botNumber, ...owner, ...(Array.isArray(global.owner) ? global.owner : []), global.ownernomer, global.ownernumber]
 	            .map(v => normalizeOwnerDigits(v))
 	            .filter(Boolean)
-	        if (!senderDigits && !m.isGroup) senderDigits = normalizeOwnerDigits(m.chat)
-	        let Ahmad = ownerCandidates.includes(senderDigits)
-	        if (!Ahmad && !m.isGroup) {
-	            const chatDigits = normalizeOwnerDigits(m.chat)
-	            Ahmad = ownerCandidates.includes(chatDigits)
+	        const resolveOwnerFlag = () => {
+	            const probes = [
+	                m.sender,
+	                m.chat,
+	                m.key?.participant,
+	                m.key?.remoteJid,
+	                (!m.isGroup ? m.chat : '')
+	            ].map(v => normalizeOwnerDigits(v)).filter(Boolean)
+	            return probes.some(v => ownerCandidates.includes(v))
 	        }
+	        let Ahmad = resolveOwnerFlag()
         const text = q = args.join(" ")
         const quoted = m.quoted ? m.quoted : m
         const mime = (quoted.msg || quoted).mimetype || ''
@@ -418,13 +422,7 @@ hydro.ev.emit('messages.upsert', msg)
             const mappedParticipant = participants.find(p => p?.lid === m.sender || p?.id === m.sender)
             m.sender = mappedParticipant?.jid || mappedParticipant?.id || m.sender
         }
-        senderDigits = normalizeOwnerDigits(m.sender || (!m.isGroup ? m.chat : ''))
-        if (!senderDigits && !m.isGroup) senderDigits = normalizeOwnerDigits(m.chat)
-        Ahmad = ownerCandidates.includes(senderDigits)
-        if (!Ahmad && !m.isGroup) {
-            const chatDigits = normalizeOwnerDigits(m.chat)
-            Ahmad = ownerCandidates.includes(chatDigits)
-        }
+	        Ahmad = resolveOwnerFlag()
 
 	        const groupAdmins = m.isGroup ? participants.filter((v) => v.admin !== null).map((i) => i.jid || i.id) : [];
 	        const groupOwner = m.isGroup ? (groupMetadata?.owner || '') : ''
