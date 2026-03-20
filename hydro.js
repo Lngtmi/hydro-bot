@@ -704,7 +704,7 @@ hydro.ev.emit('messages.upsert', msg)
       const isAutoAiGc = m.isGroup ? openaigc.includes(m.chat) : true
       const IsHydroChat = m.isGroup ? ChatHydro.includes(m.chat) : true
       const shouldExit = true
-      const automati = false
+      const automati = true
       const cekpesan = true
       const isAutosimi = m.isGroup ? siminya.includes(m.chat) : true
         const AntiNsfw = m.isGroup ? ntnsfw.includes(from) : false
@@ -4131,8 +4131,13 @@ const HydroChaty = `${budy}`
 HydroAI(pushname,HydroChaty)
 }
 const scheduleAutoRestart = () => {
-  nodecron.schedule('0 */1 * * *', () => {
-    process.exit()
+  if (global.__hydroAutoRestartScheduled) return
+  global.__hydroAutoRestartScheduled = true
+  nodecron.schedule('0 */3 * * *', () => {
+    console.log('[AUTO RESTART] Menjalankan restart terjadwal 3 jam sekali (WIB)')
+    process.exit(0)
+  }, {
+    timezone: 'Asia/Jakarta'
   })
 }
 
