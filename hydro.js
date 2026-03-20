@@ -204,6 +204,7 @@ function saveAutoClose() {
 const OPENAI_KEY_STORE = path.join(__dirname, 'session', 'openai_api_key.txt')
 const GROQ_KEY_STORE = path.join(__dirname, 'session', 'groq_api_key.txt')
 const GEMINI_KEY_STORE = path.join(__dirname, 'session', 'gemini_api_key.txt')
+const OPENROUTER_KEY_STORE = path.join(__dirname, 'session', 'openrouter_api_key.txt')
 const maskSecret = (raw = '') => {
     const v = String(raw || '').trim()
     if (!v) return '-'
@@ -295,6 +296,36 @@ const clearPersistedGeminiKey = () => {
     } catch {}
     global.keygemini = '-'
 }
+const readStoredOpenRouterKey = () => {
+    try {
+        if (!fs.existsSync(OPENROUTER_KEY_STORE)) return ''
+        return String(fs.readFileSync(OPENROUTER_KEY_STORE, 'utf8') || '').trim()
+    } catch {
+        return ''
+    }
+}
+const resolveOpenRouterKey = () => {
+    const envKey = String(process.env.OPENROUTER_API_KEY || '').trim()
+    if (envKey) return envKey
+    if (global.keyopenrouter && String(global.keyopenrouter).trim() && String(global.keyopenrouter).trim() !== '-') {
+        return String(global.keyopenrouter).trim()
+    }
+    const stored = readStoredOpenRouterKey()
+    return stored || ''
+}
+const persistOpenRouterKey = (rawKey = '') => {
+    const key = String(rawKey || '').trim()
+    const dir = path.dirname(OPENROUTER_KEY_STORE)
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
+    fs.writeFileSync(OPENROUTER_KEY_STORE, key, 'utf8')
+    global.keyopenrouter = key
+}
+const clearPersistedOpenRouterKey = () => {
+    try {
+        if (fs.existsSync(OPENROUTER_KEY_STORE)) fs.unlinkSync(OPENROUTER_KEY_STORE)
+    } catch {}
+    global.keyopenrouter = '-'
+}
 const detectTranscriptLang = (raw = '') => {
     const text = String(raw || '').toLowerCase()
     if (!text.trim()) return 'UNKNOWN'
@@ -317,6 +348,8 @@ const bootOpenAIKey = resolveOpenAIKey()
 if (bootOpenAIKey) global.keyopenai = bootOpenAIKey
 const bootGeminiKey = resolveGeminiKey()
 if (bootGeminiKey) global.keygemini = bootGeminiKey
+const bootOpenRouterKey = resolveOpenRouterKey()
+if (bootOpenRouterKey) global.keyopenrouter = bootOpenRouterKey
 const DB_FILE = './database/database.json';
 function loadDB() {
   if (fs.existsSync(DB_FILE)) {
@@ -379,6 +412,90 @@ const toGeminiHistoryPayload = (history = []) =>
       role: item.role,
       parts: [{ text: String(item.text || '') }]
     }))
+const toOpenAIStyleHistoryPayload = (history = []) =>
+  (Array.isArray(history) ? history : [])
+    .filter((item) => item && (item.role === 'user' || item.role === 'model') && String(item.text || '').trim())
+    .map((item) => ({
+      role: item.role === 'model' ? 'assistant' : 'user',
+      content: String(item.text || '')
+    }))
+const saveAiExchange = (sessionKey, userText, answer) => {
+  const history = getAiHistory(sessionKey)
+  const nextHistory = trimAiHistory([
+    ...history,
+    { role: 'user', text: String(userText || '').trim() },
+    { role: 'model', text: String(answer || '').trim() }
+  ])
+  setAiHistory(sessionKey, nextHistory)
+  return nextHistory.length
+}
+const buildAiMessagesForCompletion = ({ history, userText, botName, ownerName }) => ([
+  {
+    role: 'system',
+    content: AI_PERSONA_PROMPT(botName, ownerName)
+  },
+  ...toOpenAIStyleHistoryPayload(history),
+  {
+    role: 'user',
+    content: String(userText || '').trim()
+  }
+])
+const runGroqAiChat = async ({ m, userText, botName, ownerName }) => {
+  const apiKey = resolveGroqKey()
+  if (!apiKey) throw new Error('Groq API key belum diset.')
+  const sessionKey = getAiSessionKey(m)
+  const history = getAiHistory(sessionKey)
+  const messages = buildAiMessagesForCompletion({ history, userText, botName, ownerName })
+  const { data } = await axios.post(
+    'https://api.groq.com/openai/v1/chat/completions',
+    {
+      model: 'llama-3.3-70b-versatile',
+      messages,
+      temperature: 0.85,
+      max_tokens: 1100
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      timeout: 45000
+    }
+  )
+  const answer = String(data?.choices?.[0]?.message?.content || '').trim()
+  if (!answer) throw new Error('Respons Groq kosong.')
+  const historyCount = saveAiExchange(sessionKey, userText, answer)
+  return { answer, historyCount, provider: 'Groq' }
+}
+const runOpenRouterAiChat = async ({ m, userText, botName, ownerName }) => {
+  const apiKey = resolveOpenRouterKey()
+  if (!apiKey) throw new Error('OpenRouter API key belum diset.')
+  const sessionKey = getAiSessionKey(m)
+  const history = getAiHistory(sessionKey)
+  const messages = buildAiMessagesForCompletion({ history, userText, botName, ownerName })
+  const { data } = await axios.post(
+    'https://openrouter.ai/api/v1/chat/completions',
+    {
+      model: 'openrouter/free',
+      messages,
+      temperature: 0.85,
+      max_tokens: 1100
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': String(global.ownerweb || global.websitex || 'https://github.com/Lngtmi/hydro-bot'),
+        'X-Title': String(botName || 'Hydro-Bot')
+      },
+      timeout: 50000
+    }
+  )
+  const answer = String(data?.choices?.[0]?.message?.content || '').trim()
+  if (!answer) throw new Error('Respons OpenRouter kosong.')
+  const historyCount = saveAiExchange(sessionKey, userText, answer)
+  return { answer, historyCount, provider: 'OpenRouter-Free' }
+}
 const runGeminiAiChat = async ({ m, userText, botName, ownerName }) => {
   const apiKey = resolveGeminiKey()
   if (!apiKey) throw new Error('Gemini API key belum diset. Pakai .setgeminikey AIza... atau isi GEMINI_API_KEY di environment.')
@@ -412,8 +529,28 @@ const runGeminiAiChat = async ({ m, userText, botName, ownerName }) => {
   return {
     answer,
     sessionKey,
-    historyCount: nextHistory.length
+    historyCount: nextHistory.length,
+    provider: 'Gemini'
   }
+}
+const runSmartAiChat = async ({ m, userText, botName, ownerName }) => {
+  const errors = []
+  try {
+    return await runGroqAiChat({ m, userText, botName, ownerName })
+  } catch (err) {
+    errors.push(`Groq: ${String(err?.response?.data?.error?.message || err?.message || err)}`)
+  }
+  try {
+    return await runOpenRouterAiChat({ m, userText, botName, ownerName })
+  } catch (err) {
+    errors.push(`OpenRouter: ${String(err?.response?.data?.error?.message || err?.message || err)}`)
+  }
+  try {
+    return await runGeminiAiChat({ m, userText, botName, ownerName })
+  } catch (err) {
+    errors.push(`Gemini: ${String(err?.response?.data?.error?.message || err?.message || err)}`)
+  }
+  throw new Error(errors.join(' | '))
 }
 global.db = loadDB();
 if (global.db) global.db = {
@@ -1572,6 +1709,7 @@ const MENU_MANUAL_COMMANDS = {
     'autoread', 'antigcnosewa', 'public', 'self', 'onlypc', 'onlygc', 'setppbot', 'delppbot',
     'setbotname', 'setbotbio', 'addowner', 'delowner', 'setopenaikey', 'cekopenaikey', 'delopenaikey',
     'setgeminikey', 'cekgeminikey', 'delgeminikey',
+    'setopenrouterkey', 'cekopenrouterkey', 'delopenrouterkey',
     'setgroqkey', 'cekgroqkey', 'delgroqkey',
     'restart', 'shutdown', 'backup'
   ],
@@ -1760,7 +1898,7 @@ const classifyCommandToMenu = (cmd) => {
   if (/(yts|ytsearch|ttsearch|google|imdb|weather|wanumber|stalk|cekid|whois|trackip|myip|host|genshinstalk|npmstalk|githubstalk|news|berita|cnn|kompas|detik)/i.test(cmd)) return 'searchmenu'
   if (/(ai|gpt|chatgpt|openai|gemini|claude|simi|bing|hydromind|aimath|ai4chat|aireset|resetai|aiclear)/i.test(cmd)) return 'aimenu'
   if (/(buy|sewa|premium|prem|donasi|donate|payment|dana|gopay|ovo|produk|order|store)/i.test(cmd)) return 'storemenu'
-  if (/(owner|addowner|delowner|autoread|antigcnosewa|public|self|setppbot|restart|shutdown|backup|setopenaikey|cekopenaikey|delopenaikey|setgeminikey|cekgeminikey|delgeminikey|setgroqkey|cekgroqkey|delgroqkey)/i.test(cmd)) return 'ownermenu'
+  if (/(owner|addowner|delowner|autoread|antigcnosewa|public|self|setppbot|restart|shutdown|backup|setopenaikey|cekopenaikey|delopenaikey|setgeminikey|cekgeminikey|delgeminikey|setopenrouterkey|cekopenrouterkey|delopenrouterkey|setgroqkey|cekgroqkey|delgroqkey)/i.test(cmd)) return 'ownermenu'
   if (/(anonymous|menfess|menfes|confess|balasmenfess|balasmenfes|tolakmenfess|tolakmenfes|stopmenfess|stopmenfes|startchat|nextchat|leavechat)/i.test(cmd)) return 'anonymousmenu'
   if (/(rpg|hunt|mining|adventure|mulung|berkebun|dagang|bank|atm|gajian|bonus|upgrade|mancing|pet|heal|craft|work|rob|misi|nguli)/i.test(cmd)) return 'rpgmenu'
   if (/(islam|doa|quran|surah|hadis|sholat|asmaul|kisahnabi|alkitab)/i.test(cmd)) return 'islamimenu'
@@ -5989,6 +6127,16 @@ persistGeminiKey(candidate)
 replyhydro(`✅ Gemini API key berhasil disimpan.\nKey: ${maskSecret(candidate)}\n\nPerintah cek: ${prefix}cekgeminikey`)
 }
 break
+case 'setopenrouterkey':
+case 'setkeyopenrouter': {
+if (!Ahmad) return replytolak(mess.only.owner)
+if (!text) return replyhydro(`Format salah.\nContoh: ${prefix}setopenrouterkey sk-or-xxxx`)
+const candidate = String(text || '').trim()
+if (candidate.length < 20) return replyhydro('API key OpenRouter terlalu pendek. Pastikan key valid.')
+persistOpenRouterKey(candidate)
+replyhydro(`✅ OpenRouter API key berhasil disimpan.\nKey: ${maskSecret(candidate)}\n\nPerintah cek: ${prefix}cekopenrouterkey`)
+}
+break
 case 'cekopenaikey':
 case 'checkopenaikey': {
 if (!Ahmad) return replytolak(mess.only.owner)
@@ -6037,11 +6185,34 @@ Gunakan *${prefix}setgeminikey AIza...* untuk set key.`
 )
 }
 break
+case 'cekopenrouterkey':
+case 'checkopenrouterkey': {
+if (!Ahmad) return replytolak(mess.only.owner)
+const envKey = String(process.env.OPENROUTER_API_KEY || '').trim()
+const storedKey = readStoredOpenRouterKey()
+const activeKey = resolveOpenRouterKey()
+const source = envKey ? 'ENV (OPENROUTER_API_KEY)' : (storedKey ? 'LOCAL (session/openrouter_api_key.txt)' : '-')
+replyhydro(
+`🔐 *Status OpenRouter Key*
+• Sumber aktif: ${source}
+• Key aktif: ${maskSecret(activeKey)}
+
+Gunakan *${prefix}setopenrouterkey sk-or-...* untuk set key.`
+)
+}
+break
 case 'delopenaikey':
 case 'hapusopenaikey': {
 if (!Ahmad) return replytolak(mess.only.owner)
 clearPersistedOpenAIKey()
 replyhydro('✅ OpenAI key lokal berhasil dihapus. Jika env OPENAI_API_KEY masih terisi, bot tetap akan memakai env.')
+}
+break
+case 'delopenrouterkey':
+case 'hapusopenrouterkey': {
+if (!Ahmad) return replytolak(mess.only.owner)
+clearPersistedOpenRouterKey()
+replyhydro('✅ OpenRouter key lokal berhasil dihapus. Jika env OPENROUTER_API_KEY masih terisi, bot tetap akan memakai env.')
 }
 break
 case 'delgroqkey':
@@ -28006,19 +28177,26 @@ case 'gemini': {
 	}
 	await hydro.sendMessage(m.chat, { react: { text: '⏱️', key: m.key } })
 	try {
-		const { answer, historyCount } = await runGeminiAiChat({
+		const { answer, historyCount, provider } = await runSmartAiChat({
 			m,
 			userText: text,
 			botName: botname,
 			ownerName: ownername
 		})
 		const pairCount = Math.max(1, Math.floor(historyCount / 2))
-		reply(`🤖 *${botname}*\n\n${answer}\n\n💬 ${pairCount} pesan tersimpan • ketik ${prefix}aireset untuk reset`)
+		reply(`🤖 *${botname}* (${provider || 'AI'})\n\n${answer}\n\n💬 ${pairCount} pesan tersimpan • ketik ${prefix}aireset untuk reset`)
 	} catch (e) {
 		console.error('AI COMMAND ERROR:', e)
 		const msgErr = String(e?.message || '').trim()
-		if (/gemini api key belum diset/i.test(msgErr)) {
-			return replyhydro(`Gemini API key belum diset.\nOwner: *${prefix}setgeminikey AIza...*`)
+		if (/groq api key belum diset|openrouter api key belum diset|gemini api key belum diset/i.test(msgErr)) {
+			return replyhydro(
+`AI belum bisa jalan karena API key belum lengkap/valid.
+Set minimal:
+• ${prefix}setgroqkey gsk_...
+• ${prefix}setopenrouterkey sk-or-...
+Opsional backup:
+• ${prefix}setgeminikey AIza...`
+			)
 		}
 		replyhydro(`AI lagi error sementara.\nDetail: ${msgErr || 'unknown error'}`)
 	}
