@@ -5968,6 +5968,40 @@ if (
   await hydro.sendMessage(m.chat, { text: menuText }, { quoted: m })
   return
 }
+const quotedSenderJid = String(m.quoted?.sender || m.quoted?.participant || '')
+const quotedTextRaw = String(
+  m.quoted?.text ||
+  m.quoted?.caption ||
+  m.quoted?.conversation ||
+  m.quoted?.msg?.text ||
+  m.quoted?.message?.conversation ||
+  ''
+)
+const isReplyToAiThread =
+  !isCmd &&
+  !m.key.fromMe &&
+  Boolean(bodyText) &&
+  Boolean(m.quoted) &&
+  areJidsSameUser(quotedSenderJid, botNumber) &&
+  /ai thread|🤖\s*\*/i.test(quotedTextRaw)
+
+if (isReplyToAiThread) {
+  await hydro.sendMessage(m.chat, { react: { text: '⏱️', key: m.key } })
+  try {
+    const { answer, historyCount, provider } = await runSmartAiChat({
+      m,
+      userText: bodyText,
+      botName: botname,
+      ownerName: ownername
+    })
+    const pairCount = Math.max(1, Math.floor(historyCount / 2))
+    return reply(`🤖 *${botname}* (${provider || 'AI'})\n\n${answer}\n\n💬 ${pairCount} pesan tersimpan\n— AI Thread • reply pesan ini untuk lanjut`)
+  } catch (e) {
+    console.error('AI REPLY THREAD ERROR:', e)
+    const msgErr = String(e?.message || '').trim()
+    return replyhydro(`AI lagi error sementara.\nDetail: ${msgErr || 'unknown error'}`)
+  }
+}
 
 switch (command) {
 case 'hint': {
@@ -28184,7 +28218,7 @@ case 'gemini': {
 			ownerName: ownername
 		})
 		const pairCount = Math.max(1, Math.floor(historyCount / 2))
-		reply(`🤖 *${botname}* (${provider || 'AI'})\n\n${answer}\n\n💬 ${pairCount} pesan tersimpan • ketik ${prefix}aireset untuk reset`)
+		reply(`🤖 *${botname}* (${provider || 'AI'})\n\n${answer}\n\n💬 ${pairCount} pesan tersimpan • ketik ${prefix}aireset untuk reset\n— AI Thread • reply pesan ini untuk lanjut`)
 	} catch (e) {
 		console.error('AI COMMAND ERROR:', e)
 		const msgErr = String(e?.message || '').trim()
