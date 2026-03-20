@@ -32887,9 +32887,14 @@ case 'bratvid': case 'bratvideo': {
     const teks = (m.quoted ? m.quoted.text : text).split(' ')
     const tempDir = path.join(process.cwd(), 'temp')
     if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true })
+    const safeSender = String(m.sender || 'user').replace(/[^a-zA-Z0-9]/g, '_')
+    const jobId = `${safeSender}_${Date.now()}_${Math.floor(Math.random() * 99999)}`
+    const framePaths = []
+    let fileListPath = ''
+    let outputVideoPath = ''
+    let outputStickerPath = ''
 
     try {
-        const framePaths = []
         for (let i = 0; i < teks.length; i++) {
             const currentText = teks.slice(0, i + 1).join(' ')
             let res
@@ -32898,12 +32903,12 @@ case 'bratvid': case 'bratvideo': {
             } catch (e) {
                 res = await getBuffer('https://aqul-brat.hf.space/?text=' + encodeURIComponent(currentText))
             }
-            const framePath = path.join(tempDir, `${m.sender}_${i}.mp4`)
+            const framePath = path.join(tempDir, `${jobId}_${i}.mp4`)
             fs.writeFileSync(framePath, res)
             framePaths.push(framePath)
         }
 
-        const fileListPath = path.join(tempDir, `${m.sender}.txt`)
+        fileListPath = path.join(tempDir, `${jobId}.txt`)
         let fileListContent = ''
         for (let i = 0; i < framePaths.length; i++) {
             fileListContent += `file '${framePaths[i]}'\n`
@@ -32913,22 +32918,24 @@ case 'bratvid': case 'bratvideo': {
         fileListContent += `duration 3\n`
         fs.writeFileSync(fileListPath, fileListContent)
 
-        const outputVideoPath = path.join(tempDir, `${m.sender}-output.mp4`)
+        outputVideoPath = path.join(tempDir, `${jobId}-output.mp4`)
         execSync(`ffmpeg -y -f concat -safe 0 -i "${fileListPath}" -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2,fps=30" -c:v libx264 -preset veryfast -pix_fmt yuv420p "${outputVideoPath}"`)
 
-        const outputStickerPath = path.join(tempDir, `${m.sender}_bratvid.webp`)
-        execSync(`ffmpeg -i "${outputVideoPath}" -vcodec libwebp -vf "scale=512:512:force_original_aspect_ratio=decrease,fps=15,pad=512:512:-1:-1:color=white@0.0" -loop 0 -ss 00:00:00 -t 10 -an -vsync 0 "${outputStickerPath}"`)
+        outputStickerPath = path.join(tempDir, `${jobId}_bratvid.webp`)
+        execSync(`ffmpeg -y -i "${outputVideoPath}" -vcodec libwebp -vf "scale=512:512:force_original_aspect_ratio=decrease,fps=15,pad=512:512:-1:-1:color=white@0.0" -loop 0 -ss 00:00:00 -t 10 -an -fps_mode passthrough "${outputStickerPath}"`)
 
         await hydro.sendMessage(m.chat, { sticker: fs.readFileSync(outputStickerPath) }, { quoted: m })
-
-        framePaths.forEach(f => fs.unlinkSync(f))
-        fs.unlinkSync(fileListPath)
-        fs.unlinkSync(outputVideoPath)
-        fs.unlinkSync(outputStickerPath)
 
     } catch (e) {
         console.error(e)
         m.reply('❌ Terjadi Kesalahan Saat Memproses bratvid!')
+    } finally {
+        for (const f of framePaths) {
+            try { if (f && fs.existsSync(f)) fs.unlinkSync(f) } catch {}
+        }
+        try { if (fileListPath && fs.existsSync(fileListPath)) fs.unlinkSync(fileListPath) } catch {}
+        try { if (outputVideoPath && fs.existsSync(outputVideoPath)) fs.unlinkSync(outputVideoPath) } catch {}
+        try { if (outputStickerPath && fs.existsSync(outputStickerPath)) fs.unlinkSync(outputStickerPath) } catch {}
     }
 }
 break
