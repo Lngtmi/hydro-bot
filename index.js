@@ -81,18 +81,19 @@ require('./index.js')
 nocache('../index.js', module => console.log(color('[ CHANGE ]', 'green'), color(`'${module}'`, 'green'), 'Updated'))
 
 global.__hydroRuntime = global.__hydroRuntime || {
-		starting: false,
-		reconnectTimer: null,
-		socketWatchdogTimer: null,
-		socket: null,
+			starting: false,
+			reconnectTimer: null,
+			socketWatchdogTimer: null,
+			socket: null,
 		replacedCount: 0,
 		replacedWindowStart: 0,
 		pauseReconnectUntil: 0,
 		startupOnlineNotified: false,
-		idleProbeAt: 0,
-		badSessionCount: 0,
-		badSessionWindowStart: 0
-	}
+			idleProbeAt: 0,
+			badSessionCount: 0,
+			badSessionWindowStart: 0,
+			sewaIntervalStarted: false
+		}
 
 const getOwnerNotifyJids = () => {
 	const raw = []
@@ -269,13 +270,13 @@ console.log('Pairing code aktif tapi nomor belum diisi di settings.js (global.ow
 	}
 	startSocketWatchdog()
 
-hydro.ev.on('connection.update', async (update) => {
-		const {
-			connection,
-			lastDisconnect
-		} = update
-	markSocketActivity()
-	try{
+	hydro.ev.on('connection.update', async (update) => {
+			const {
+				connection,
+				lastDisconnect
+			} = update
+		if (connection === 'open' || connection === 'connecting') markSocketActivity()
+		try{
 			if (connection === 'close') {
 				let reason = new Boom(lastDisconnect?.error)?.output.statusCode
 				if (reason === DisconnectReason.badSession) {
@@ -404,28 +405,32 @@ hydro.ev.on('creds.update', await saveCreds)
 		const messages = Array.isArray(chatUpdate?.messages) ? chatUpdate.messages : []
 		if (!messages.length) return
 		for (const rawMsg of messages) {
-			if (!rawMsg?.message) continue
-			markSocketActivity()
-			const kay = rawMsg
-			kay.message = (Object.keys(kay.message)[0] === 'ephemeralMessage') ? kay.message.ephemeralMessage.message : kay.message
-			if (kay.key?.remoteJid === 'status@broadcast') {
-				await hydro.readMessages([kay.key]).catch(() => {})
-				continue
+			try {
+				if (!rawMsg?.message) continue
+				markSocketActivity()
+				const kay = rawMsg
+				kay.message = (Object.keys(kay.message)[0] === 'ephemeralMessage') ? kay.message.ephemeralMessage.message : kay.message
+				if (kay.key?.remoteJid === 'status@broadcast') {
+					await hydro.readMessages([kay.key]).catch(() => {})
+					continue
+				}
+				// Mode public/self difilter di hydro.js setelah normalisasi sender (termasuk LID -> JID)
+				// agar pesan owner di grup tidak ter-drop sebelum diproses.
+				const msgId = String(kay.key?.id || '')
+				if (msgId.startsWith('BAE5') && msgId.length === 16 && kay.key?.fromMe) continue
+				const m = smsg(hydro, kay, store)
+				if (m?.isGroup && m?.chat && global.triggerAntiGcNoSewaCheck) {
+					setTimeout(() => {
+						global.triggerAntiGcNoSewaCheck?.(m.chat, 'messages.upsert')
+					}, 500)
+				}
+				await require('./hydro')(hydro, m, chatUpdate, store)
+			} catch (singleErr) {
+				console.log('[messages.upsert item error]', singleErr)
 			}
-			// Mode public/self difilter di hydro.js setelah normalisasi sender (termasuk LID -> JID)
-			// agar pesan owner di grup tidak ter-drop sebelum diproses.
-			const msgId = String(kay.key?.id || '')
-			if (msgId.startsWith('BAE5') && msgId.length === 16 && kay.key?.fromMe) continue
-			const m = smsg(hydro, kay, store)
-			if (m?.isGroup && m?.chat && global.triggerAntiGcNoSewaCheck) {
-				setTimeout(() => {
-					global.triggerAntiGcNoSewaCheck?.(m.chat, 'messages.upsert')
-				}, 500)
-			}
-			await require('./hydro')(hydro, m, chatUpdate, store)
 		}
 		} catch (err) {
-			console.log(err)
+			console.log('[messages.upsert batch error]', err)
 		}
 		})
     async function getMessage(key){
@@ -454,31 +459,34 @@ hydro.ev.on('creds.update', await saveCreds)
 			}
 		}
     })
-// === Interval Cek Sewa ===
-setInterval(async () => {
-    try {
-        // hapus expired
-        sewa = expiredCheck(sewa)
+// === Interval Cek Sewa (singleton, jangan dobel tiap reconnect) ===
+if (!global.__hydroRuntime.sewaIntervalStarted) {
+    global.__hydroRuntime.sewaIntervalStarted = true
+    setInterval(async () => {
+        try {
+            // hapus expired
+            sewa = expiredCheck(sewa)
 
-        // kirim reminder
-        await remindSewa(hydro, sewa)
+            // kirim reminder
+            await remindSewa(hydro, sewa)
 
-        // auto keluar grup kalau expired
-        for (let x of sewa) {
-            if (!x.id) continue // fix bug undefined
-            if (x.expired !== "PERMANENT" && x.expired <= Date.now()) {
-                try {
-                    await hydro.sendMessage(x.id, { text: "⏳ Masa sewa habis, bot akan keluar. Terima kasih telah menyewa 🙏" })
-                    await hydro.groupLeave(x.id)
-                } catch (e) {
-                    console.log("Gagal keluar grup:", e)
+            // auto keluar grup kalau expired
+            for (let x of sewa) {
+                if (!x.id) continue // fix bug undefined
+                if (x.expired !== "PERMANENT" && x.expired <= Date.now()) {
+                    try {
+                        await hydro.sendMessage(x.id, { text: "⏳ Masa sewa habis, bot akan keluar. Terima kasih telah menyewa 🙏" })
+                        await hydro.groupLeave(x.id)
+                    } catch (e) {
+                        console.log("Gagal keluar grup:", e)
+                    }
                 }
             }
+        } catch (e) {
+            console.error("Interval sewa error:", e)
         }
-    } catch (e) {
-        console.error("Interval sewa error:", e)
-    }
-}, 60 * 60 * 1000) // cek tiap 1 jam
+    }, 60 * 60 * 1000) // cek tiap 1 jam
+}
 
 if (!global.__agcnsSweepIntervalStarted) {
     global.__agcnsSweepIntervalStarted = true

@@ -433,8 +433,8 @@ hydro.ev.emit('messages.upsert', msg)
         const isGroupAdmins = m.isGroup ? groupAdmins.includes(m.sender) : false
     	const isAdmins = m.isGroup ? groupAdmins.includes(m.sender) : false
 
-        const sender = m.sender
-        const senderNumber = sender.split('@')[0]
+	        const sender = String(m.sender || m.key?.participant || m.key?.remoteJid || '')
+	        const senderNumber = sender.includes('@') ? sender.split('@')[0] : sender.replace(/[^0-9]/g, '')
 
         const jangan = m.isGroup ? pler.includes(m.chat) : false
     	const isPrem = prem.includes(m.sender)
