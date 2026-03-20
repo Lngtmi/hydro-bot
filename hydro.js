@@ -202,6 +202,7 @@ function saveAutoClose() {
 }
 
 const OPENAI_KEY_STORE = path.join(__dirname, 'session', 'openai_api_key.txt')
+const GROQ_KEY_STORE = path.join(__dirname, 'session', 'groq_api_key.txt')
 const maskSecret = (raw = '') => {
     const v = String(raw || '').trim()
     if (!v) return '-'
@@ -237,6 +238,31 @@ const clearPersistedOpenAIKey = () => {
         if (fs.existsSync(OPENAI_KEY_STORE)) fs.unlinkSync(OPENAI_KEY_STORE)
     } catch {}
     global.keyopenai = '-'
+}
+const readStoredGroqKey = () => {
+    try {
+        if (!fs.existsSync(GROQ_KEY_STORE)) return ''
+        return String(fs.readFileSync(GROQ_KEY_STORE, 'utf8') || '').trim()
+    } catch {
+        return ''
+    }
+}
+const resolveGroqKey = () => {
+    const envKey = String(process.env.GROQ_API_KEY || '').trim()
+    if (envKey) return envKey
+    const stored = readStoredGroqKey()
+    return stored || ''
+}
+const persistGroqKey = (rawKey = '') => {
+    const key = String(rawKey || '').trim()
+    const dir = path.dirname(GROQ_KEY_STORE)
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
+    fs.writeFileSync(GROQ_KEY_STORE, key, 'utf8')
+}
+const clearPersistedGroqKey = () => {
+    try {
+        if (fs.existsSync(GROQ_KEY_STORE)) fs.unlinkSync(GROQ_KEY_STORE)
+    } catch {}
 }
 
 const bootOpenAIKey = resolveOpenAIKey()
@@ -1416,6 +1442,7 @@ const MENU_MANUAL_COMMANDS = {
   ownermenu: [
     'autoread', 'antigcnosewa', 'public', 'self', 'onlypc', 'onlygc', 'setppbot', 'delppbot',
     'setbotname', 'setbotbio', 'addowner', 'delowner', 'setopenaikey', 'cekopenaikey', 'delopenaikey',
+    'setgroqkey', 'cekgroqkey', 'delgroqkey',
     'restart', 'shutdown', 'backup'
   ],
   anonymousmenu: ['anonymouschat', 'start', 'next', 'stop', 'sendprofile', 'menfess', 'confess', 'balasmenfess', 'tolakmenfess', 'stopmenfess'],
@@ -1603,7 +1630,7 @@ const classifyCommandToMenu = (cmd) => {
   if (/(yts|ytsearch|ttsearch|google|imdb|weather|wanumber|stalk|cekid|whois|trackip|myip|host|genshinstalk|npmstalk|githubstalk|news|berita|cnn|kompas|detik)/i.test(cmd)) return 'searchmenu'
   if (/(ai|gpt|chatgpt|openai|gemini|claude|simi|bing|hydromind|aimath|ai4chat)/i.test(cmd)) return 'aimenu'
   if (/(buy|sewa|premium|prem|donasi|donate|payment|dana|gopay|ovo|produk|order|store)/i.test(cmd)) return 'storemenu'
-  if (/(owner|addowner|delowner|autoread|antigcnosewa|public|self|setppbot|restart|shutdown|backup|setopenaikey|cekopenaikey|delopenaikey)/i.test(cmd)) return 'ownermenu'
+  if (/(owner|addowner|delowner|autoread|antigcnosewa|public|self|setppbot|restart|shutdown|backup|setopenaikey|cekopenaikey|delopenaikey|setgroqkey|cekgroqkey|delgroqkey)/i.test(cmd)) return 'ownermenu'
   if (/(anonymous|menfess|menfes|confess|balasmenfess|balasmenfes|tolakmenfess|tolakmenfes|stopmenfess|stopmenfes|startchat|nextchat|leavechat)/i.test(cmd)) return 'anonymousmenu'
   if (/(rpg|hunt|mining|adventure|mulung|berkebun|dagang|bank|atm|gajian|bonus|upgrade|mancing|pet|heal|craft|work|rob|misi|nguli)/i.test(cmd)) return 'rpgmenu'
   if (/(islam|doa|quran|surah|hadis|sholat|asmaul|kisahnabi|alkitab)/i.test(cmd)) return 'islamimenu'
@@ -5796,6 +5823,16 @@ persistOpenAIKey(candidate)
 replyhydro(`✅ OpenAI API key berhasil disimpan.\nKey: ${maskSecret(candidate)}\n\nPerintah cek: ${prefix}cekopenaikey`)
 }
 break
+case 'setgroqkey':
+case 'setkeygroq': {
+if (!Ahmad) return replytolak(mess.only.owner)
+if (!text) return replyhydro(`Format salah.\nContoh: ${prefix}setgroqkey gsk_xxxx`)
+const candidate = String(text || '').trim()
+if (candidate.length < 20) return replyhydro('API key Groq terlalu pendek. Pastikan key valid.')
+persistGroqKey(candidate)
+replyhydro(`✅ Groq API key berhasil disimpan.\nKey: ${maskSecret(candidate)}\n\nPerintah cek: ${prefix}cekgroqkey`)
+}
+break
 case 'cekopenaikey':
 case 'checkopenaikey': {
 if (!Ahmad) return replytolak(mess.only.owner)
@@ -5812,11 +5849,34 @@ Gunakan *${prefix}setopenaikey sk-...* untuk set key.`
 )
 }
 break
+case 'cekgroqkey':
+case 'checkgroqkey': {
+if (!Ahmad) return replytolak(mess.only.owner)
+const envKey = String(process.env.GROQ_API_KEY || '').trim()
+const storedKey = readStoredGroqKey()
+const activeKey = resolveGroqKey()
+const source = envKey ? 'ENV (GROQ_API_KEY)' : (storedKey ? 'LOCAL (session/groq_api_key.txt)' : '-')
+replyhydro(
+`🔐 *Status Groq Key*
+• Sumber aktif: ${source}
+• Key aktif: ${maskSecret(activeKey)}
+
+Gunakan *${prefix}setgroqkey gsk_...* untuk set key gratis.`
+)
+}
+break
 case 'delopenaikey':
 case 'hapusopenaikey': {
 if (!Ahmad) return replytolak(mess.only.owner)
 clearPersistedOpenAIKey()
 replyhydro('✅ OpenAI key lokal berhasil dihapus. Jika env OPENAI_API_KEY masih terisi, bot tetap akan memakai env.')
+}
+break
+case 'delgroqkey':
+case 'hapusgroqkey': {
+if (!Ahmad) return replytolak(mess.only.owner)
+clearPersistedGroqKey()
+replyhydro('✅ Groq key lokal berhasil dihapus. Jika env GROQ_API_KEY masih terisi, bot tetap akan memakai env.')
 }
 break
 
@@ -35371,13 +35431,18 @@ break
             if (!/audio/.test(mime)) return replyhydro('Reply pesan voice note (VN), bukan media lain.')
             const isVoiceNote = Boolean(qmsg?.ptt || m.quoted?.ptt || m.quoted?.msg?.ptt || m.quoted?.message?.audioMessage?.ptt)
             if (!isVoiceNote) return replyhydro('Perintah ini khusus voice note (VN). Kirim/Reply VN lalu ketik .transkrip')
+            const groqKey = resolveGroqKey()
             const openAiKey = resolveOpenAIKey()
-            if (!openAiKey) {
+            if (!groqKey && !openAiKey) {
               return replyhydro(
-`OpenAI API key belum diset.
-• Isi env server: OPENAI_API_KEY
+`API transkrip belum diset.
+• Disarankan gratis: set GROQ key (buat di console.groq.com)
+  ${prefix}setgroqkey gsk_xxxx
+• Atau isi env server: GROQ_API_KEY
+• Alternatif lama:
+  ${prefix}setopenaikey sk-xxxx
 atau
-• Owner set via chat: ${prefix}setopenaikey sk-xxxx`
+• env OPENAI_API_KEY`
               )
             }
 
@@ -35402,17 +35467,40 @@ atau
               }
               fs.writeFileSync(tempFile, audioBuffer)
 
-              const { Configuration, OpenAIApi } = require('openai')
-              const openai = new OpenAIApi(new Configuration({ apiKey: openAiKey }))
-              const result = await openai.createTranscription(
-                fs.createReadStream(tempFile),
-                'whisper-1',
-                undefined,
-                'json',
-                0,
-                'id'
-              )
-              const transcript = String(result?.data?.text || '').trim()
+              let transcript = ''
+              if (groqKey) {
+                const form = new FormData()
+                form.append('file', fs.createReadStream(tempFile))
+                form.append('model', 'whisper-large-v3-turbo')
+                form.append('language', 'id')
+                form.append('response_format', 'json')
+                const groqResp = await axios.post(
+                  'https://api.groq.com/openai/v1/audio/transcriptions',
+                  form,
+                  {
+                    headers: {
+                      ...form.getHeaders(),
+                      Authorization: `Bearer ${groqKey}`
+                    },
+                    maxBodyLength: Infinity,
+                    maxContentLength: Infinity,
+                    timeout: 120000
+                  }
+                )
+                transcript = String(groqResp?.data?.text || '').trim()
+              } else {
+                const { Configuration, OpenAIApi } = require('openai')
+                const openai = new OpenAIApi(new Configuration({ apiKey: openAiKey }))
+                const result = await openai.createTranscription(
+                  fs.createReadStream(tempFile),
+                  'whisper-1',
+                  undefined,
+                  'json',
+                  0,
+                  'id'
+                )
+                transcript = String(result?.data?.text || '').trim()
+              }
               if (!transcript) return replyhydro('❌ Transkrip kosong. Coba VN lain dengan suara lebih jelas.')
               replyhydro(`*Transkrip VN:*\n\n${transcript}`)
             } catch (err) {
