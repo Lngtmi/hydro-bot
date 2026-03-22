@@ -54,6 +54,38 @@ const { smsg, isUrl, generateMessageTag, getBuffer, getSizeMedia, fetchJson, awa
 
 const prefix = String(global.commandPrefix || '.')
 let phoneNumber = global.ownernomer || global.ownernumber || ""
+const logDir = path.resolve('./logs')
+const heartbeatFile = path.join(logDir, 'socket-heartbeat.json')
+const watchdogLogFile = path.join(logDir, 'socket-watchdog.log')
+
+const ensureRuntimeLogDir = () => {
+	try {
+		if (!fs.existsSync(logDir)) fs.mkdirSync(logDir, { recursive: true })
+	} catch {}
+}
+
+const appendWatchdogLog = (reason = '', extra = {}) => {
+	try {
+		ensureRuntimeLogDir()
+		const line = JSON.stringify({
+			ts: moment.tz('Asia/Jakarta').format('YYYY-MM-DD HH:mm:ss'),
+			reason,
+			...extra
+		})
+		fs.appendFileSync(watchdogLogFile, line + '\n')
+	} catch {}
+}
+
+const writeHeartbeat = (payload = {}) => {
+	try {
+		ensureRuntimeLogDir()
+		fs.writeFileSync(heartbeatFile, JSON.stringify({
+			updatedAt: Date.now(),
+			updatedAtWib: moment.tz('Asia/Jakarta').format('YYYY-MM-DD HH:mm:ss'),
+			...payload
+		}, null, 2))
+	} catch {}
+}
 global.db = JSON.parse(fs.readFileSync('./database/database.json'))
 if (global.db) global.db = {
 sticker: {},
@@ -86,6 +118,7 @@ global.__hydroRuntime = global.__hydroRuntime || {
 			reconnectTimer: null,
 			socketWatchdogTimer: null,
 			socketHealthTimer: null,
+			socketStallTimer: null,
 			socket: null,
 			pairingRequested: false,
 			pairingPrompted: false,
@@ -99,7 +132,10 @@ global.__hydroRuntime = global.__hydroRuntime || {
 			badSessionWindowStart: 0,
 			sewaIntervalStarted: false,
 			lastInboundAt: 0,
-			lastHealthcheckAt: 0
+			lastUpsertAt: 0,
+			lastHealthcheckAt: 0,
+			stallHits: 0,
+			lastRestartReason: ''
 		}
 
 const getOwnerNotifyJids = () => {
@@ -199,64 +235,73 @@ markOnlineOnConnect: true,
 		return jid
 	}
 	hydro.decodeJid = decodeJidSafe
-		runtimeState.socket = hydro
-		runtimeState.starting = false
-		let pairingInProgress = false
-		let pairingLoopTimer = null
-		const requestPairingCodeSafe = async () => {
-			if (!pairingCode) return false
-			if (hydro.authState.creds.registered) return true
-			if (global.__hydroRuntime.pairingRequested) return true
-			if (pairingInProgress) return false
-			const runtime = global.__hydroRuntime
-			const envPairingNumber = String(process.env.PAIRING_NUMBER || '').replace(/[^0-9]/g, '')
-			const configuredPhoneNumber = String(global.ownernomer || global.ownernumber || '').replace(/[^0-9]/g, '')
-			let phoneForPairing = String(runtime.pairingPhone || '').replace(/[^0-9]/g, '')
-			if (!phoneForPairing && process.stdin.isTTY && !runtime.pairingPrompted) {
-				runtime.pairingPrompted = true
-				const fallbackHint = envPairingNumber || configuredPhoneNumber || '628xxxxxxxxxx'
-				const rawPhoneNumber = await question(`Masukin nomor yang mau ditautkan untuk pairing (contoh: ${fallbackHint})\n`)
-				phoneForPairing = String(rawPhoneNumber || '').replace(/[^0-9]/g, '')
-				if (!phoneForPairing) phoneForPairing = envPairingNumber || configuredPhoneNumber
-			}
-			if (!phoneForPairing) phoneForPairing = envPairingNumber || configuredPhoneNumber
-			runtime.pairingPhone = phoneForPairing
-			if (!phoneForPairing) {
-				console.log('Pairing code aktif, tapi nomor belum diisi. Isi dulu di prompt startup, atau set env PAIRING_NUMBER / settings.js (global.ownernomer).')
-				return false
-			}
-			const wsState = hydro?.ws?.readyState
-			if (typeof wsState === 'number' && wsState !== 1) return false
-			pairingInProgress = true
-			try {
-				let code = await hydro.requestPairingCode(phoneForPairing)
-				if (typeof code === 'string' && code.length === 8 && !code.includes('-')) {
-					code = code.match(/.{1,4}/g)?.join("-") || code
-				}
-				console.log(`Ini kodenya:`, code)
-				global.__hydroRuntime.pairingRequested = true
-				return true
-			} catch (err) {
-				const msg = String(err?.message || err || '')
-				console.log(`[PAIRING RETRY] ${msg}`)
-				return false
-			} finally {
-				pairingInProgress = false
-			}
-		}
-	    store.bind(hydro.ev)
+	runtimeState.socket = hydro
+	runtimeState.starting = false
+
+	let pairingInProgress = false
+	let pairingLoopTimer = null
+	let lastHeartbeatWriteAt = 0
 	let lastSocketActivityAt = Date.now()
 	let socketWatchdogTimer = global.__hydroRuntime.socketWatchdogTimer || null
 	let socketHealthTimer = global.__hydroRuntime.socketHealthTimer || null
+	let socketStallTimer = global.__hydroRuntime.socketStallTimer || null
 	const WS_READY_OPEN = 1
 	const SOCKET_WATCHDOG_INTERVAL_MS = 60 * 1000
-		const SOCKET_INACTIVE_TTL_MS = 3 * 60 * 1000
-		const SOCKET_IDLE_PROBE_GRACE_MS = 2 * 60 * 1000
+	const SOCKET_INACTIVE_TTL_MS = 3 * 60 * 1000
+	const SOCKET_IDLE_PROBE_GRACE_MS = 2 * 60 * 1000
 	const SOCKET_HEALTHCHECK_INTERVAL_MS = 2 * 60 * 1000
+	const SOCKET_STALLCHECK_INTERVAL_MS = 60 * 1000
+	const SOCKET_UPSERT_STALL_MS = 5 * 60 * 1000
+
 	const markSocketActivity = () => {
 		lastSocketActivityAt = Date.now()
 		global.__hydroRuntime.idleProbeAt = 0
 	}
+
+	const requestPairingCodeSafe = async () => {
+		if (!pairingCode) return false
+		if (hydro.authState.creds.registered) return true
+		if (global.__hydroRuntime.pairingRequested) return true
+		if (pairingInProgress) return false
+		const runtime = global.__hydroRuntime
+		const envPairingNumber = String(process.env.PAIRING_NUMBER || '').replace(/[^0-9]/g, '')
+		const configuredPhoneNumber = String(global.ownernomer || global.ownernumber || '').replace(/[^0-9]/g, '')
+		let phoneForPairing = String(runtime.pairingPhone || '').replace(/[^0-9]/g, '')
+
+		if (!phoneForPairing && process.stdin.isTTY && !runtime.pairingPrompted) {
+			runtime.pairingPrompted = true
+			const fallbackHint = envPairingNumber || configuredPhoneNumber || '628xxxxxxxxxx'
+			const rawPhoneNumber = await question(`Masukin nomor yang mau ditautkan untuk pairing (contoh: ${fallbackHint})\n`)
+			phoneForPairing = String(rawPhoneNumber || '').replace(/[^0-9]/g, '')
+			if (!phoneForPairing) phoneForPairing = envPairingNumber || configuredPhoneNumber
+		}
+		if (!phoneForPairing) phoneForPairing = envPairingNumber || configuredPhoneNumber
+		runtime.pairingPhone = phoneForPairing
+		if (!phoneForPairing) {
+			console.log('Pairing code aktif, tapi nomor belum diisi. Isi PAIRING_NUMBER di Startup env panel atau global.ownernomer di settings.js.')
+			return false
+		}
+
+		const wsState = hydro?.ws?.readyState
+		if (typeof wsState === 'number' && wsState !== WS_READY_OPEN) return false
+
+		pairingInProgress = true
+		try {
+			let code = await hydro.requestPairingCode(phoneForPairing)
+			if (typeof code === 'string' && code.length === 8 && !code.includes('-')) {
+				code = code.match(/.{1,4}/g)?.join('-') || code
+			}
+			console.log(`Ini kodenya:`, code)
+			global.__hydroRuntime.pairingRequested = true
+			return true
+		} catch (err) {
+			console.log(`[PAIRING RETRY] ${String(err?.message || err || '')}`)
+			return false
+		} finally {
+			pairingInProgress = false
+		}
+	}
+
 	const stopPairingLoop = () => {
 		if (!pairingLoopTimer) return
 		clearInterval(pairingLoopTimer)
@@ -273,6 +318,7 @@ markOnlineOnConnect: true,
 			} catch {}
 		}, 5000)
 	}
+
 	const stopSocketWatchdog = () => {
 		if (!socketWatchdogTimer) return
 		clearInterval(socketWatchdogTimer)
@@ -285,6 +331,13 @@ markOnlineOnConnect: true,
 		socketHealthTimer = null
 		global.__hydroRuntime.socketHealthTimer = null
 	}
+	const stopSocketStallcheck = () => {
+		if (!socketStallTimer) return
+		clearInterval(socketStallTimer)
+		socketStallTimer = null
+		global.__hydroRuntime.socketStallTimer = null
+	}
+
 	const restartSocket = (delayMs = 3000, reason = 'unknown') => {
 		const runtime = global.__hydroRuntime
 		if (runtime.pauseReconnectUntil && Date.now() < runtime.pauseReconnectUntil) return
@@ -292,6 +345,10 @@ markOnlineOnConnect: true,
 		stopPairingLoop()
 		stopSocketWatchdog()
 		stopSocketHealthcheck()
+		stopSocketStallcheck()
+		runtime.lastRestartReason = reason
+		appendWatchdogLog('restart-socket', { reason, delayMs })
+		writeHeartbeat({ state: 'reconnecting', reason, delayMs, wsReadyState: hydro?.ws?.readyState })
 		try { hydro.ws?.close?.() } catch {}
 		runtime.reconnectTimer = setTimeout(() => {
 			runtime.reconnectTimer = null
@@ -299,35 +356,37 @@ markOnlineOnConnect: true,
 		}, delayMs)
 		console.log(`[SOCKET RESTART] ${reason} -> reconnect ${Math.round(delayMs / 1000)}s`)
 	}
+
 	const startSocketWatchdog = () => {
 		stopSocketWatchdog()
 		socketWatchdogTimer = setInterval(async () => {
-				try {
-					const wsState = hydro?.ws?.readyState
-					const hasNumericWsState = typeof wsState === 'number'
-					if (hasNumericWsState && wsState !== WS_READY_OPEN) {
-						console.log(`[SOCKET WATCHDOG] readyState=${wsState} -> reconnect`)
-						return restartSocket(4000, `watchdog-readyState-${wsState}`)
+			try {
+				const wsState = hydro?.ws?.readyState
+				const hasNumericWsState = typeof wsState === 'number'
+				if (hasNumericWsState && wsState !== WS_READY_OPEN) {
+					console.log(`[SOCKET WATCHDOG] readyState=${wsState} -> reconnect`)
+					return restartSocket(4000, `watchdog-readyState-${wsState}`)
+				}
+				const idleMs = Date.now() - lastSocketActivityAt
+				if (idleMs >= SOCKET_INACTIVE_TTL_MS) {
+					const runtime = global.__hydroRuntime
+					if (!runtime.idleProbeAt) {
+						runtime.idleProbeAt = Date.now()
+						console.log('[SOCKET WATCHDOG] idle terlalu lama, kirim keepalive probe')
+						await hydro.sendPresenceUpdate('available').catch(() => {})
+						await hydro.groupFetchAllParticipating().catch(() => {})
+					} else if (Date.now() - runtime.idleProbeAt >= SOCKET_IDLE_PROBE_GRACE_MS) {
+						console.log('[SOCKET WATCHDOG] idle tetap tidak pulih setelah probe -> reconnect')
+						return restartSocket(4000, 'watchdog-idle-stuck')
 					}
-					const idleMs = Date.now() - lastSocketActivityAt
-					if (idleMs >= SOCKET_INACTIVE_TTL_MS) {
-						const runtime = global.__hydroRuntime
-						if (!runtime.idleProbeAt) {
-							runtime.idleProbeAt = Date.now()
-							console.log('[SOCKET WATCHDOG] idle terlalu lama, kirim keepalive probe')
-							await hydro.sendPresenceUpdate('available').catch(() => {})
-							await hydro.groupFetchAllParticipating().catch(() => {})
-						} else if (Date.now() - runtime.idleProbeAt >= SOCKET_IDLE_PROBE_GRACE_MS) {
-							console.log('[SOCKET WATCHDOG] idle tetap tidak pulih setelah probe -> reconnect')
-							return restartSocket(4000, 'watchdog-idle-stuck')
-						}
-					}
+				}
 			} catch (watchdogErr) {
 				console.log('[SOCKET WATCHDOG] error:', watchdogErr)
 			}
 		}, SOCKET_WATCHDOG_INTERVAL_MS)
 		global.__hydroRuntime.socketWatchdogTimer = socketWatchdogTimer
 	}
+
 	const startSocketHealthcheck = () => {
 		stopSocketHealthcheck()
 		socketHealthTimer = setInterval(async () => {
@@ -343,22 +402,53 @@ markOnlineOnConnect: true,
 		}, SOCKET_HEALTHCHECK_INTERVAL_MS)
 		global.__hydroRuntime.socketHealthTimer = socketHealthTimer
 	}
+
+	const startSocketStallcheck = () => {
+		stopSocketStallcheck()
+		socketStallTimer = setInterval(() => {
+			try {
+				const wsState = hydro?.ws?.readyState
+				if (typeof wsState === 'number' && wsState !== WS_READY_OPEN) return
+				const runtime = global.__hydroRuntime
+				if (!runtime.lastUpsertAt) return
+				const idleUpsertMs = Date.now() - runtime.lastUpsertAt
+				if (idleUpsertMs < SOCKET_UPSERT_STALL_MS) {
+					runtime.stallHits = 0
+					return
+				}
+				runtime.stallHits = (runtime.stallHits || 0) + 1
+				if (runtime.stallHits < 2) {
+					appendWatchdogLog('stall-warning', { idleUpsertMs, wsState, stallHits: runtime.stallHits })
+					return
+				}
+				appendWatchdogLog('stall-restart', { idleUpsertMs, wsState, stallHits: runtime.stallHits })
+				writeHeartbeat({ state: 'restarting_due_to_stall', idleUpsertMs })
+				console.log(`[SOCKET STALL] messages.upsert idle ${Math.round(idleUpsertMs / 1000)}s -> process restart`)
+				process.exit(1)
+			} catch (stallErr) {
+				console.log('[SOCKET STALLCHECK] error:', stallErr?.message || stallErr)
+			}
+		}, SOCKET_STALLCHECK_INTERVAL_MS)
+		global.__hydroRuntime.socketStallTimer = socketStallTimer
+	}
+
+	store.bind(hydro.ev)
 	startSocketWatchdog()
 	startSocketHealthcheck()
+	startSocketStallcheck()
 	startPairingLoop()
 
 	hydro.ev.on('connection.update', async (update) => {
-			const {
-				connection,
-				lastDisconnect
-			} = update
-		if (connection === 'open') {
-			markSocketActivity()
-			global.__hydroRuntime.lastInboundAt = Date.now()
-		}
-		try{
+		const { connection, lastDisconnect } = update
+		if (connection === 'open') markSocketActivity()
+		try {
 			if (connection === 'close') {
 				let reason = new Boom(lastDisconnect?.error)?.output.statusCode
+				appendWatchdogLog('connection-close', {
+					reason,
+					reasonText: String(lastDisconnect?.error?.message || ''),
+					wsReadyState: hydro?.ws?.readyState
+				})
 				if (reason === DisconnectReason.badSession) {
 					const runtime = global.__hydroRuntime
 					const now = Date.now()
@@ -377,13 +467,14 @@ markOnlineOnConnect: true,
 						console.log('[SOCKET GUARD] badSession berulang. Jeda reconnect 30 menit untuk cegah loop.')
 						stopSocketWatchdog()
 						stopSocketHealthcheck()
+						stopSocketStallcheck()
 					}
 				} else if (reason === DisconnectReason.connectionClosed) {
-					console.log("Connection closed, reconnecting....");
-					restartSocket(3000, 'connectionClosed');
+					console.log('Connection closed, reconnecting....')
+					restartSocket(3000, 'connectionClosed')
 				} else if (reason === DisconnectReason.connectionLost) {
-					console.log("Connection Lost from Server, reconnecting...");
-					restartSocket(3000, 'connectionLost');
+					console.log('Connection Lost from Server, reconnecting...')
+					restartSocket(3000, 'connectionLost')
 				} else if (reason === DisconnectReason.connectionReplaced) {
 					const runtime = global.__hydroRuntime
 					const now = Date.now()
@@ -392,79 +483,84 @@ markOnlineOnConnect: true,
 						runtime.replacedCount = 0
 					}
 					runtime.replacedCount += 1
-					console.log("Connection Replaced, Another New Session Opened, Please Close Current Session First");
+					console.log('Connection Replaced, Another New Session Opened, Please Close Current Session First')
 					if (runtime.replacedCount >= 3) {
 						runtime.pauseReconnectUntil = Date.now() + 5 * 60 * 1000
-						console.log("[SOCKET GUARD] connectionReplaced berulang. Reconnect dijeda 5 menit untuk cegah loop.")
+						console.log('[SOCKET GUARD] connectionReplaced berulang. Reconnect dijeda 5 menit untuk cegah loop.')
 						stopSocketWatchdog()
 						stopSocketHealthcheck()
+						stopSocketStallcheck()
 						return
 					}
 					restartSocket(15000, 'connectionReplaced')
 				} else if (reason === DisconnectReason.loggedOut) {
-					console.log(`Device Logged Out, Please Scan Again And Run.`);
-					stopPairingLoop();
-					stopSocketWatchdog();
-					stopSocketHealthcheck();
+					console.log('Device Logged Out, Please Scan Again And Run.')
+					stopPairingLoop()
+					stopSocketWatchdog()
+					stopSocketHealthcheck()
+					stopSocketStallcheck()
 				} else if (reason === DisconnectReason.restartRequired) {
-					console.log("Restart Required, Restarting...");
-					restartSocket(3000, 'restartRequired');
+					console.log('Restart Required, Restarting...')
+					restartSocket(3000, 'restartRequired')
 				} else if (reason === DisconnectReason.timedOut) {
-					console.log("Connection TimedOut, Reconnecting...");
-					restartSocket(3000, 'timedOut');
+					console.log('Connection TimedOut, Reconnecting...')
+					restartSocket(3000, 'timedOut')
 				} else {
-				  console.log(`Unknown DisconnectReason: ${reason}|${connection}`)
-				  restartSocket(4000, `unknown-${reason}`);
+					console.log(`Unknown DisconnectReason: ${reason}|${connection}`)
+					restartSocket(4000, `unknown-${reason}`)
 				}
 			}
-			if (update.connection == "connecting" || update.receivedPendingNotifications == "false") {
-				console.log(color(`\n👀Menghubungkan...`, 'yellow'))
-				startPairingLoop()
-		}
-					if (update.connection == "open" || update.receivedPendingNotifications == "true") {
-						global.__hydroRuntime.replacedCount = 0
-						global.__hydroRuntime.replacedWindowStart = 0
-						global.__hydroRuntime.pauseReconnectUntil = 0
-						global.__hydroRuntime.pairingRequested = false
-						requestPairingCodeSafe().catch((err) => {
-							console.log('[PAIRING SAFE ERROR]', err?.message || err)
-						})
-						startPairingLoop()
-					await delay(1999)
-cfonts.say(botname || 'BOT', {
-    font: 'block',
-    align: 'left',
-    colors: ['blue', 'blueBright'],
-    background: 'transparent',
-	    maxLength: 18,
-	    rawMode: false,
-	});
-					if (!global.__hydroRuntime.startupOnlineNotified) {
-						global.__hydroRuntime.startupOnlineNotified = true
-						const botJid = decodeJidSafe(hydro?.user?.id || '')
-						const ownerTargets = getOwnerNotifyJids().filter(jid => jid !== botJid)
-						const onlineText = `✅ *${botname}* telah online kembali.\n🕒 ${moment.tz('Asia/Jakarta').format('DD/MM/YYYY HH:mm:ss')} WIB\n🧩 Prefix aktif: *${prefix}*`
-						for (const jid of ownerTargets) {
-							try {
-								await hydro.sendMessage(jid, { text: onlineText })
-							} catch (notifyErr) {
-								console.log(`[ONLINE NOTIFY FAILED] ${jid}: ${notifyErr?.message || notifyErr}`)
-							}
-							}
-						}
-						global.__hydroRuntime.badSessionCount = 0
-						global.__hydroRuntime.badSessionWindowStart = 0
-						setTimeout(() => {
-							global.triggerAntiGcNoSewaSweep?.('connection.open')
-						}, 12000)
-				}
-		} catch (err) {
-		  console.log('Error in Connection.update '+err)
-		  restartSocket(5000, 'connection.update.catch');
-		}
-		
-	})
 
+			if (update.connection == 'connecting' || update.receivedPendingNotifications == 'false') {
+				console.log(color('\n👀Menghubungkan...', 'yellow'))
+				startPairingLoop()
+			}
+
+			if (update.connection == 'open' || update.receivedPendingNotifications == 'true') {
+				global.__hydroRuntime.replacedCount = 0
+				global.__hydroRuntime.replacedWindowStart = 0
+				global.__hydroRuntime.pauseReconnectUntil = 0
+				global.__hydroRuntime.pairingRequested = false
+				global.__hydroRuntime.stallHits = 0
+				global.__hydroRuntime.lastUpsertAt = Date.now()
+				writeHeartbeat({ state: 'open', wsReadyState: hydro?.ws?.readyState })
+				requestPairingCodeSafe().catch((err) => {
+					console.log('[PAIRING SAFE ERROR]', err?.message || err)
+				})
+				startPairingLoop()
+				await delay(1999)
+				cfonts.say(botname || 'BOT', {
+					font: 'block',
+					align: 'left',
+					colors: ['blue', 'blueBright'],
+					background: 'transparent',
+					maxLength: 18,
+					rawMode: false,
+				})
+				if (!global.__hydroRuntime.startupOnlineNotified) {
+					global.__hydroRuntime.startupOnlineNotified = true
+					const botJid = decodeJidSafe(hydro?.user?.id || '')
+					const ownerTargets = getOwnerNotifyJids().filter(jid => jid !== botJid)
+					const onlineText = `✅ *${botname}* telah online kembali.\n🕒 ${moment.tz('Asia/Jakarta').format('DD/MM/YYYY HH:mm:ss')} WIB\n🧩 Prefix aktif: *${prefix}*`
+					for (const jid of ownerTargets) {
+						try {
+							await hydro.sendMessage(jid, { text: onlineText })
+						} catch (notifyErr) {
+							console.log(`[ONLINE NOTIFY FAILED] ${jid}: ${notifyErr?.message || notifyErr}`)
+						}
+					}
+				}
+				global.__hydroRuntime.badSessionCount = 0
+				global.__hydroRuntime.badSessionWindowStart = 0
+				setTimeout(() => {
+					global.triggerAntiGcNoSewaSweep?.('connection.open')
+				}, 12000)
+			}
+		} catch (err) {
+			console.log('Error in Connection.update ' + err)
+			restartSocket(5000, 'connection.update.catch')
+		}
+	})
 await delay(5555) 
 start('2',colors.bold.white('\n\nMenunggu Pesan Baru..'))
 
@@ -498,6 +594,20 @@ hydro.ev.on('creds.update', await saveCreds)
 			try {
 				if (!rawMsg?.message) continue
 				markSocketActivity()
+				const now = Date.now()
+				global.__hydroRuntime.lastUpsertAt = now
+				global.__hydroRuntime.stallHits = 0
+				if (!rawMsg?.key?.fromMe) global.__hydroRuntime.lastInboundAt = now
+				if (now - lastHeartbeatWriteAt >= 3000) {
+					lastHeartbeatWriteAt = now
+					writeHeartbeat({
+						state: 'messages.upsert',
+						wsReadyState: hydro?.ws?.readyState,
+						lastMessageTs: now,
+						lastMessageId: String(rawMsg?.key?.id || ''),
+						lastMessageFrom: String(rawMsg?.key?.remoteJid || '')
+					})
+				}
 				const kay = rawMsg
 				kay.message = (Object.keys(kay.message)[0] === 'ephemeralMessage') ? kay.message.ephemeralMessage.message : kay.message
 				if (kay.key?.remoteJid === 'status@broadcast') {
@@ -509,7 +619,6 @@ hydro.ev.on('creds.update', await saveCreds)
 				const msgId = String(kay.key?.id || '')
 				if (msgId.startsWith('BAE5') && msgId.length === 16 && kay.key?.fromMe) continue
 				const m = smsg(hydro, kay, store)
-				if (!kay.key?.fromMe) global.__hydroRuntime.lastInboundAt = Date.now()
 				if (m?.isGroup && m?.chat && global.triggerAntiGcNoSewaCheck) {
 					setTimeout(() => {
 						global.triggerAntiGcNoSewaCheck?.(m.chat, 'messages.upsert')
