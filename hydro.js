@@ -496,7 +496,15 @@ const saveAiExchange = (sessionKey, userText, answer) => {
   setAiHistory(sessionKey, nextHistory)
   return nextHistory.length
 }
-const buildAiMessagesForCompletion = ({ history, userText, botName, ownerName }) => ([
+const buildVisionUserContent = (userText, imageAsset = null) => {
+  const safeText = String(userText || '').trim() || 'Jelaskan gambar ini secara jelas dan natural.'
+  if (!imageAsset?.dataUrl) return safeText
+  return [
+    { type: 'text', text: safeText },
+    { type: 'image_url', image_url: { url: imageAsset.dataUrl } }
+  ]
+}
+const buildAiMessagesForCompletion = ({ history, userText, botName, ownerName, imageAsset = null }) => ([
   {
     role: 'system',
     content: AI_PERSONA_PROMPT(botName, ownerName)
@@ -504,19 +512,40 @@ const buildAiMessagesForCompletion = ({ history, userText, botName, ownerName })
   ...toOpenAIStyleHistoryPayload(history),
   {
     role: 'user',
-    content: String(userText || '').trim()
+    content: buildVisionUserContent(userText, imageAsset)
   }
 ])
-const runGroqAiChat = async ({ m, userText, botName, ownerName }) => {
+const resolveAiImageAsset = async (m) => {
+  try {
+    const source = m?.quoted ? m.quoted : m
+    const mime = String((source?.msg || source)?.mimetype || '')
+    if (!/^image\//i.test(mime)) return null
+    if (typeof source?.download !== 'function') return null
+    const buff = await source.download()
+    if (!buff || !Buffer.isBuffer(buff) || !buff.length) return null
+    const maxSize = 4 * 1024 * 1024
+    if (buff.length > maxSize) throw new Error('Gambar terlalu besar. Maksimal 4MB untuk .ai vision.')
+    const mimeType = mime.split(';')[0] || 'image/jpeg'
+    return {
+      mimeType,
+      base64: buff.toString('base64'),
+      dataUrl: `data:${mimeType};base64,${buff.toString('base64')}`
+    }
+  } catch (err) {
+    throw err
+  }
+}
+const runGroqAiChat = async ({ m, userText, botName, ownerName, imageAsset = null }) => {
   const apiKey = resolveGroqKey()
   if (!apiKey) throw new Error('Groq API key belum diset.')
   const sessionKey = getAiSessionKey(m)
   const history = getAiHistory(sessionKey)
-  const messages = buildAiMessagesForCompletion({ history, userText, botName, ownerName })
+  const isVision = Boolean(imageAsset?.dataUrl)
+  const messages = buildAiMessagesForCompletion({ history, userText, botName, ownerName, imageAsset })
   const { data } = await axios.post(
     'https://api.groq.com/openai/v1/chat/completions',
     {
-      model: 'llama-3.3-70b-versatile',
+      model: isVision ? 'meta-llama/llama-4-scout-17b-16e-instruct' : 'llama-3.3-70b-versatile',
       messages,
       temperature: 0.85,
       max_tokens: 1100
@@ -532,18 +561,19 @@ const runGroqAiChat = async ({ m, userText, botName, ownerName }) => {
   const answer = String(data?.choices?.[0]?.message?.content || '').trim()
   if (!answer) throw new Error('Respons Groq kosong.')
   const historyCount = saveAiExchange(sessionKey, userText, answer)
-  return { answer, historyCount, provider: 'Groq' }
+  return { answer, historyCount, provider: isVision ? 'Groq Vision' : 'Groq' }
 }
-const runOpenRouterAiChat = async ({ m, userText, botName, ownerName }) => {
+const runOpenRouterAiChat = async ({ m, userText, botName, ownerName, imageAsset = null }) => {
   const apiKey = resolveOpenRouterKey()
   if (!apiKey) throw new Error('OpenRouter API key belum diset.')
   const sessionKey = getAiSessionKey(m)
   const history = getAiHistory(sessionKey)
-  const messages = buildAiMessagesForCompletion({ history, userText, botName, ownerName })
+  const isVision = Boolean(imageAsset?.dataUrl)
+  const messages = buildAiMessagesForCompletion({ history, userText, botName, ownerName, imageAsset })
   const { data } = await axios.post(
     'https://openrouter.ai/api/v1/chat/completions',
     {
-      model: 'openrouter/free',
+      model: isVision ? 'meta-llama/llama-3.2-11b-vision-instruct:free' : 'openrouter/free',
       messages,
       temperature: 0.85,
       max_tokens: 1100
@@ -561,9 +591,9 @@ const runOpenRouterAiChat = async ({ m, userText, botName, ownerName }) => {
   const answer = String(data?.choices?.[0]?.message?.content || '').trim()
   if (!answer) throw new Error('Respons OpenRouter kosong.')
   const historyCount = saveAiExchange(sessionKey, userText, answer)
-  return { answer, historyCount, provider: 'OpenRouter-Free' }
+  return { answer, historyCount, provider: isVision ? 'OpenRouter Vision' : 'OpenRouter-Free' }
 }
-const runGeminiAiChat = async ({ m, userText, botName, ownerName }) => {
+const runGeminiAiChat = async ({ m, userText, botName, ownerName, imageAsset = null }) => {
   const apiKey = resolveGeminiKey()
   if (!apiKey) throw new Error('Gemini API key belum diset. Pakai .setgeminikey AIza... atau isi GEMINI_API_KEY di environment.')
   const Gemini = require('@google/generative-ai')
@@ -581,10 +611,22 @@ const runGeminiAiChat = async ({ m, userText, botName, ownerName }) => {
 
   const sessionKey = getAiSessionKey(m)
   const history = getAiHistory(sessionKey)
-  const chat = model.startChat({
-    history: toGeminiHistoryPayload(history)
-  })
-  const result = await chat.sendMessage(String(userText || '').trim())
+  let result
+  if (imageAsset?.base64) {
+    const historyText = history.slice(-6).map((h) => `${h.role === 'model' ? 'assistant' : 'user'}: ${h.text}`).join('\n')
+    const prompt = historyText
+      ? `Konteks chat sebelumnya:\n${historyText}\n\nPertanyaan sekarang: ${String(userText || '').trim()}`
+      : String(userText || '').trim()
+    result = await model.generateContent([
+      { text: prompt || 'Jelaskan gambar ini secara jelas dan natural.' },
+      { inlineData: { mimeType: imageAsset.mimeType || 'image/jpeg', data: imageAsset.base64 } }
+    ])
+  } else {
+    const chat = model.startChat({
+      history: toGeminiHistoryPayload(history)
+    })
+    result = await chat.sendMessage(String(userText || '').trim())
+  }
   const answer = String(result?.response?.text?.() || '').trim()
   if (!answer) throw new Error('Respons AI kosong. Coba ulangi pertanyaan dengan kalimat lebih jelas.')
   const nextHistory = trimAiHistory([
@@ -597,23 +639,23 @@ const runGeminiAiChat = async ({ m, userText, botName, ownerName }) => {
     answer,
     sessionKey,
     historyCount: nextHistory.length,
-    provider: 'Gemini'
+    provider: imageAsset?.base64 ? 'Gemini Vision' : 'Gemini'
   }
 }
-const runSmartAiChat = async ({ m, userText, botName, ownerName }) => {
+const runSmartAiChat = async ({ m, userText, botName, ownerName, imageAsset = null }) => {
   const errors = []
   try {
-    return await runGroqAiChat({ m, userText, botName, ownerName })
+    return await runGroqAiChat({ m, userText, botName, ownerName, imageAsset })
   } catch (err) {
     errors.push(`Groq: ${String(err?.response?.data?.error?.message || err?.message || err)}`)
   }
   try {
-    return await runOpenRouterAiChat({ m, userText, botName, ownerName })
+    return await runOpenRouterAiChat({ m, userText, botName, ownerName, imageAsset })
   } catch (err) {
     errors.push(`OpenRouter: ${String(err?.response?.data?.error?.message || err?.message || err)}`)
   }
   try {
-    return await runGeminiAiChat({ m, userText, botName, ownerName })
+    return await runGeminiAiChat({ m, userText, botName, ownerName, imageAsset })
   } catch (err) {
     errors.push(`Gemini: ${String(err?.response?.data?.error?.message || err?.message || err)}`)
   }
@@ -6058,7 +6100,6 @@ const quotedFromBot = Boolean(quotedSenderJid) && areJidsSameUser(quotedSenderJi
 const isReplyToAiThread =
   !isCmd &&
   !m.key.fromMe &&
-  Boolean(bodyText) &&
   Boolean(m.quoted) &&
   (
     quotedLooksLikeAiThread ||
@@ -6068,11 +6109,14 @@ const isReplyToAiThread =
 if (isReplyToAiThread) {
   await hydro.sendMessage(m.chat, { react: { text: '⏱️', key: m.key } })
   try {
+    const aiImage = await resolveAiImageAsset(m)
+    const aiText = bodyText || 'Tolong bantu analisa gambar ini.'
     const { answer, historyCount, provider } = await runSmartAiChat({
       m,
-      userText: bodyText,
+      userText: aiText,
       botName: botname,
-      ownerName: ownername
+      ownerName: ownername,
+      imageAsset: aiImage
     })
     const pairCount = Math.max(1, Math.floor(historyCount / 2))
     return reply(`🤖 *${botname}* (${provider || 'AI'})\n\n${answer}\n\n💬 ${pairCount} pesan tersimpan\n— AI Thread • reply pesan ini untuk lanjut`)
@@ -28286,16 +28330,24 @@ case 'openai':
 case 'chatgpt':
 case 'open-ai':
 case 'gemini': {
-	if (!text) {
+	let aiImage = null
+	try {
+		aiImage = await resolveAiImageAsset(m)
+	} catch (imgErr) {
+		return replyhydro(`Gagal membaca gambar.\nDetail: ${String(imgErr?.message || imgErr)}`)
+	}
+	if (!text && !aiImage) {
 		return replyhydro(`Contoh:\n${prefix + command} siapa nama kamu?\n\nReset memori chat:\n${prefix}aireset`)
 	}
+	const aiText = text || 'Tolong jelaskan isi gambar ini dengan bahasa santai dan jelas.'
 	await hydro.sendMessage(m.chat, { react: { text: '⏱️', key: m.key } })
 	try {
 		const { answer, historyCount, provider } = await runSmartAiChat({
 			m,
-			userText: text,
+			userText: aiText,
 			botName: botname,
-			ownerName: ownername
+			ownerName: ownername,
+			imageAsset: aiImage
 		})
 		const pairCount = Math.max(1, Math.floor(historyCount / 2))
 		reply(`🤖 *${botname}* (${provider || 'AI'})\n\n${answer}\n\n💬 ${pairCount} pesan tersimpan • ketik ${prefix}aireset untuk reset\n— AI Thread • reply pesan ini untuk lanjut`)
