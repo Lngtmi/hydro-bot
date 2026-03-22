@@ -454,8 +454,61 @@ const clearAiHistory = (sessionKey) => {
   delete store[sessionKey]
   saveDB(global.db)
 }
-const AI_PERSONA_PROMPT = (botName, ownerName) => `Kamu adalah ${botName}, teman ngobrol WhatsApp yang hangat, nyambung, dan natural.
+const AI_MODES = {
+  adaptif: {
+    label: 'Adaptif',
+    style: 'Paling seimbang: santai, nyambung, dan mengikuti gaya user.'
+  },
+  kreatif: {
+    label: 'Kreatif',
+    style: 'Lebih imajinatif, banyak ide, analogi, dan eksplorasi konsep.'
+  },
+  empatik: {
+    label: 'Empatik',
+    style: 'Lebih hangat, suportif, dan validasi emosi user sebelum memberi saran.'
+  },
+  teknis: {
+    label: 'Teknis',
+    style: 'Lebih terstruktur, presisi, step-by-step, minim basa-basi.'
+  },
+  ringkas: {
+    label: 'Ringkas',
+    style: 'Jawaban super padat, langsung ke inti, tetap jelas.'
+  }
+}
+const normalizeAiMode = (raw = '') => {
+  const key = String(raw || '').trim().toLowerCase()
+  if (!key) return 'adaptif'
+  if (['default', 'normal', 'adapt', 'adaptif'].includes(key)) return 'adaptif'
+  if (['creative', 'kreatif', 'creatif'].includes(key)) return 'kreatif'
+  if (['empati', 'empatik', 'empathy'].includes(key)) return 'empatik'
+  if (['teknis', 'technical', 'teknik'].includes(key)) return 'teknis'
+  if (['ringkas', 'singkat', 'concise'].includes(key)) return 'ringkas'
+  return AI_MODES[key] ? key : 'adaptif'
+}
+const getAiProfileStore = () => {
+  global.db = global.db || {}
+  global.db.others = global.db.others || {}
+  global.db.others.aiProfiles = global.db.others.aiProfiles || {}
+  return global.db.others.aiProfiles
+}
+const getAiProfile = (sessionKey) => {
+  const store = getAiProfileStore()
+  const base = store[sessionKey] || {}
+  const mode = normalizeAiMode(base.mode)
+  return { mode }
+}
+const setAiModeProfile = (sessionKey, modeRaw) => {
+  const mode = normalizeAiMode(modeRaw)
+  const store = getAiProfileStore()
+  store[sessionKey] = { ...(store[sessionKey] || {}), mode, updatedAt: Date.now() }
+  saveDB(global.db)
+  return mode
+}
+const AI_PERSONA_PROMPT = (botName, ownerName, aiMode = 'adaptif') => `Kamu adalah ${botName}, teman ngobrol WhatsApp yang hangat, nyambung, dan natural.
 Pemilik bot: ${ownerName}.
+Mode aktif: ${AI_MODES[normalizeAiMode(aiMode)]?.label || 'Adaptif'}.
+Karakter mode: ${AI_MODES[normalizeAiMode(aiMode)]?.style || AI_MODES.adaptif.style}
 
 Aturan gaya bicara:
 - Pakai Bahasa Indonesia santai yang enak dibaca.
@@ -504,10 +557,10 @@ const buildVisionUserContent = (userText, imageAsset = null) => {
     { type: 'image_url', image_url: { url: imageAsset.dataUrl } }
   ]
 }
-const buildAiMessagesForCompletion = ({ history, userText, botName, ownerName, imageAsset = null }) => ([
+const buildAiMessagesForCompletion = ({ history, userText, botName, ownerName, imageAsset = null, aiMode = 'adaptif' }) => ([
   {
     role: 'system',
-    content: AI_PERSONA_PROMPT(botName, ownerName)
+    content: AI_PERSONA_PROMPT(botName, ownerName, aiMode)
   },
   ...toOpenAIStyleHistoryPayload(history),
   {
@@ -540,8 +593,9 @@ const runGroqAiChat = async ({ m, userText, botName, ownerName, imageAsset = nul
   if (!apiKey) throw new Error('Groq API key belum diset.')
   const sessionKey = getAiSessionKey(m)
   const history = getAiHistory(sessionKey)
+  const aiProfile = getAiProfile(sessionKey)
   const isVision = Boolean(imageAsset?.dataUrl)
-  const messages = buildAiMessagesForCompletion({ history, userText, botName, ownerName, imageAsset })
+  const messages = buildAiMessagesForCompletion({ history, userText, botName, ownerName, imageAsset, aiMode: aiProfile.mode })
   const { data } = await axios.post(
     'https://api.groq.com/openai/v1/chat/completions',
     {
@@ -568,8 +622,9 @@ const runOpenRouterAiChat = async ({ m, userText, botName, ownerName, imageAsset
   if (!apiKey) throw new Error('OpenRouter API key belum diset.')
   const sessionKey = getAiSessionKey(m)
   const history = getAiHistory(sessionKey)
+  const aiProfile = getAiProfile(sessionKey)
   const isVision = Boolean(imageAsset?.dataUrl)
-  const messages = buildAiMessagesForCompletion({ history, userText, botName, ownerName, imageAsset })
+  const messages = buildAiMessagesForCompletion({ history, userText, botName, ownerName, imageAsset, aiMode: aiProfile.mode })
   const { data } = await axios.post(
     'https://openrouter.ai/api/v1/chat/completions',
     {
@@ -611,6 +666,8 @@ const runGeminiAiChat = async ({ m, userText, botName, ownerName, imageAsset = n
 
   const sessionKey = getAiSessionKey(m)
   const history = getAiHistory(sessionKey)
+  const aiProfile = getAiProfile(sessionKey)
+  const systemPrompt = AI_PERSONA_PROMPT(botName, ownerName, aiProfile.mode)
   let result
   if (imageAsset?.base64) {
     const historyText = history.slice(-6).map((h) => `${h.role === 'model' ? 'assistant' : 'user'}: ${h.text}`).join('\n')
@@ -618,6 +675,7 @@ const runGeminiAiChat = async ({ m, userText, botName, ownerName, imageAsset = n
       ? `Konteks chat sebelumnya:\n${historyText}\n\nPertanyaan sekarang: ${String(userText || '').trim()}`
       : String(userText || '').trim()
     result = await model.generateContent([
+      { text: systemPrompt },
       { text: prompt || 'Jelaskan gambar ini secara jelas dan natural.' },
       { inlineData: { mimeType: imageAsset.mimeType || 'image/jpeg', data: imageAsset.base64 } }
     ])
@@ -1812,7 +1870,7 @@ const MENU_MANUAL_COMMANDS = {
     'tebakkabupaten', 'tebaksurah', 'tebakkimia', 'asahotak', 'siapaaku', 'susunkata', 'tekateki',
     'blackjack', 'slot', 'truth', 'dare', 'tictactoe', 'ttt', 'ttc', 'suit', 'hint', 'nyerah'
   ],
-  aimenu: ['ai', 'gpt', 'chatgpt', 'openai', 'gemini', 'claude', 'hydromind', 'simi', 'bing', 'aireset'],
+  aimenu: ['ai', 'gpt', 'chatgpt', 'openai', 'gemini', 'claude', 'hydromind', 'simi', 'bing', 'aireset', 'aimode'],
   storemenu: ['addsewa', 'delsewa', 'listsewa', 'ceksewa', 'addprem', 'delprem', 'listprem', 'premium', 'buyprem'],
   ownermenu: [
     'autoread', 'antigcnosewa', 'public', 'self', 'onlypc', 'onlygc', 'setppbot', 'delppbot',
@@ -2005,7 +2063,7 @@ const classifyCommandToMenu = (cmd) => {
   if (/(sticker|stiker|take|emoji|fstik|smeme|qc|iqc|swm|brat|ttp|attp)/i.test(cmd)) return 'stickermenu'
   if (/(ytmp3|ytmp4|play|tiktok|ttslide|tiktokaudio|instagram|igdl|facebook|fbdl|mediafire|gdrive|terabox|spotify|soundcloud|capcut|gitclone|twittervid|snackvideo|download|ytv|yta)/i.test(cmd)) return 'downloadmenu'
   if (/(yts|ytsearch|ttsearch|google|imdb|weather|wanumber|stalk|cekid|whois|trackip|myip|host|genshinstalk|npmstalk|githubstalk|news|berita|cnn|kompas|detik)/i.test(cmd)) return 'searchmenu'
-  if (/(ai|gpt|chatgpt|openai|gemini|claude|simi|bing|hydromind|aimath|ai4chat|aireset|resetai|aiclear)/i.test(cmd)) return 'aimenu'
+  if (/(ai|gpt|chatgpt|openai|gemini|claude|simi|bing|hydromind|aimath|ai4chat|aireset|resetai|aiclear|aimode)/i.test(cmd)) return 'aimenu'
   if (/(buy|sewa|premium|prem|donasi|donate|payment|dana|gopay|ovo|produk|order|store)/i.test(cmd)) return 'storemenu'
   if (/(owner|addowner|delowner|autoread|antigcnosewa|public|self|setppbot|restart|shutdown|backup|setopenaikey|cekopenaikey|delopenaikey|setgeminikey|cekgeminikey|delgeminikey|setopenrouterkey|cekopenrouterkey|delopenrouterkey|setgroqkey|cekgroqkey|delgroqkey)/i.test(cmd)) return 'ownermenu'
   if (/(anonymous|menfess|menfes|confess|balasmenfess|balasmenfes|tolakmenfess|tolakmenfes|stopmenfess|stopmenfes|startchat|nextchat|leavechat)/i.test(cmd)) return 'anonymousmenu'
@@ -28374,6 +28432,16 @@ case 'aiclear': {
 	const sessionKey = getAiSessionKey(m)
 	clearAiHistory(sessionKey)
 	replyhydro('✅ Memori chat AI untuk sesi ini berhasil direset.')
+}
+break
+case 'aimode': {
+	const sessionKey = getAiSessionKey(m)
+	if (!text) {
+		const activeMode = getAiProfile(sessionKey).mode
+		return replyhydro(`Mode AI saat ini: *${AI_MODES[activeMode]?.label || 'Adaptif'}*\n\nPilihan mode:\n• ${prefix}aimode adaptif\n• ${prefix}aimode kreatif\n• ${prefix}aimode empatik\n• ${prefix}aimode teknis\n• ${prefix}aimode ringkas`)
+	}
+	const modeSet = setAiModeProfile(sessionKey, text)
+	replyhydro(`✅ Mode AI diubah ke *${AI_MODES[modeSet]?.label || modeSet}*.\nKarakter: ${AI_MODES[modeSet]?.style || '-'}`)
 }
 break
 case 'mangap': {
