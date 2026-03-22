@@ -1870,7 +1870,7 @@ const MENU_MANUAL_COMMANDS = {
     'tebakkabupaten', 'tebaksurah', 'tebakkimia', 'asahotak', 'siapaaku', 'susunkata', 'tekateki',
     'blackjack', 'slot', 'truth', 'dare', 'tictactoe', 'ttt', 'ttc', 'suit', 'hint', 'nyerah'
   ],
-  aimenu: ['ai', 'gpt', 'chatgpt', 'openai', 'gemini', 'claude', 'hydromind', 'simi', 'bing', 'aireset', 'aimode'],
+  aimenu: ['ai', 'gpt', 'chatgpt', 'openai', 'gemini', 'claude', 'hydromind', 'simi', 'bing', 'aireset', 'aimode', 'aivoice', 'aiaudio', 'aivn'],
   storemenu: ['addsewa', 'delsewa', 'listsewa', 'ceksewa', 'addprem', 'delprem', 'listprem', 'premium', 'buyprem'],
   ownermenu: [
     'autoread', 'antigcnosewa', 'public', 'self', 'onlypc', 'onlygc', 'setppbot', 'delppbot',
@@ -2063,7 +2063,7 @@ const classifyCommandToMenu = (cmd) => {
   if (/(sticker|stiker|take|emoji|fstik|smeme|qc|iqc|swm|brat|ttp|attp)/i.test(cmd)) return 'stickermenu'
   if (/(ytmp3|ytmp4|play|tiktok|ttslide|tiktokaudio|instagram|igdl|facebook|fbdl|mediafire|gdrive|terabox|spotify|soundcloud|capcut|gitclone|twittervid|snackvideo|download|ytv|yta)/i.test(cmd)) return 'downloadmenu'
   if (/(yts|ytsearch|ttsearch|google|imdb|weather|wanumber|stalk|cekid|whois|trackip|myip|host|genshinstalk|npmstalk|githubstalk|news|berita|cnn|kompas|detik)/i.test(cmd)) return 'searchmenu'
-  if (/(ai|gpt|chatgpt|openai|gemini|claude|simi|bing|hydromind|aimath|ai4chat|aireset|resetai|aiclear|aimode)/i.test(cmd)) return 'aimenu'
+  if (/(ai|gpt|chatgpt|openai|gemini|claude|simi|bing|hydromind|aimath|ai4chat|aireset|resetai|aiclear|aimode|aivoice|aiaudio|aivn)/i.test(cmd)) return 'aimenu'
   if (/(buy|sewa|premium|prem|donasi|donate|payment|dana|gopay|ovo|produk|order|store)/i.test(cmd)) return 'storemenu'
   if (/(owner|addowner|delowner|autoread|antigcnosewa|public|self|setppbot|restart|shutdown|backup|setopenaikey|cekopenaikey|delopenaikey|setgeminikey|cekgeminikey|delgeminikey|setopenrouterkey|cekopenrouterkey|delopenrouterkey|setgroqkey|cekgroqkey|delgroqkey)/i.test(cmd)) return 'ownermenu'
   if (/(anonymous|menfess|menfes|confess|balasmenfess|balasmenfes|tolakmenfess|tolakmenfes|stopmenfess|stopmenfes|startchat|nextchat|leavechat)/i.test(cmd)) return 'anonymousmenu'
@@ -6168,7 +6168,10 @@ if (isReplyToAiThread) {
   await hydro.sendMessage(m.chat, { react: { text: '⏱️', key: m.key } })
   try {
     const aiImage = await resolveAiImageAsset(m)
-    const aiText = bodyText || 'Tolong bantu analisa gambar ini.'
+    const voiceFlagRegex = /\s--(?:voice|audio|vn)\s*$/i
+    const wantsVoice = voiceFlagRegex.test(bodyText || '')
+    const aiTextClean = String(bodyText || '').replace(voiceFlagRegex, '').trim()
+    const aiText = aiTextClean || 'Tolong bantu analisa gambar ini.'
     const { answer, historyCount, provider } = await runSmartAiChat({
       m,
       userText: aiText,
@@ -6177,7 +6180,28 @@ if (isReplyToAiThread) {
       imageAsset: aiImage
     })
     const pairCount = Math.max(1, Math.floor(historyCount / 2))
-    return reply(`🤖 *${botname}* (${provider || 'AI'})\n\n${answer}\n\n💬 ${pairCount} pesan tersimpan\n— AI Thread • reply pesan ini untuk lanjut`)
+    await reply(`🤖 *${botname}* (${provider || 'AI'})\n\n${answer}\n\n💬 ${pairCount} pesan tersimpan\n— AI Thread • reply pesan ini untuk lanjut`)
+    if (wantsVoice) {
+      const ttsText = String(answer || '')
+        .replace(/[*_`~#>]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .slice(0, 900)
+      if (ttsText) {
+        const ttsUrl = googleTTS.getAudioUrl(ttsText, {
+          lang: "id",
+          slow: false,
+          host: "https://translate.google.com",
+        })
+        await hydro.sendMessage(m.chat, {
+          audio: { url: ttsUrl },
+          mimetype: 'audio/mp4',
+          ptt: true,
+          fileName: 'ai-voice.mp3',
+        }, { quoted: m })
+      }
+    }
+    return
   } catch (e) {
     console.error('AI REPLY THREAD ERROR:', e)
     const msgErr = String(e?.message || '').trim()
@@ -28387,17 +28411,46 @@ case 'ai':
 case 'openai':
 case 'chatgpt':
 case 'open-ai':
-case 'gemini': {
+case 'gemini':
+case 'aivoice':
+case 'aiaudio':
+case 'aivn': {
+	const wantsVoiceByCommand = ['aivoice', 'aiaudio', 'aivn'].includes(command)
+	const voiceFlagRegex = /\s--(?:voice|audio|vn)\s*$/i
+	const wantsVoiceByFlag = voiceFlagRegex.test(text || '')
+	const wantsVoice = wantsVoiceByCommand || wantsVoiceByFlag
+	const cleanUserText = String(text || '').replace(voiceFlagRegex, '').trim()
 	let aiImage = null
 	try {
 		aiImage = await resolveAiImageAsset(m)
 	} catch (imgErr) {
 		return replyhydro(`Gagal membaca gambar.\nDetail: ${String(imgErr?.message || imgErr)}`)
 	}
-	if (!text && !aiImage) {
-		return replyhydro(`Contoh:\n${prefix + command} siapa nama kamu?\n\nReset memori chat:\n${prefix}aireset`)
+	if (!cleanUserText && !aiImage && wantsVoice && m.quoted) {
+		const quotedTtsText = String(extractQuotedText(m.quoted) || '').trim()
+		if (quotedTtsText) {
+			const ttsText = quotedTtsText
+				.replace(/[*_`~#>]/g, ' ')
+				.replace(/\s+/g, ' ')
+				.trim()
+				.slice(0, 700)
+			const ttsUrl = googleTTS.getAudioUrl(ttsText, {
+				lang: "id",
+				slow: false,
+				host: "https://translate.google.com",
+			})
+			return hydro.sendMessage(m.chat, {
+				audio: { url: ttsUrl },
+				mimetype: 'audio/mp4',
+				ptt: true,
+				fileName: 'ai-voice.mp3',
+			}, { quoted: m })
+		}
 	}
-	const aiText = text || 'Tolong jelaskan isi gambar ini dengan bahasa santai dan jelas.'
+	if (!cleanUserText && !aiImage) {
+		return replyhydro(`Contoh:\n${prefix + command} siapa nama kamu?\n${prefix + command} siapa nama kamu? --voice\n\nAtau reply pesan AI lalu ketik:\n${prefix}aivoice\n\nReset memori chat:\n${prefix}aireset`)
+	}
+	const aiText = cleanUserText || 'Tolong jelaskan isi gambar ini dengan bahasa santai dan jelas.'
 	await hydro.sendMessage(m.chat, { react: { text: '⏱️', key: m.key } })
 	try {
 		const { answer, historyCount, provider } = await runSmartAiChat({
@@ -28409,6 +28462,26 @@ case 'gemini': {
 		})
 		const pairCount = Math.max(1, Math.floor(historyCount / 2))
 		reply(`🤖 *${botname}* (${provider || 'AI'})\n\n${answer}\n\n💬 ${pairCount} pesan tersimpan • ketik ${prefix}aireset untuk reset\n— AI Thread • reply pesan ini untuk lanjut`)
+		if (wantsVoice) {
+			const ttsText = String(answer || '')
+				.replace(/[*_`~#>]/g, ' ')
+				.replace(/\s+/g, ' ')
+				.trim()
+				.slice(0, 900)
+			if (ttsText) {
+				const ttsUrl = googleTTS.getAudioUrl(ttsText, {
+					lang: "id",
+					slow: false,
+					host: "https://translate.google.com",
+				})
+				await hydro.sendMessage(m.chat, {
+					audio: { url: ttsUrl },
+					mimetype: 'audio/mp4',
+					ptt: true,
+					fileName: 'ai-voice.mp3',
+				}, { quoted: m })
+			}
+		}
 	} catch (e) {
 		console.error('AI COMMAND ERROR:', e)
 		const msgErr = String(e?.message || '').trim()
