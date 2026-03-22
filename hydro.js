@@ -557,6 +557,13 @@ const buildVisionUserContent = (userText, imageAsset = null) => {
     { type: 'image_url', image_url: { url: imageAsset.dataUrl } }
   ]
 }
+const parseAiVoiceIntent = (rawText = '') => {
+  const original = String(rawText || '')
+  const pattern = /(?:\s|^)(?:--|—|–|-)?(?:voice|audio|vn|suara)\s*$/i
+  const wantsVoice = pattern.test(original)
+  const cleanText = original.replace(pattern, '').trim()
+  return { wantsVoice, cleanText }
+}
 const buildAiMessagesForCompletion = ({ history, userText, botName, ownerName, imageAsset = null, aiMode = 'adaptif' }) => ([
   {
     role: 'system',
@@ -6168,9 +6175,7 @@ if (isReplyToAiThread) {
   await hydro.sendMessage(m.chat, { react: { text: '⏱️', key: m.key } })
   try {
     const aiImage = await resolveAiImageAsset(m)
-    const voiceFlagRegex = /\s--(?:voice|audio|vn)\s*$/i
-    const wantsVoice = voiceFlagRegex.test(bodyText || '')
-    const aiTextClean = String(bodyText || '').replace(voiceFlagRegex, '').trim()
+    const { wantsVoice, cleanText: aiTextClean } = parseAiVoiceIntent(bodyText || '')
     const aiText = aiTextClean || 'Tolong bantu analisa gambar ini.'
     const { answer, historyCount, provider } = await runSmartAiChat({
       m,
@@ -28416,10 +28421,10 @@ case 'aivoice':
 case 'aiaudio':
 case 'aivn': {
 	const wantsVoiceByCommand = ['aivoice', 'aiaudio', 'aivn'].includes(command)
-	const voiceFlagRegex = /\s--(?:voice|audio|vn)\s*$/i
-	const wantsVoiceByFlag = voiceFlagRegex.test(text || '')
+	const aiVoiceParsed = parseAiVoiceIntent(text || '')
+	const wantsVoiceByFlag = aiVoiceParsed.wantsVoice
 	const wantsVoice = wantsVoiceByCommand || wantsVoiceByFlag
-	const cleanUserText = String(text || '').replace(voiceFlagRegex, '').trim()
+	const cleanUserText = aiVoiceParsed.cleanText
 	let aiImage = null
 	try {
 		aiImage = await resolveAiImageAsset(m)
