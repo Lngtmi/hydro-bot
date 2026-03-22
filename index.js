@@ -199,10 +199,13 @@ markOnlineOnConnect: true,
 	hydro.decodeJid = decodeJidSafe
 		runtimeState.socket = hydro
 		runtimeState.starting = false
+		let pairingInProgress = false
+		let pairingLoopTimer = null
 		const requestPairingCodeSafe = async () => {
-			if (!pairingCode) return
-			if (hydro.authState.creds.registered) return
-			if (global.__hydroRuntime.pairingRequested) return
+			if (!pairingCode) return false
+			if (hydro.authState.creds.registered) return true
+			if (global.__hydroRuntime.pairingRequested) return true
+			if (pairingInProgress) return false
 			const configuredPhoneNumber = String(global.ownernomer || global.ownernumber || '').replace(/[^0-9]/g, '')
 			let phoneForPairing = configuredPhoneNumber
 			if (!phoneForPairing && process.stdin.isTTY) {
@@ -211,31 +214,26 @@ markOnlineOnConnect: true,
 			}
 			if (!phoneForPairing) {
 				console.log('Pairing code aktif tapi nomor belum diisi di settings.js (global.ownernomer).')
-				return
+				return false
 			}
-
-			const MAX_TRY = 6
-			for (let i = 1; i <= MAX_TRY; i++) {
-				const wsState = hydro?.ws?.readyState
-				if (typeof wsState === 'number' && wsState !== 1) {
-					await delay(1000 * i)
-					continue
+			const wsState = hydro?.ws?.readyState
+			if (typeof wsState === 'number' && wsState !== 1) return false
+			pairingInProgress = true
+			try {
+				let code = await hydro.requestPairingCode(phoneForPairing)
+				if (typeof code === 'string' && code.length === 8 && !code.includes('-')) {
+					code = code.match(/.{1,4}/g)?.join("-") || code
 				}
-				try {
-					let code = await hydro.requestPairingCode(phoneForPairing)
-					if (typeof code === 'string' && code.length === 8 && !code.includes('-')) {
-						code = code.match(/.{1,4}/g)?.join("-") || code
-					}
-					console.log(`Ini kodenya:`, code)
-					global.__hydroRuntime.pairingRequested = true
-					return
-				} catch (err) {
-					const msg = String(err?.message || err || '')
-					console.log(`[PAIRING RETRY ${i}/${MAX_TRY}] ${msg}`)
-					await delay(1500 * i)
-				}
+				console.log(`Ini kodenya:`, code)
+				global.__hydroRuntime.pairingRequested = true
+				return true
+			} catch (err) {
+				const msg = String(err?.message || err || '')
+				console.log(`[PAIRING RETRY] ${msg}`)
+				return false
+			} finally {
+				pairingInProgress = false
 			}
-			console.log('[PAIRING] Gagal mengambil kode pairing setelah beberapa percobaan. Socket akan retry normal.')
 		}
 	    store.bind(hydro.ev)
 	let lastSocketActivityAt = Date.now()
@@ -249,6 +247,22 @@ markOnlineOnConnect: true,
 	const markSocketActivity = () => {
 		lastSocketActivityAt = Date.now()
 		global.__hydroRuntime.idleProbeAt = 0
+	}
+	const stopPairingLoop = () => {
+		if (!pairingLoopTimer) return
+		clearInterval(pairingLoopTimer)
+		pairingLoopTimer = null
+	}
+	const startPairingLoop = () => {
+		stopPairingLoop()
+		if (!pairingCode) return
+		if (hydro.authState.creds.registered) return
+		pairingLoopTimer = setInterval(async () => {
+			try {
+				const ok = await requestPairingCodeSafe()
+				if (ok === true || hydro.authState.creds.registered) stopPairingLoop()
+			} catch {}
+		}, 5000)
 	}
 	const stopSocketWatchdog = () => {
 		if (!socketWatchdogTimer) return
@@ -266,6 +280,7 @@ markOnlineOnConnect: true,
 		const runtime = global.__hydroRuntime
 		if (runtime.pauseReconnectUntil && Date.now() < runtime.pauseReconnectUntil) return
 		if (runtime.reconnectTimer) return
+		stopPairingLoop()
 		stopSocketWatchdog()
 		stopSocketHealthcheck()
 		try { hydro.ws?.close?.() } catch {}
@@ -321,6 +336,7 @@ markOnlineOnConnect: true,
 	}
 	startSocketWatchdog()
 	startSocketHealthcheck()
+	startPairingLoop()
 
 	hydro.ev.on('connection.update', async (update) => {
 			const {
@@ -378,6 +394,7 @@ markOnlineOnConnect: true,
 					restartSocket(15000, 'connectionReplaced')
 				} else if (reason === DisconnectReason.loggedOut) {
 					console.log(`Device Logged Out, Please Scan Again And Run.`);
+					stopPairingLoop();
 					stopSocketWatchdog();
 					stopSocketHealthcheck();
 				} else if (reason === DisconnectReason.restartRequired) {
@@ -393,6 +410,7 @@ markOnlineOnConnect: true,
 			}
 			if (update.connection == "connecting" || update.receivedPendingNotifications == "false") {
 				console.log(color(`\n👀Menghubungkan...`, 'yellow'))
+				startPairingLoop()
 		}
 					if (update.connection == "open" || update.receivedPendingNotifications == "true") {
 						global.__hydroRuntime.replacedCount = 0
@@ -402,6 +420,7 @@ markOnlineOnConnect: true,
 						requestPairingCodeSafe().catch((err) => {
 							console.log('[PAIRING SAFE ERROR]', err?.message || err)
 						})
+						startPairingLoop()
 					await delay(1999)
 cfonts.say(botname || 'BOT', {
     font: 'block',
