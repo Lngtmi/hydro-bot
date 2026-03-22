@@ -66,7 +66,8 @@ chats: {},
 settings: {},
 ...(global.db || {})
 }
-const pairingCode = process.argv.includes("--pairing-code")
+const forceQrPairing = process.argv.includes("--qr")
+const pairingCode = !forceQrPairing
 
 const useMobile = process.argv.includes("--mobile")
 const owner = JSON.parse(fs.readFileSync('./database/owner.json'))
@@ -84,6 +85,7 @@ global.__hydroRuntime = global.__hydroRuntime || {
 			starting: false,
 			reconnectTimer: null,
 			socketWatchdogTimer: null,
+			socketHealthTimer: null,
 			socket: null,
 		replacedCount: 0,
 		replacedWindowStart: 0,
@@ -93,7 +95,8 @@ global.__hydroRuntime = global.__hydroRuntime || {
 			badSessionCount: 0,
 			badSessionWindowStart: 0,
 			sewaIntervalStarted: false,
-			lastInboundAt: 0
+			lastInboundAt: 0,
+			lastHealthcheckAt: 0
 		}
 
 const getOwnerNotifyJids = () => {
@@ -132,7 +135,7 @@ async function hydroInd() {
 		const msgRetryCounterCache = new NodeCache()
 	    	const hydro = XeonBotIncConnect({
         logger: pino({ level: 'silent' }),
-        printQRInTerminal: !pairingCode, // popping up QR in terminal log
+        printQRInTerminal: !pairingCode, // default: pairing code mode (QR hanya jika --qr)
       mobile: useMobile, // mobile api (prone to bans)
      auth: {
          creds: state.creds,
@@ -215,10 +218,12 @@ console.log('Pairing code aktif tapi nomor belum diisi di settings.js (global.ow
 	    store.bind(hydro.ev)
 	let lastSocketActivityAt = Date.now()
 	let socketWatchdogTimer = global.__hydroRuntime.socketWatchdogTimer || null
+	let socketHealthTimer = global.__hydroRuntime.socketHealthTimer || null
 	const WS_READY_OPEN = 1
 	const SOCKET_WATCHDOG_INTERVAL_MS = 60 * 1000
-		const SOCKET_INACTIVE_TTL_MS = 8 * 60 * 1000
+		const SOCKET_INACTIVE_TTL_MS = 3 * 60 * 1000
 		const SOCKET_IDLE_PROBE_GRACE_MS = 2 * 60 * 1000
+	const SOCKET_HEALTHCHECK_INTERVAL_MS = 2 * 60 * 1000
 	const markSocketActivity = () => {
 		lastSocketActivityAt = Date.now()
 		global.__hydroRuntime.idleProbeAt = 0
@@ -229,11 +234,18 @@ console.log('Pairing code aktif tapi nomor belum diisi di settings.js (global.ow
 		socketWatchdogTimer = null
 		global.__hydroRuntime.socketWatchdogTimer = null
 	}
+	const stopSocketHealthcheck = () => {
+		if (!socketHealthTimer) return
+		clearInterval(socketHealthTimer)
+		socketHealthTimer = null
+		global.__hydroRuntime.socketHealthTimer = null
+	}
 	const restartSocket = (delayMs = 3000, reason = 'unknown') => {
 		const runtime = global.__hydroRuntime
 		if (runtime.pauseReconnectUntil && Date.now() < runtime.pauseReconnectUntil) return
 		if (runtime.reconnectTimer) return
 		stopSocketWatchdog()
+		stopSocketHealthcheck()
 		try { hydro.ws?.close?.() } catch {}
 		runtime.reconnectTimer = setTimeout(() => {
 			runtime.reconnectTimer = null
@@ -270,14 +282,33 @@ console.log('Pairing code aktif tapi nomor belum diisi di settings.js (global.ow
 		}, SOCKET_WATCHDOG_INTERVAL_MS)
 		global.__hydroRuntime.socketWatchdogTimer = socketWatchdogTimer
 	}
+	const startSocketHealthcheck = () => {
+		stopSocketHealthcheck()
+		socketHealthTimer = setInterval(async () => {
+			try {
+				const wsState = hydro?.ws?.readyState
+				if (typeof wsState === 'number' && wsState !== WS_READY_OPEN) return
+				global.__hydroRuntime.lastHealthcheckAt = Date.now()
+				await hydro.sendPresenceUpdate('available')
+			} catch (healthErr) {
+				console.log('[SOCKET HEALTHCHECK] gagal, paksa reconnect:', healthErr?.message || healthErr)
+				return restartSocket(4000, 'healthcheck-failed')
+			}
+		}, SOCKET_HEALTHCHECK_INTERVAL_MS)
+		global.__hydroRuntime.socketHealthTimer = socketHealthTimer
+	}
 	startSocketWatchdog()
+	startSocketHealthcheck()
 
 	hydro.ev.on('connection.update', async (update) => {
 			const {
 				connection,
 				lastDisconnect
 			} = update
-		if (connection === 'open' || connection === 'connecting') markSocketActivity()
+		if (connection === 'open') {
+			markSocketActivity()
+			global.__hydroRuntime.lastInboundAt = Date.now()
+		}
 		try{
 			if (connection === 'close') {
 				let reason = new Boom(lastDisconnect?.error)?.output.statusCode
@@ -298,6 +329,7 @@ console.log('Pairing code aktif tapi nomor belum diisi di settings.js (global.ow
 						runtime.pauseReconnectUntil = Date.now() + 30 * 60 * 1000
 						console.log('[SOCKET GUARD] badSession berulang. Jeda reconnect 30 menit untuk cegah loop.')
 						stopSocketWatchdog()
+						stopSocketHealthcheck()
 					}
 				} else if (reason === DisconnectReason.connectionClosed) {
 					console.log("Connection closed, reconnecting....");
@@ -318,12 +350,14 @@ console.log('Pairing code aktif tapi nomor belum diisi di settings.js (global.ow
 						runtime.pauseReconnectUntil = Date.now() + 5 * 60 * 1000
 						console.log("[SOCKET GUARD] connectionReplaced berulang. Reconnect dijeda 5 menit untuk cegah loop.")
 						stopSocketWatchdog()
+						stopSocketHealthcheck()
 						return
 					}
 					restartSocket(15000, 'connectionReplaced')
 				} else if (reason === DisconnectReason.loggedOut) {
 					console.log(`Device Logged Out, Please Scan Again And Run.`);
 					stopSocketWatchdog();
+					stopSocketHealthcheck();
 				} else if (reason === DisconnectReason.restartRequired) {
 					console.log("Restart Required, Restarting...");
 					restartSocket(3000, 'restartRequired');

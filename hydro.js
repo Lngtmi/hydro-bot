@@ -12,7 +12,7 @@ const {
 const { modul } = require('./module')
 const path = require('path')
 const { os, axios, baileys, chalk, cheerio, child_process, crypto, cookie, FormData, FileType, fetch, fs, fsx, ffmpeg, Jimp, jsobfus, PhoneNumber, process, moment, ms, speed, syntaxerror, util, ytdl, googleTTS, nodecron, maker } = modul
-const { exec, spawn, execSync, spawnSync } = child_process
+const { exec, spawn, execSync, spawnSync, execFile } = child_process
 const { BufferJSON, WA_DEFAULT_EPHEMERAL, generateWAMessageFromContent, proto, generateWAMessageContent, generateWAMessage, prepareWAMessageMedia, areJidsSameUser, getContentType, generateForwardMessageContent } = baileys
 const { clockString, parseMention, formatp, tanggal, getTime, isUrl, sleep, runtime, fetchJson, getBuffer, jsonformat, format, reSize, generateProfilePicture, getRandom } = require('./lib/myfunc')
 const { FajarNews, BBCNews, metroNews, CNNNews, iNews, KumparanNews, TribunNews, DailyNews, DetikNews, OkezoneNews, CNBCNews, KompasNews, SindoNews, TempoNews, IndozoneNews, AntaraNews, RepublikaNews, VivaNews, KontanNews, MerdekaNews, KomikuSearch, AniPlanetSearch, KomikFoxSearch, KomikStationSearch, MangakuSearch, KiryuuSearch, KissMangaSearch, KlikMangaSearch, PalingMurah, LayarKaca21, AminoApps, Mangatoon, WAModsSearch, Emojis, CoronaInfo, JalanTikusMeme,Cerpen, Quotes, Couples, Darkjokes } = require("dhn-api");
@@ -59,6 +59,61 @@ const vm = require('node:vm')
 const { EmojiAPI } = require("emoji-api")
 const emoji = new EmojiAPI()
 const owner = JSON.parse(fs.readFileSync('./database/owner.json'))
+
+function createAsyncTaskQueue({ concurrency = 1 } = {}) {
+    let active = 0
+    const queue = []
+    const runNext = () => {
+        if (active >= concurrency) return
+        const job = queue.shift()
+        if (!job) return
+        active += 1
+        Promise.resolve()
+            .then(job.task)
+            .then(job.resolve)
+            .catch(job.reject)
+            .finally(() => {
+                active -= 1
+                runNext()
+            })
+    }
+    return {
+        push(task) {
+            return new Promise((resolve, reject) => {
+                queue.push({ task, resolve, reject })
+                runNext()
+            })
+        },
+        size() {
+            return queue.length
+        },
+        active() {
+            return active
+        }
+    }
+}
+
+const mediaHeavyQueue = global.__mediaHeavyQueue || createAsyncTaskQueue({ concurrency: 1 })
+global.__mediaHeavyQueue = mediaHeavyQueue
+
+const resolveFfmpegBinary = () => {
+    try {
+        const staticPath = require('ffmpeg-static')
+        if (staticPath && fs.existsSync(staticPath)) return staticPath
+    } catch {}
+    return 'ffmpeg'
+}
+
+const runFfmpegAsync = (args = [], timeoutMs = 180000) => new Promise((resolve, reject) => {
+    const ffmpegBin = resolveFfmpegBinary()
+    execFile(ffmpegBin, args, { timeout: timeoutMs, windowsHide: true }, (err, stdout, stderr) => {
+        if (err) {
+            const detail = String(stderr || stdout || err.message || '').slice(0, 1200)
+            return reject(new Error(detail || 'ffmpeg gagal diproses'))
+        }
+        resolve({ stdout, stderr })
+    })
+})
 const prem = JSON.parse(fs.readFileSync('./database/premium.json'))
 const badPath = './database/bad.json';
 const antiToxicPath = './database/antitoxic.json'
@@ -33255,59 +33310,82 @@ await hydro.sendImageAsSticker(m.chat, brat, m, {packname: global.packname})
 break
 case 'bratvid': case 'bratvideo': {
     if (!text && (!m.quoted || !m.quoted.text)) return m.reply(`Kirim/reply pesan *${prefix + command}* Teksnya`)
-    const teks = (m.quoted ? m.quoted.text : text).split(' ')
-    const tempDir = path.join(process.cwd(), 'temp')
-    if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true })
-    const safeSender = String(m.sender || 'user').replace(/[^a-zA-Z0-9]/g, '_')
-    const jobId = `${safeSender}_${Date.now()}_${Math.floor(Math.random() * 99999)}`
-    const framePaths = []
-    let fileListPath = ''
-    let outputVideoPath = ''
-    let outputStickerPath = ''
-
-    try {
-        for (let i = 0; i < teks.length; i++) {
-            const currentText = teks.slice(0, i + 1).join(' ')
-            let res
-            try {
-                res = await getBuffer('https://brat.siputzx.my.id/mp4?text=' + encodeURIComponent(currentText))
-            } catch (e) {
-                res = await getBuffer('https://aqul-brat.hf.space/?text=' + encodeURIComponent(currentText))
-            }
-            const framePath = path.join(tempDir, `${jobId}_${i}.mp4`)
-            fs.writeFileSync(framePath, res)
-            framePaths.push(framePath)
-        }
-
-        fileListPath = path.join(tempDir, `${jobId}.txt`)
-        let fileListContent = ''
-        for (let i = 0; i < framePaths.length; i++) {
-            fileListContent += `file '${framePaths[i]}'\n`
-            fileListContent += `duration 0.5\n`
-        }
-        fileListContent += `file '${framePaths[framePaths.length - 1]}'\n`
-        fileListContent += `duration 3\n`
-        fs.writeFileSync(fileListPath, fileListContent)
-
-        outputVideoPath = path.join(tempDir, `${jobId}-output.mp4`)
-        execSync(`ffmpeg -y -f concat -safe 0 -i "${fileListPath}" -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2,fps=30" -c:v libx264 -preset veryfast -pix_fmt yuv420p "${outputVideoPath}"`)
-
-        outputStickerPath = path.join(tempDir, `${jobId}_bratvid.webp`)
-        execSync(`ffmpeg -y -i "${outputVideoPath}" -vcodec libwebp -vf "scale=512:512:force_original_aspect_ratio=decrease,fps=15,pad=512:512:-1:-1:color=white@0.0" -loop 0 -ss 00:00:00 -t 10 -an -fps_mode passthrough "${outputStickerPath}"`)
-
-        await hydro.sendMessage(m.chat, { sticker: fs.readFileSync(outputStickerPath) }, { quoted: m })
-
-    } catch (e) {
-        console.error(e)
-        m.reply('❌ Terjadi Kesalahan Saat Memproses bratvid!')
-    } finally {
-        for (const f of framePaths) {
-            try { if (f && fs.existsSync(f)) fs.unlinkSync(f) } catch {}
-        }
-        try { if (fileListPath && fs.existsSync(fileListPath)) fs.unlinkSync(fileListPath) } catch {}
-        try { if (outputVideoPath && fs.existsSync(outputVideoPath)) fs.unlinkSync(outputVideoPath) } catch {}
-        try { if (outputStickerPath && fs.existsSync(outputStickerPath)) fs.unlinkSync(outputStickerPath) } catch {}
+    if (mediaHeavyQueue.size() > 0 || mediaHeavyQueue.active() > 0) {
+        await m.reply(`⏳ Antrean proses media: ${mediaHeavyQueue.size() + mediaHeavyQueue.active()} job. Tunggu sebentar ya...`)
     }
+    const teks = (m.quoted ? m.quoted.text : text).split(' ')
+    await mediaHeavyQueue.push(async () => {
+        const tempDir = path.join(process.cwd(), 'temp')
+        if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true })
+        const safeSender = String(m.sender || 'user').replace(/[^a-zA-Z0-9]/g, '_')
+        const jobId = `${safeSender}_${Date.now()}_${Math.floor(Math.random() * 99999)}`
+        const framePaths = []
+        let fileListPath = ''
+        let outputVideoPath = ''
+        let outputStickerPath = ''
+
+        try {
+            for (let i = 0; i < teks.length; i++) {
+                const currentText = teks.slice(0, i + 1).join(' ')
+                let res
+                try {
+                    res = await getBuffer('https://brat.siputzx.my.id/mp4?text=' + encodeURIComponent(currentText))
+                } catch (e) {
+                    res = await getBuffer('https://aqul-brat.hf.space/?text=' + encodeURIComponent(currentText))
+                }
+                const framePath = path.join(tempDir, `${jobId}_${i}.mp4`)
+                fs.writeFileSync(framePath, res)
+                framePaths.push(framePath)
+            }
+
+            fileListPath = path.join(tempDir, `${jobId}.txt`)
+            let fileListContent = ''
+            for (let i = 0; i < framePaths.length; i++) {
+                fileListContent += `file '${framePaths[i]}'\n`
+                fileListContent += `duration 0.5\n`
+            }
+            fileListContent += `file '${framePaths[framePaths.length - 1]}'\n`
+            fileListContent += `duration 3\n`
+            fs.writeFileSync(fileListPath, fileListContent)
+
+            outputVideoPath = path.join(tempDir, `${jobId}-output.mp4`)
+            await runFfmpegAsync([
+                '-y', '-f', 'concat', '-safe', '0',
+                '-i', fileListPath,
+                '-vf', 'scale=trunc(iw/2)*2:trunc(ih/2)*2,fps=30',
+                '-c:v', 'libx264',
+                '-preset', 'veryfast',
+                '-pix_fmt', 'yuv420p',
+                outputVideoPath
+            ], 180000)
+
+            outputStickerPath = path.join(tempDir, `${jobId}_bratvid.webp`)
+            await runFfmpegAsync([
+                '-y',
+                '-i', outputVideoPath,
+                '-vcodec', 'libwebp',
+                '-vf', 'scale=512:512:force_original_aspect_ratio=decrease,fps=15,pad=512:512:-1:-1:color=white@0.0',
+                '-loop', '0',
+                '-ss', '00:00:00',
+                '-t', '10',
+                '-an',
+                '-fps_mode', 'passthrough',
+                outputStickerPath
+            ], 180000)
+
+            await hydro.sendMessage(m.chat, { sticker: fs.readFileSync(outputStickerPath) }, { quoted: m })
+        } catch (e) {
+            console.error('BRATVID ERROR:', e)
+            await m.reply('❌ Terjadi Kesalahan Saat Memproses bratvid!')
+        } finally {
+            for (const f of framePaths) {
+                try { if (f && fs.existsSync(f)) fs.unlinkSync(f) } catch {}
+            }
+            try { if (fileListPath && fs.existsSync(fileListPath)) fs.unlinkSync(fileListPath) } catch {}
+            try { if (outputVideoPath && fs.existsSync(outputVideoPath)) fs.unlinkSync(outputVideoPath) } catch {}
+            try { if (outputStickerPath && fs.existsSync(outputStickerPath)) fs.unlinkSync(outputStickerPath) } catch {}
+        }
+    })
 }
 break
 case 'furbrat': {
@@ -39811,9 +39889,11 @@ console.log('Caught exception: ', err)
 
 function autoClearSession() {
     const sessionDir = path.resolve(`./${sessionName}`)
+    const backupRoot = path.resolve('./session-backup/pre-key')
     const monitorInterval = 30 * 60 * 1000 // 30 menit
     const PREKEY_KEEP = 120
     const PREKEY_REGEX = /^pre-key-\d+\.json$/i
+    const MAX_BACKUP_AGE_MS = 7 * 24 * 60 * 60 * 1000 // 7 hari
 
     const listPreKeys = () => {
         if (!fs.existsSync(sessionDir)) return []
@@ -39830,15 +39910,45 @@ function autoClearSession() {
         return tracked
     }
 
+    const cleanupOldBackups = () => {
+        try {
+            if (!fs.existsSync(backupRoot)) return
+            const now = Date.now()
+            const children = fs.readdirSync(backupRoot)
+            for (const child of children) {
+                const dir = path.join(backupRoot, child)
+                let stat
+                try { stat = fs.statSync(dir) } catch { continue }
+                if (!stat.isDirectory()) continue
+                if (now - stat.mtimeMs > MAX_BACKUP_AGE_MS) {
+                    fs.rmSync(dir, { recursive: true, force: true })
+                }
+            }
+        } catch {}
+    }
+
     const runSweep = () => {
         try {
             const preKeys = listPreKeys().sort((a, b) => b.mtimeMs - a.mtimeMs)
             if (!preKeys.length) return
-            // Monitor-only mode:
-            // penghapusan pre-key dinonaktifkan untuk mencegah risiko badSession
-            // pada instance yang butuh rotasi key lebih tinggi.
-            const status = preKeys.length <= PREKEY_KEEP ? 'aman' : 'tinggi'
-            console.log(chalk.cyan.bold(`📂 [SESSION MONITOR] pre-key ${status}: ${preKeys.length}/${PREKEY_KEEP} (no-prune mode)`))
+            const removable = preKeys.slice(PREKEY_KEEP)
+            let moved = 0
+            if (removable.length > 0) {
+                const stamp = moment().tz('Asia/Jakarta').format('YYYYMMDD-HHmmss')
+                const targetBackupDir = path.join(backupRoot, stamp)
+                fs.mkdirSync(targetBackupDir, { recursive: true })
+                for (const item of removable) {
+                    try {
+                        const dst = path.join(targetBackupDir, item.file)
+                        fs.copyFileSync(item.abs, dst)
+                        fs.unlinkSync(item.abs)
+                        moved += 1
+                    } catch {}
+                }
+            }
+            cleanupOldBackups()
+            const status = preKeys.length <= PREKEY_KEEP ? 'aman' : 'dipruning'
+            console.log(chalk.cyan.bold(`📂 [SESSION MONITOR] pre-key ${status}: ${preKeys.length}/${PREKEY_KEEP} | dibackup+hapus: ${moved}`))
         } catch (error) {
             console.error(chalk.red.bold('📑 [SESSION MONITOR ERROR]'), chalk.red.bold(error))
         }
