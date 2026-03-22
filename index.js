@@ -88,6 +88,8 @@ global.__hydroRuntime = global.__hydroRuntime || {
 			socketHealthTimer: null,
 			socket: null,
 			pairingRequested: false,
+			pairingPrompted: false,
+			pairingPhone: '',
 		replacedCount: 0,
 		replacedWindowStart: 0,
 		pauseReconnectUntil: 0,
@@ -206,14 +208,21 @@ markOnlineOnConnect: true,
 			if (hydro.authState.creds.registered) return true
 			if (global.__hydroRuntime.pairingRequested) return true
 			if (pairingInProgress) return false
+			const runtime = global.__hydroRuntime
+			const envPairingNumber = String(process.env.PAIRING_NUMBER || '').replace(/[^0-9]/g, '')
 			const configuredPhoneNumber = String(global.ownernomer || global.ownernumber || '').replace(/[^0-9]/g, '')
-			let phoneForPairing = configuredPhoneNumber
-			if (!phoneForPairing && process.stdin.isTTY) {
-				const rawPhoneNumber = await question(`Masukin nomor yang mau dijadikan bot.. contoh: ${global.ownernomer || global.ownernumber}\n`)
+			let phoneForPairing = String(runtime.pairingPhone || '').replace(/[^0-9]/g, '')
+			if (!phoneForPairing && process.stdin.isTTY && !runtime.pairingPrompted) {
+				runtime.pairingPrompted = true
+				const fallbackHint = envPairingNumber || configuredPhoneNumber || '628xxxxxxxxxx'
+				const rawPhoneNumber = await question(`Masukin nomor yang mau ditautkan untuk pairing (contoh: ${fallbackHint})\n`)
 				phoneForPairing = String(rawPhoneNumber || '').replace(/[^0-9]/g, '')
+				if (!phoneForPairing) phoneForPairing = envPairingNumber || configuredPhoneNumber
 			}
+			if (!phoneForPairing) phoneForPairing = envPairingNumber || configuredPhoneNumber
+			runtime.pairingPhone = phoneForPairing
 			if (!phoneForPairing) {
-				console.log('Pairing code aktif tapi nomor belum diisi di settings.js (global.ownernomer).')
+				console.log('Pairing code aktif, tapi nomor belum diisi. Isi dulu di prompt startup, atau set env PAIRING_NUMBER / settings.js (global.ownernomer).')
 				return false
 			}
 			const wsState = hydro?.ws?.readyState
