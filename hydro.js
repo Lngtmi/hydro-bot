@@ -6037,13 +6037,21 @@ const quotedTextRaw = String(
   m.quoted?.message?.conversation ||
   ''
 )
+const quotedTextDeep = String(extractQuotedText(m.quoted) || '')
+const aiSessionKeyForReply = getAiSessionKey(m)
+const hasAiMemoryForReply = getAiHistory(aiSessionKeyForReply).length > 0
+const quotedLooksLikeAiThread = /ai thread|reply pesan ini untuk lanjut|pesan tersimpan|🤖\s*\*/i
+  .test(`${quotedTextRaw}\n${quotedTextDeep}`)
+const quotedFromBot = Boolean(quotedSenderJid) && areJidsSameUser(quotedSenderJid, botNumber)
 const isReplyToAiThread =
   !isCmd &&
   !m.key.fromMe &&
   Boolean(bodyText) &&
   Boolean(m.quoted) &&
-  areJidsSameUser(quotedSenderJid, botNumber) &&
-  /ai thread|🤖\s*\*/i.test(quotedTextRaw)
+  (
+    quotedLooksLikeAiThread ||
+    (quotedFromBot && hasAiMemoryForReply)
+  )
 
 if (isReplyToAiThread) {
   await hydro.sendMessage(m.chat, { react: { text: '⏱️', key: m.key } })
