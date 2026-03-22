@@ -87,6 +87,7 @@ global.__hydroRuntime = global.__hydroRuntime || {
 			socketWatchdogTimer: null,
 			socketHealthTimer: null,
 			socket: null,
+			pairingRequested: false,
 		replacedCount: 0,
 		replacedWindowStart: 0,
 		pauseReconnectUntil: 0,
@@ -196,24 +197,45 @@ markOnlineOnConnect: true,
 		return jid
 	}
 	hydro.decodeJid = decodeJidSafe
-	runtimeState.socket = hydro
-	runtimeState.starting = false
-		if (!hydro.authState.creds.registered && pairingCode) {
-const configuredPhoneNumber = String(global.ownernomer || global.ownernumber || '').replace(/[^0-9]/g, '');
-let phoneForPairing = configuredPhoneNumber;
-if (!phoneForPairing && process.stdin.isTTY) {
-const rawPhoneNumber = await question(`Masukin nomor yang mau dijadikan bot.. contoh: ${global.ownernomer || global.ownernumber}\n`);
-phoneForPairing = String(rawPhoneNumber || '').replace(/[^0-9]/g, '');
-}
-if (phoneForPairing) {
-let code = await hydro.requestPairingCode(phoneForPairing);
-if (typeof code === 'string' && code.length === 8 && !code.includes('-')) {
-code = code.match(/.{1,4}/g)?.join("-") || code;
-}
-		console.log(`Ini kodenya:`, code);
-} else {
-console.log('Pairing code aktif tapi nomor belum diisi di settings.js (global.ownernomer).');
-}
+		runtimeState.socket = hydro
+		runtimeState.starting = false
+		const requestPairingCodeSafe = async () => {
+			if (!pairingCode) return
+			if (hydro.authState.creds.registered) return
+			if (global.__hydroRuntime.pairingRequested) return
+			const configuredPhoneNumber = String(global.ownernomer || global.ownernumber || '').replace(/[^0-9]/g, '')
+			let phoneForPairing = configuredPhoneNumber
+			if (!phoneForPairing && process.stdin.isTTY) {
+				const rawPhoneNumber = await question(`Masukin nomor yang mau dijadikan bot.. contoh: ${global.ownernomer || global.ownernumber}\n`)
+				phoneForPairing = String(rawPhoneNumber || '').replace(/[^0-9]/g, '')
+			}
+			if (!phoneForPairing) {
+				console.log('Pairing code aktif tapi nomor belum diisi di settings.js (global.ownernomer).')
+				return
+			}
+
+			const MAX_TRY = 6
+			for (let i = 1; i <= MAX_TRY; i++) {
+				const wsState = hydro?.ws?.readyState
+				if (typeof wsState === 'number' && wsState !== 1) {
+					await delay(1000 * i)
+					continue
+				}
+				try {
+					let code = await hydro.requestPairingCode(phoneForPairing)
+					if (typeof code === 'string' && code.length === 8 && !code.includes('-')) {
+						code = code.match(/.{1,4}/g)?.join("-") || code
+					}
+					console.log(`Ini kodenya:`, code)
+					global.__hydroRuntime.pairingRequested = true
+					return
+				} catch (err) {
+					const msg = String(err?.message || err || '')
+					console.log(`[PAIRING RETRY ${i}/${MAX_TRY}] ${msg}`)
+					await delay(1500 * i)
+				}
+			}
+			console.log('[PAIRING] Gagal mengambil kode pairing setelah beberapa percobaan. Socket akan retry normal.')
 		}
 	    store.bind(hydro.ev)
 	let lastSocketActivityAt = Date.now()
@@ -376,6 +398,10 @@ console.log('Pairing code aktif tapi nomor belum diisi di settings.js (global.ow
 						global.__hydroRuntime.replacedCount = 0
 						global.__hydroRuntime.replacedWindowStart = 0
 						global.__hydroRuntime.pauseReconnectUntil = 0
+						global.__hydroRuntime.pairingRequested = false
+						requestPairingCodeSafe().catch((err) => {
+							console.log('[PAIRING SAFE ERROR]', err?.message || err)
+						})
 					await delay(1999)
 cfonts.say(botname || 'BOT', {
     font: 'block',
