@@ -247,11 +247,12 @@ markOnlineOnConnect: true,
 	let socketStallTimer = global.__hydroRuntime.socketStallTimer || null
 	const WS_READY_OPEN = 1
 	const SOCKET_WATCHDOG_INTERVAL_MS = 60 * 1000
-	const SOCKET_INACTIVE_TTL_MS = 3 * 60 * 1000
-	const SOCKET_IDLE_PROBE_GRACE_MS = 2 * 60 * 1000
+	const SOCKET_INACTIVE_TTL_MS = 20 * 60 * 1000
+	const SOCKET_IDLE_PROBE_GRACE_MS = 10 * 60 * 1000
 	const SOCKET_HEALTHCHECK_INTERVAL_MS = 2 * 60 * 1000
 	const SOCKET_STALLCHECK_INTERVAL_MS = 60 * 1000
-	const SOCKET_UPSERT_STALL_MS = 5 * 60 * 1000
+	const SOCKET_UPSERT_STALL_MS = 20 * 60 * 1000
+	const ENABLE_STALL_RESTART = String(process.env.ENABLE_STALL_RESTART || '').toLowerCase() === 'true'
 
 	const markSocketActivity = () => {
 		lastSocketActivityAt = Date.now()
@@ -376,8 +377,11 @@ markOnlineOnConnect: true,
 						await hydro.sendPresenceUpdate('available').catch(() => {})
 						await hydro.groupFetchAllParticipating().catch(() => {})
 					} else if (Date.now() - runtime.idleProbeAt >= SOCKET_IDLE_PROBE_GRACE_MS) {
-						console.log('[SOCKET WATCHDOG] idle tetap tidak pulih setelah probe -> reconnect')
-						return restartSocket(4000, 'watchdog-idle-stuck')
+						// Jangan paksa reconnect hanya karena tidak ada traffic upsert.
+						// Di WA, chat bisa memang sepi lama dan itu normal.
+						console.log('[SOCKET WATCHDOG] idle lama terdeteksi, skip reconnect (safe mode)')
+						runtime.idleProbeAt = Date.now()
+						appendWatchdogLog('idle-safe-skip-restart', { idleMs, wsState })
 					}
 				}
 			} catch (watchdogErr) {
@@ -419,6 +423,12 @@ markOnlineOnConnect: true,
 				runtime.stallHits = (runtime.stallHits || 0) + 1
 				if (runtime.stallHits < 2) {
 					appendWatchdogLog('stall-warning', { idleUpsertMs, wsState, stallHits: runtime.stallHits })
+					return
+				}
+				if (!ENABLE_STALL_RESTART) {
+					appendWatchdogLog('stall-safe-mode-no-restart', { idleUpsertMs, wsState, stallHits: runtime.stallHits })
+					console.log(`[SOCKET STALL] idle ${Math.round(idleUpsertMs / 1000)}s, safe mode aktif (tanpa restart)`)
+					runtime.stallHits = 0
 					return
 				}
 				appendWatchdogLog('stall-restart', { idleUpsertMs, wsState, stallHits: runtime.stallHits })
